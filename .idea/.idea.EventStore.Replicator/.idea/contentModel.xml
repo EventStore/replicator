@@ -20,6 +20,7 @@
       <e p="src/EventStore.Replicator" t="IncludeRecursive">
         <e p="bin" t="ExcludeRecursive" />
         <e p="EventStore.Replicator.csproj" t="IncludeRecursive" />
+        <e p="FileCheckpointStore.cs" t="Include" />
         <e p="obj" t="ExcludeRecursive">
           <e p="Debug" t="Include">
             <e p="netstandard2.1" t="Include">
@@ -34,6 +35,7 @@
         <e p="EventRead.cs" t="Include" />
         <e p="EventStore.Replicator.Shared.csproj" t="IncludeRecursive" />
         <e p="EventWrite.cs" t="Include" />
+        <e p="ICheckpointStore.cs" t="Include" />
         <e p="IEventReader.cs" t="Include" />
         <e p="IEventWriter.cs" t="Include" />
         <e p="obj" t="ExcludeRecursive">
@@ -70,6 +72,7 @@
             </e>
           </e>
         </e>
+        <e p="Position.cs" t="Include" />
         <e p="Settings.cs" t="Include" />
       </e>
       <e p="src/EventStore.Replicator.Tcp" t="IncludeRecursive">

@@ -4,6 +4,7 @@ using System.Threading;
 using EventStore.ClientAPI;
 using EventStore.Replicator.Shared;
 using EventStore.Replicator.Tcp.Logging;
+using Position = EventStore.ClientAPI.Position;
 
 namespace EventStore.Replicator.Tcp {
     public class TcpEventReader : IEventReader {
@@ -13,12 +14,12 @@ namespace EventStore.Replicator.Tcp {
 
         public TcpEventReader(IEventStoreConnection connection) => _connection = connection;
 
-        public async IAsyncEnumerable<EventRead> ReadEvents([EnumeratorCancellation] CancellationToken cancellationToken) {
-            var position    = Position.Start;
+        public async IAsyncEnumerable<EventRead> ReadEvents(Shared.Position position, [EnumeratorCancellation] CancellationToken cancellationToken) {
             var endOfStream = false;
+            var start       = new Position(position.CommitPosition, position.PreparePosition);
 
             while (!cancellationToken.IsCancellationRequested) {
-                var slice = await _connection.ReadAllEventsForwardAsync(position, 1024, true);
+                var slice = await _connection.ReadAllEventsForwardAsync(start, 1024, true);
 
                 if (slice.IsEndOfStream) {
                     if (!endOfStream) Log.Info("Reached the end of the stream at {@Position}", position);
@@ -30,22 +31,26 @@ namespace EventStore.Replicator.Tcp {
                 endOfStream = false;
 
                 foreach (var sliceEvent in slice.Events) {
-                    if (sliceEvent.OriginalEvent.EventType[0] == '$') continue;
+                    if (sliceEvent.Event.EventType[0] == '$') continue;
 
-                    yield return Map(sliceEvent.Event);
+                    yield return Map(sliceEvent.Event, sliceEvent.OriginalPosition!.Value);
                 }
             }
 
-            static EventRead Map(RecordedEvent evt)
+            static EventRead Map(RecordedEvent evt, Position position)
                 => new EventRead {
                     Created       = evt.Created,
                     Data          = evt.Data,
                     Metadata      = evt.Metadata,
                     EventId       = evt.EventId,
-                    EventNumber   = evt.EventNumber,
                     EventType     = evt.EventType,
                     IsJson        = evt.IsJson,
-                    EventStreamId = evt.EventStreamId
+                    EventStreamId = evt.EventStreamId,
+                    Position = new Shared.Position {
+                        CommitPosition  = position.CommitPosition,
+                        PreparePosition = position.PreparePosition,
+                        EventNumber     = evt.EventNumber
+                    }
                 };
         }
     }

@@ -8,8 +8,8 @@ namespace EventStore.Replicator.Tcp {
 
         public TcpEventWriter(IEventStoreConnection connection) => _connection = connection;
 
-        public async Task WriteEvent(EventWrite eventWrite) {
-            await _connection.AppendToStreamAsync(eventWrite.Stream, ExpectedVersion.Any, Map(eventWrite));
+        public Task WriteEvent(EventWrite eventWrite) {
+            return _connection.AppendToStreamAsync(eventWrite.Stream, ExpectedVersion.Any, Map(eventWrite));
             
             static EventData Map(EventWrite evt) => new EventData(evt.EventId, evt.EventType, evt.IsJson, evt.Data, evt.Metadata);
         }
