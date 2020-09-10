@@ -1,0 +1,34 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EventStore.Replicator", "src\EventStore.Replicator\EventStore.Replicator.csproj", "{B9B901BB-BFEB-4396-BD4D-6E1B5AEA6743}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EventStore.Replicator.Shared", "src\EventStore.Replicator.Shared\EventStore.Replicator.Shared.csproj", "{989BF42F-4CD2-46C1-AF16-B709450706FD}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "es-replicator", "src\es-replicator\es-replicator.csproj", "{239E829E-F479-4DC7-BB67-8AE7E970F2B3}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EventStore.Replicator.Tcp", "src\EventStore.Replicator.Tcp\EventStore.Replicator.Tcp.csproj", "{AD365FF1-5B5C-4820-9697-C8E130949B3C}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{B9B901BB-BFEB-4396-BD4D-6E1B5AEA6743}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B9B901BB-BFEB-4396-BD4D-6E1B5AEA6743}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B9B901BB-BFEB-4396-BD4D-6E1B5AEA6743}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B9B901BB-BFEB-4396-BD4D-6E1B5AEA6743}.Release|Any CPU.Build.0 = Release|Any CPU
+		{989BF42F-4CD2-46C1-AF16-B709450706FD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{989BF42F-4CD2-46C1-AF16-B709450706FD}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{989BF42F-4CD2-46C1-AF16-B709450706FD}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{989BF42F-4CD2-46C1-AF16-B709450706FD}.Release|Any CPU.Build.0 = Release|Any CPU
+		{239E829E-F479-4DC7-BB67-8AE7E970F2B3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{239E829E-F479-4DC7-BB67-8AE7E970F2B3}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{239E829E-F479-4DC7-BB67-8AE7E970F2B3}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{239E829E-F479-4DC7-BB67-8AE7E970F2B3}.Release|Any CPU.Build.0 = Release|Any CPU
+		{AD365FF1-5B5C-4820-9697-C8E130949B3C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{AD365FF1-5B5C-4820-9697-C8E130949B3C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{AD365FF1-5B5C-4820-9697-C8E130949B3C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{AD365FF1-5B5C-4820-9697-C8E130949B3C}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+EndGlobal

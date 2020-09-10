@@ -1,0 +1,20 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>netcoreapp3.1</TargetFramework>
+    <RootNamespace>es_replicator</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Update="settings.yaml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\EventStore.Replicator.Shared\EventStore.Replicator.Shared.csproj" />
+    <ProjectReference Include="..\EventStore.Replicator\EventStore.Replicator.csproj" />
+  </ItemGroup>
+
+</Project>
