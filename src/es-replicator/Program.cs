@@ -1,11 +1,8 @@
-﻿using System.Threading.Tasks;
-using EventStore.Replicator.Shared;
+using es_replicator;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.Extensions.Hosting;
 
-namespace es_replicator {
-    class Program {
-        static async Task Main(string[] args) {
-            var settings = Settings.Load("settings.yaml");
-
-        }
-    }
-}
+Host.CreateDefaultBuilder(args)
+    .ConfigureWebHostDefaults(b => b.UseStartup<Startup>())
+    .Build()
+    .Run();

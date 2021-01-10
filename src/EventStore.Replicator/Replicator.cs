@@ -4,87 +4,107 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Channels;
 using System.Threading.Tasks;
+using EventStore.Replicator.Pipeline;
 using EventStore.Replicator.Shared;
 using EventStore.Replicator.Shared.Logging;
-using Open.ChannelExtensions;
-using Polly;
+using EventStore.Replicator.Shared.Pipeline;
+using GreenPipes;
 
 namespace EventStore.Replicator {
     public class Replicator {
         static readonly ILog Log = LogProvider.GetCurrentClassLogger();
 
+        Task _reader;
+
         const int Capacity = 10240;
 
         public async Task Replicate(
-            IEventReader reader, IEventWriter writer, ICheckpointStore checkpointStore,
+            IEventReader reader, IEventWriter writer, 
+            ICheckpointStore checkpointStore,
             CancellationToken cancellationToken,
-            Func<EventRead, bool> filter,
-            Func<EventRead, ValueTask<EventWrite>> transform
+            Func<OriginalEvent, bool> filter,
+            Func<OriginalEvent, ValueTask<ProposedEvent>> transform
         ) {
             var cts       = new CancellationTokenSource();
             var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, cts.Token);
-            var start     = await checkpointStore.LoadCheckpoint();
+            var start     = await checkpointStore.LoadCheckpoint(cancellationToken);
 
-            var retryPolicy = Policy
-                .Handle<Exception>(ex => !(ex is OperationCanceledException))
-                .RetryForeverAsync(ex => Log.Warn(ex, "Writer error: {Error}, retrying", ex.Message));
+            var prepareChannel = Channel.CreateBounded<OriginalEvent>(Capacity);
 
-            var channel = Channel.CreateBounded<EventRead>(Capacity)
-                .Source(reader.ReadEvents(start, linkedCts.Token));
+            var preparePipe = Pipe.New<FilterContext>(
+                cfg => {
+                    cfg.UseEventFilter(x => Filters.StreamFilter(x, null, null));
+                    cfg.UseEventTransform(Transforms.Default);
+                    cfg.UseExecuteAsync(async ctx => await prepareChannel.Writer.WriteAsync(ctx.OriginalEvent, ctx.CancellationToken));
+                    cfg.UseRetry(r => r.Incremental(10, TimeSpan.Zero, TimeSpan.FromMilliseconds(100)));
+                    cfg.UseConcurrencyLimit(10);
+                }
+            );
 
-            if (filter != null) channel = channel.Filter(x => Try(x, filter));
+            var sinkChannel = Channel.CreateBounded<ProposedEvent>(Capacity);
 
-            Func<EventRead, ValueTask<EventWrite>> transformFunction;
+            var sinkPipe = Pipe.New<SinkContext>(
+                cfg => {
+                    cfg.UseEventWriter(writer);
+                    cfg.UseRetry(r => r.Incremental(10, TimeSpan.Zero, TimeSpan.FromMilliseconds(100)));
+                    cfg.UseConcurrencyLimit(1);
+                }
+            );
 
-            if (transform != null)
-                transformFunction = TryTransform;
-            else
-                transformFunction = DefaultTransform;
+            _reader = Task.Run(() => Reader(reader, start, preparePipe, linkedCts.Token));
 
-            var resultChannel = channel
-                .PipeAsync(5, transformFunction, Capacity, false, linkedCts.Token)
-                .PipeAsync(WriteEvent, Capacity, true, linkedCts.Token)
-                .Batch(1024, true, true);
+            // var channel = Channel.CreateBounded<EventRead>(Capacity)
+            // .Source(reader.ReadEvents(start, linkedCts.Token));
 
-            var lastPosition = new Position();
+            // if (filter != null) channel = channel.Filter(x => Try(x, filter));
 
-            try {
-                await resultChannel.ReadUntilCancelledAsync(linkedCts.Token, StoreCheckpoint, true);
-            }
-            catch (Exception e) {
-                Log.Fatal(e, "Unable to proceed: {Error}", e.Message);
-            }
-            finally {
-                Log.Info("Last recorded position: {Position}", lastPosition);
-            }
+            // var resultChannel = channel
+            // .PipeAsync(5, transformFunction, Capacity, false, linkedCts.Token)
+            // .PipeAsync(WriteEvent, Capacity, true, linkedCts.Token)
+            // .Batch(1024, true, true);
 
-            async ValueTask<Position> WriteEvent(EventWrite write) {
-                await retryPolicy.ExecuteAsync(() => writer.WriteEvent(write));
-                return write.SourcePosition;
-            }
+            // var lastPosition = new Position();
 
-            T Try<T>(EventRead evt, Func<EventRead, T> func) {
+            // try {
+                // await resultChannel.ReadUntilCancelledAsync(linkedCts.Token, StoreCheckpoint, true);
+            // }
+            // catch (Exception e) {
+                // Log.Fatal(e, "Unable to proceed: {Error}", e.Message);
+            // }
+            // finally {
+                // Log.Info("Last recorded position: {Position}", lastPosition);
+            // }
+        }
+
+        static async Task Reader(IEventReader reader, Position start, IPipe<FilterContext> pipe, CancellationToken token) {
+            while (!token.IsCancellationRequested) {
                 try {
-                    return func(evt);
+                    await foreach (var read in reader.ReadEvents(start, token)) {
+                        await pipe.Send(new FilterContext(read, token));
+                    }
                 }
-                catch (Exception e) {
-                    Log.Error(e, "Error in the pipeline: {Error}", e.Message);
-                    cts.Cancel();
-                    throw;
+                catch (TaskCanceledException) {
+                    // it's ok
                 }
-            }
-
-            async ValueTask<EventWrite> TryTransform(EventRead evt) => await Try(evt, transform);
-
-            ValueTask StoreCheckpoint(List<Position> positions) {
-                lastPosition = positions.Last();
-                return checkpointStore.StoreCheckpoint(lastPosition);
             }
         }
 
-        static ValueTask<EventWrite> DefaultTransform(EventRead evt)
-            => new ValueTask<EventWrite>(
-                new EventWrite {
+        static async Task Write(ChannelReader<OriginalEvent> readChannel, IPipe<SinkContext> pipe, CancellationToken token) {
+            while (!token.IsCancellationRequested) {
+                try {
+                    await foreach (var prepared in readChannel.ReadAllAsync(token)) {
+                        
+                    }
+                }
+                catch (TaskCanceledException) {
+                    // it's ok
+                }
+            }
+        }
+
+        static ValueTask<ProposedEvent> DefaultTransform(OriginalEvent evt)
+            => new(
+                new ProposedEvent {
                     Stream         = evt.EventStreamId,
                     EventId        = evt.EventId,
                     EventType      = evt.EventType,

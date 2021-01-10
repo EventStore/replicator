@@ -14,9 +14,11 @@ namespace EventStore.Replicator.Tcp {
 
         public TcpEventReader(IEventStoreConnection connection) => _connection = connection;
 
-        public async IAsyncEnumerable<EventRead> ReadEvents(Shared.Position position, [EnumeratorCancellation] CancellationToken cancellationToken) {
+        public async IAsyncEnumerable<OriginalEvent> ReadEvents(
+            Shared.Position position, [EnumeratorCancellation] CancellationToken cancellationToken
+        ) {
             var endOfStream = false;
-            var start       = new Position(position.CommitPosition, position.PreparePosition);
+            var start       = new Position(position.EventPosition, position.EventPosition);
 
             while (!cancellationToken.IsCancellationRequested) {
                 var slice = await _connection.ReadAllEventsForwardAsync(start, 1024, true);
@@ -37,8 +39,8 @@ namespace EventStore.Replicator.Tcp {
                 }
             }
 
-            static EventRead Map(RecordedEvent evt, Position position)
-                => new EventRead {
+            static OriginalEvent Map(RecordedEvent evt, Position position)
+                => new() {
                     Created       = evt.Created,
                     Data          = evt.Data,
                     Metadata      = evt.Metadata,
@@ -46,11 +48,7 @@ namespace EventStore.Replicator.Tcp {
                     EventType     = evt.EventType,
                     IsJson        = evt.IsJson,
                     EventStreamId = evt.EventStreamId,
-                    Position = new Shared.Position {
-                        CommitPosition  = position.CommitPosition,
-                        PreparePosition = position.PreparePosition,
-                        EventNumber     = evt.EventNumber
-                    }
+                    Position      = new Shared.Position(evt.EventNumber, position.CommitPosition)
                 };
         }
     }

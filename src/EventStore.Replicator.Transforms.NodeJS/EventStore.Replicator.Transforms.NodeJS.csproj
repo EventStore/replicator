@@ -1,0 +1,11 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net5.0</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Jering.Javascript.NodeJS" Version="5.4.3" />
+    <PackageReference Include="Microsoft.ClearScript.osx-x64" Version="7.0.0" />
+  </ItemGroup>
+</Project>
