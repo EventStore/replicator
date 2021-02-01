@@ -23,15 +23,18 @@ namespace EventStore.Replicator.Pipeline {
 
         public TransformSpecification(TransformEvent transform) => _transform = transform;
 
-        public void Apply(IPipeBuilder<FilterContext> builder) => builder.AddFilter(new TransformFilter(_transform));
+        public void Apply(IPipeBuilder<FilterContext> builder)
+            => builder.AddFilter(new TransformFilter(_transform));
 
         public IEnumerable<ValidationResult> Validate() {
-            if (_transform == null) yield return this.Failure("validationTransformPipe", "Event transform is missing");
+            yield return this.Success("filter");
         }
     }
 
     public static class TransformPipeExtensions {
-        public static void UseEventTransform(this IPipeConfigurator<FilterContext> configurator, TransformEvent transformEvent)
+        public static void UseEventTransform(
+            this IPipeConfigurator<FilterContext> configurator, TransformEvent transformEvent
+        )
             => configurator.AddPipeSpecification(new TransformSpecification(transformEvent));
     }
 }

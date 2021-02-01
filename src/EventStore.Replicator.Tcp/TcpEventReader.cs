@@ -3,7 +3,8 @@ using System.Runtime.CompilerServices;
 using System.Threading;
 using EventStore.ClientAPI;
 using EventStore.Replicator.Shared;
-using EventStore.Replicator.Tcp.Logging;
+using EventStore.Replicator.Shared.Contracts;
+using EventStore.Replicator.Shared.Logging;
 using Position = EventStore.ClientAPI.Position;
 
 namespace EventStore.Replicator.Tcp {
@@ -24,7 +25,8 @@ namespace EventStore.Replicator.Tcp {
                 var slice = await _connection.ReadAllEventsForwardAsync(start, 1024, true);
 
                 if (slice.IsEndOfStream) {
-                    if (!endOfStream) Log.Info("Reached the end of the stream at {@Position}", position);
+                    if (!endOfStream)
+                        Log.Info("Reached the end of the stream at {@Position}", position);
 
                     endOfStream = true;
                     continue;
@@ -40,16 +42,20 @@ namespace EventStore.Replicator.Tcp {
             }
 
             static OriginalEvent Map(RecordedEvent evt, Position position)
-                => new() {
-                    Created       = evt.Created,
-                    Data          = evt.Data,
-                    Metadata      = evt.Metadata,
-                    EventId       = evt.EventId,
-                    EventType     = evt.EventType,
-                    IsJson        = evt.IsJson,
-                    EventStreamId = evt.EventStreamId,
-                    Position      = new Shared.Position(evt.EventNumber, position.CommitPosition)
-                };
+                => new(
+                    evt.Created,
+                    new EventDetails(
+                        evt.EventStreamId,
+                        evt.EventId,
+                        evt.EventType,
+                        evt.IsJson ? ContentTypes.Json : ContentTypes.Binary
+                    ),
+                    evt.Data,
+                    evt.Metadata,
+                    new Shared.Position(evt.EventNumber, position.CommitPosition),
+                    0
+                )
+            ;
         }
     }
 }

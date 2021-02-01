@@ -1,11 +1,10 @@
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Threading;
 using System.Threading.Channels;
 using System.Threading.Tasks;
 using EventStore.Replicator.Pipeline;
 using EventStore.Replicator.Shared;
+using EventStore.Replicator.Shared.Contracts;
 using EventStore.Replicator.Shared.Logging;
 using EventStore.Replicator.Shared.Pipeline;
 using GreenPipes;
@@ -15,104 +14,136 @@ namespace EventStore.Replicator {
         static readonly ILog Log = LogProvider.GetCurrentClassLogger();
 
         Task _reader;
+        Task _prepare;
+        Task _writer;
 
         const int Capacity = 10240;
 
         public async Task Replicate(
-            IEventReader reader, IEventWriter writer, 
-            ICheckpointStore checkpointStore,
+            IEventReader      reader,
+            IEventWriter      writer,
+            ICheckpointStore  checkpointStore,
             CancellationToken cancellationToken,
-            Func<OriginalEvent, bool> filter,
-            Func<OriginalEvent, ValueTask<ProposedEvent>> transform
+            FilterEvent?      filter    = null,
+            TransformEvent?   transform = null
         ) {
-            var cts       = new CancellationTokenSource();
-            var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, cts.Token);
-            var start     = await checkpointStore.LoadCheckpoint(cancellationToken);
+            var cts = new CancellationTokenSource();
+
+            var linkedCts =
+                CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, cts.Token);
+            var start = await checkpointStore.LoadCheckpoint(cancellationToken);
 
             var prepareChannel = Channel.CreateBounded<OriginalEvent>(Capacity);
+            var sinkChannel    = Channel.CreateBounded<ProposedEvent>(Capacity);
 
             var preparePipe = Pipe.New<FilterContext>(
                 cfg => {
-                    cfg.UseEventFilter(x => Filters.StreamFilter(x, null, null));
-                    cfg.UseEventTransform(Transforms.Default);
-                    cfg.UseExecuteAsync(async ctx => await prepareChannel.Writer.WriteAsync(ctx.OriginalEvent, ctx.CancellationToken));
-                    cfg.UseRetry(r => r.Incremental(10, TimeSpan.Zero, TimeSpan.FromMilliseconds(100)));
+                    cfg.UseEventFilter(filter       ?? Filters.EmptyFilter);
+                    cfg.UseEventTransform(transform ?? Transforms.Default);
+
+                    cfg.UseExecuteAsync(
+                        async ctx => await sinkChannel.Writer.WriteAsync(
+                            ctx.GetPayload<ProposedEvent>(),
+                            ctx.CancellationToken
+                        )
+                    );
+
+                    cfg.UseRetry(
+                        r => r.Incremental(10, TimeSpan.Zero, TimeSpan.FromMilliseconds(100))
+                    );
                     cfg.UseConcurrencyLimit(10);
                 }
             );
 
-            var sinkChannel = Channel.CreateBounded<ProposedEvent>(Capacity);
-
             var sinkPipe = Pipe.New<SinkContext>(
                 cfg => {
                     cfg.UseEventWriter(writer);
-                    cfg.UseRetry(r => r.Incremental(10, TimeSpan.Zero, TimeSpan.FromMilliseconds(100)));
+                    cfg.UseCheckpointStore(checkpointStore);
+
+                    cfg.UseRetry(
+                        r => r.Incremental(10, TimeSpan.Zero, TimeSpan.FromMilliseconds(100))
+                    );
                     cfg.UseConcurrencyLimit(1);
                 }
             );
 
-            _reader = Task.Run(() => Reader(reader, start, preparePipe, linkedCts.Token));
-
-            // var channel = Channel.CreateBounded<EventRead>(Capacity)
-            // .Source(reader.ReadEvents(start, linkedCts.Token));
-
-            // if (filter != null) channel = channel.Filter(x => Try(x, filter));
-
-            // var resultChannel = channel
-            // .PipeAsync(5, transformFunction, Capacity, false, linkedCts.Token)
-            // .PipeAsync(WriteEvent, Capacity, true, linkedCts.Token)
-            // .Batch(1024, true, true);
-
-            // var lastPosition = new Position();
-
-            // try {
-                // await resultChannel.ReadUntilCancelledAsync(linkedCts.Token, StoreCheckpoint, true);
-            // }
-            // catch (Exception e) {
-                // Log.Fatal(e, "Unable to proceed: {Error}", e.Message);
-            // }
-            // finally {
-                // Log.Info("Last recorded position: {Position}", lastPosition);
-            // }
-        }
-
-        static async Task Reader(IEventReader reader, Position start, IPipe<FilterContext> pipe, CancellationToken token) {
-            while (!token.IsCancellationRequested) {
-                try {
-                    await foreach (var read in reader.ReadEvents(start, token)) {
-                        await pipe.Send(new FilterContext(read, token));
-                    }
-                }
-                catch (TaskCanceledException) {
-                    // it's ok
-                }
-            }
-        }
-
-        static async Task Write(ChannelReader<OriginalEvent> readChannel, IPipe<SinkContext> pipe, CancellationToken token) {
-            while (!token.IsCancellationRequested) {
-                try {
-                    await foreach (var prepared in readChannel.ReadAllAsync(token)) {
-                        
-                    }
-                }
-                catch (TaskCanceledException) {
-                    // it's ok
-                }
-            }
-        }
-
-        static ValueTask<ProposedEvent> DefaultTransform(OriginalEvent evt)
-            => new(
-                new ProposedEvent {
-                    Stream         = evt.EventStreamId,
-                    EventId        = evt.EventId,
-                    EventType      = evt.EventType,
-                    IsJson         = evt.IsJson,
-                    Data           = evt.Data,
-                    Metadata       = evt.Metadata,
-                    SourcePosition = evt.Position
-                }
+            _prepare = Task.Run(
+                () => Prepare(prepareChannel.Reader, preparePipe, linkedCts.Token),
+                linkedCts.Token
             );
+
+            _writer = Task.Run(
+                () => Write(sinkChannel.Reader, sinkPipe, linkedCts.Token),
+                linkedCts.Token
+            );
+
+            await Reader(reader, start, prepareChannel.Writer, linkedCts.Token);
+
+            try {
+                await _prepare;
+                await _writer;
+            }
+            catch (OperationCanceledException) { }
+        }
+
+        static async Task Reader(
+            IEventReader                 reader,
+            Position                     start,
+            ChannelWriter<OriginalEvent> writer,
+            CancellationToken            token
+        ) {
+            Log.Info("Reader started");
+
+            try {
+                while (!token.IsCancellationRequested) {
+                    await foreach (var read in reader.ReadEvents(start, token)) {
+                        await writer.WriteAsync(read, token);
+                    }
+                }
+            }
+            catch (OperationCanceledException) {
+                // it's ok
+            }
+            finally {
+                Log.Info("Reader stopped");
+            }
+        }
+
+        static async Task Prepare(
+            ChannelReader<OriginalEvent> reader,
+            IPipe<FilterContext>         pipe,
+            CancellationToken            token
+        ) {
+            try {
+                while (!token.IsCancellationRequested && await reader.WaitToReadAsync(token)) {
+                    await foreach (var original in reader.ReadAllAsync(token)) {
+                        await pipe.Send(new FilterContext(original, token));
+                    }
+                }
+            }
+            catch (OperationCanceledException) { }
+        }
+
+        static async Task Write(
+            ChannelReader<ProposedEvent> channelReader,
+            IPipe<SinkContext>           pipe,
+            CancellationToken            token
+        ) {
+            Log.Info("Writer started");
+
+            try {
+                while (!token.IsCancellationRequested &&
+                    await channelReader.WaitToReadAsync(token)) {
+                    await foreach (var proposed in channelReader.ReadAllAsync(token)) {
+                        await pipe.Send(new SinkContext(proposed, token));
+                    }
+                }
+            }
+            catch (TaskCanceledException) {
+                // it's ok
+            }
+
+            Log.Info("Writer stopped");
+        }
     }
 }
