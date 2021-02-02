@@ -10,6 +10,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EventStore.Replicator.Trans
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "es-replicator", "src\es-replicator\es-replicator.csproj", "{C8FCDAA2-71F1-4926-BFDE-CEF674497484}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EventStore.Replicator.Grpc", "src\EventStore.Replicator.Grpc\EventStore.Replicator.Grpc.csproj", "{BB3E9A7A-4116-4F86-B2EA-9CEE207C7977}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -36,5 +38,9 @@ Global
 		{C8FCDAA2-71F1-4926-BFDE-CEF674497484}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{C8FCDAA2-71F1-4926-BFDE-CEF674497484}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{C8FCDAA2-71F1-4926-BFDE-CEF674497484}.Release|Any CPU.Build.0 = Release|Any CPU
+		{BB3E9A7A-4116-4F86-B2EA-9CEE207C7977}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{BB3E9A7A-4116-4F86-B2EA-9CEE207C7977}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{BB3E9A7A-4116-4F86-B2EA-9CEE207C7977}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{BB3E9A7A-4116-4F86-B2EA-9CEE207C7977}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

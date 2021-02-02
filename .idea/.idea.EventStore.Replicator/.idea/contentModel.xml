@@ -34,17 +34,40 @@
             </e>
           </e>
         </e>
-        <e p="Pipeline" t="Include">
-          <e p="FilterPipe.cs" t="Include" />
-          <e p="SinkPipe.cs" t="Include" />
-          <e p="TransformPipe.cs" t="Include" />
+        <e p="Options" t="Include" />
+        <e p="Prepare" t="Include">
+          <e p="EventFilterFilter.cs" t="Include" />
+          <e p="PrepareContext.cs" t="Include" />
+          <e p="PreparePine.cs" t="Include" />
+          <e p="PreparePipelineOptions.cs" t="Include" />
+          <e p="TransformFilter.cs" t="Include" />
+        </e>
+        <e p="Read" t="Include">
+          <e p="ReaderPipe.cs" t="Include" />
         </e>
         <e p="Replicator.cs" t="Include" />
+        <e p="Sink" t="Include">
+          <e p="SinkContext.cs" t="Include" />
+          <e p="SinkPipe.cs" t="Include" />
+          <e p="SinkPipelineOptions.cs" t="Include" />
+        </e>
+      </e>
+      <e p="src/EventStore.Replicator.Grpc" t="IncludeRecursive">
+        <e p="bin" t="ExcludeRecursive" />
+        <e p="EventStore.Replicator.Grpc.csproj" t="IncludeRecursive" />
+        <e p="obj" t="ExcludeRecursive">
+          <e p="Debug" t="Include">
+            <e p="net5.0" t="Include">
+              <e p="EventStore.Replicator.Grpc.AssemblyInfo.cs" t="Include" />
+            </e>
+          </e>
+        </e>
       </e>
       <e p="src/EventStore.Replicator.Shared" t="IncludeRecursive">
         <e p="bin" t="ExcludeRecursive" />
         <e p="Contracts" t="Include">
           <e p="EventDetails.cs" t="Include" />
+          <e p="Metadata.cs" t="Include" />
           <e p="OriginalEvent.cs" t="Include" />
           <e p="ProposedEvent.cs" t="Include" />
         </e>

@@ -16,17 +16,18 @@ namespace EventStore.Replicator.Tcp {
         public TcpEventReader(IEventStoreConnection connection) => _connection = connection;
 
         public async IAsyncEnumerable<OriginalEvent> ReadEvents(
-            Shared.Position position, [EnumeratorCancellation] CancellationToken cancellationToken
+            Shared.Position fromPosition, [EnumeratorCancellation] CancellationToken cancellationToken
         ) {
             var endOfStream = false;
-            var start       = new Position(position.EventPosition, position.EventPosition);
+            var sequence    = 0;
+            var start       = new Position(fromPosition.EventPosition, fromPosition.EventPosition);
 
             while (!cancellationToken.IsCancellationRequested) {
                 var slice = await _connection.ReadAllEventsForwardAsync(start, 1024, true);
 
                 if (slice.IsEndOfStream) {
                     if (!endOfStream)
-                        Log.Info("Reached the end of the stream at {@Position}", position);
+                        Log.Info("Reached the end of the stream at {@Position}", fromPosition);
 
                     endOfStream = true;
                     continue;
@@ -37,11 +38,11 @@ namespace EventStore.Replicator.Tcp {
                 foreach (var sliceEvent in slice.Events) {
                     if (sliceEvent.Event.EventType[0] == '$') continue;
 
-                    yield return Map(sliceEvent.Event, sliceEvent.OriginalPosition!.Value);
+                    yield return Map(sliceEvent.Event, sliceEvent.OriginalPosition!.Value, sequence++);
                 }
             }
 
-            static OriginalEvent Map(RecordedEvent evt, Position position)
+            static OriginalEvent Map(RecordedEvent evt, Position position, int sequence)
                 => new(
                     evt.Created,
                     new EventDetails(
@@ -53,7 +54,7 @@ namespace EventStore.Replicator.Tcp {
                     evt.Data,
                     evt.Metadata,
                     new Shared.Position(evt.EventNumber, position.CommitPosition),
-                    0
+                    sequence
                 )
             ;
         }
