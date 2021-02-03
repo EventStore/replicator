@@ -32,10 +32,7 @@ namespace EventStore.Replicator.Read {
                                     )) {
                                         using var activity = new Activity("read").Start();
 
-                                        var meta = new Metadata(
-                                            activity.TraceId.ToString(),
-                                            activity.SpanId.ToString()
-                                        );
+                                        var meta = new Metadata(activity.TraceId, activity.SpanId);
 
                                         await channel.WriteAsync(
                                             new PrepareContext(read, meta, ctx.CancellationToken),

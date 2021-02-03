@@ -29,7 +29,7 @@ namespace EventStore.Replicator.Shared.Pipeline {
                 exclude.IsNullOrDoesntMatch(originalEvent.EventDetails.Stream);
             return new ValueTask<bool>(pass);
         }
-
+        
         static readonly ILog Log = LogProvider.GetCurrentClassLogger();
         
         public static ValueTask<bool> EmptyFilter(OriginalEvent originalEvent) {

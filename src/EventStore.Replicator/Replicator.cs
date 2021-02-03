@@ -5,7 +5,6 @@ using System.Threading.Tasks;
 using EventStore.Replicator.Prepare;
 using EventStore.Replicator.Read;
 using EventStore.Replicator.Shared;
-using EventStore.Replicator.Shared.Contracts;
 using EventStore.Replicator.Shared.Logging;
 using EventStore.Replicator.Shared.Pipeline;
 using EventStore.Replicator.Sink;

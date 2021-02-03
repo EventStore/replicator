@@ -73,6 +73,7 @@
         </e>
         <e p="EventStore.Replicator.Shared.csproj" t="IncludeRecursive" />
         <e p="extensions" t="Include">
+          <e p="DictionaryExtensions.cs" t="Include" />
           <e p="RegexExtensions.cs" t="Include" />
         </e>
         <e p="ICheckpointStore.cs" t="Include" />
@@ -120,6 +121,8 @@
       </e>
       <e p="src/EventStore.Replicator.Tcp" t="IncludeRecursive">
         <e p="bin" t="ExcludeRecursive" />
+        <e p="ConnectionExtensions.cs" t="Include" />
+        <e p="EventFilters.cs" t="Include" />
         <e p="EventStore.Replicator.Tcp.csproj" t="IncludeRecursive" />
         <e p="obj" t="ExcludeRecursive">
           <e p="Debug" t="Include">

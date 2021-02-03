@@ -1,3 +1,5 @@
+using System.Diagnostics;
+
 namespace EventStore.Replicator.Shared.Contracts {
-    public record Metadata(string TraceId, string SpanId);
+    public record Metadata(ActivityTraceId TraceId, ActivitySpanId SpanId);
 }

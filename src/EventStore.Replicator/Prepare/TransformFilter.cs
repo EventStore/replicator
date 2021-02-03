@@ -12,6 +12,7 @@ namespace EventStore.Replicator.Prepare {
 
         public async Task Send(PrepareContext context, IPipe<PrepareContext> next) {
             using (var activity = new Activity("transform")) {
+                activity.SetParentId(context.Metadata.TraceId, context.Metadata.SpanId);
                 activity.Start();
 
                 var transformed = await _transform(
