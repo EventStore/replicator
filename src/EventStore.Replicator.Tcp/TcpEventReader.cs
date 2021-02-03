@@ -54,7 +54,6 @@ namespace EventStore.Replicator.Tcp {
                     evt.Data,
                     evt.Metadata,
                     new Shared.Position(evt.EventNumber, position.CommitPosition),
-                    evt.EventNumber,
                     sequence
                 )
             ;

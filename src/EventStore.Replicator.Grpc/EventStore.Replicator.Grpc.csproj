@@ -8,4 +8,8 @@
       <PackageReference Include="EventStore.Client.Grpc.Streams" Version="20.10.0" />
     </ItemGroup>
 
+    <ItemGroup>
+      <ProjectReference Include="..\EventStore.Replicator.Shared\EventStore.Replicator.Shared.csproj" />
+    </ItemGroup>
+
 </Project>

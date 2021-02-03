@@ -9,7 +9,6 @@ namespace EventStore.Replicator.Shared.Contracts {
         byte[]         Data,
         byte[]         Metadata,
         Position       Position,
-        long           EventNumber,
         long           SequenceNumber
     );
 }

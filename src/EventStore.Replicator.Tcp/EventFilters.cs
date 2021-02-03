@@ -30,7 +30,7 @@ namespace EventStore.Replicator.Tcp {
                     connection.GetStreamSize
                 );
 
-                return originalEvent.EventNumber - streamSize.FirstEventNumber >= streamMeta.MaxCount;
+                return originalEvent.Position.EventNumber < streamSize.FirstEventNumber;
             }
         }
     }
