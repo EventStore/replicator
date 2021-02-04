@@ -1,4 +1,5 @@
 using System;
+using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 using EventStore.ClientAPI;
 
@@ -10,13 +11,6 @@ namespace EventStore.Replicator.Tcp {
             var first = await connection.ReadStreamEventsForwardAsync(
                 stream,
                 StreamPosition.Start,
-                1,
-                false
-            );
-
-            var last = await connection.ReadStreamEventsBackwardAsync(
-                stream,
-                StreamPosition.End,
                 1,
                 false
             );
