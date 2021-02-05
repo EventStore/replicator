@@ -28,7 +28,7 @@ namespace es_replicator {
         }
 
         protected override Task ExecuteAsync(CancellationToken stoppingToken) {
-            return new Replicator().Replicate(
+            return Replicator.Replicate(
                 _reader,
                 _writer,
                 _checkpointStore,

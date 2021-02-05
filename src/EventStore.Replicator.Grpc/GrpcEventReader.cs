@@ -16,7 +16,7 @@ namespace EventStore.Replicator.Grpc {
 
         public GrpcEventReader(EventStoreClient connection) => _client = connection;
 
-        public async IAsyncEnumerable<OriginalEvent> ReadEvents(
+        public async IAsyncEnumerable<BaseOriginalEvent> ReadEvents(
             Shared.Position                            fromPosition,
             [EnumeratorCancellation] CancellationToken cancellationToken
         ) {

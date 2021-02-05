@@ -42,7 +42,7 @@ namespace es_replicator {
 
         public FakeReader(ILogger<FakeReader> log) => _log = log;
 
-        public async IAsyncEnumerable<OriginalEvent> ReadEvents(
+        public async IAsyncEnumerable<BaseOriginalEvent> ReadEvents(
             Position                                   fromPosition,
             [EnumeratorCancellation] CancellationToken cancellationToken
         ) {

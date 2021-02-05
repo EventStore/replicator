@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Threading.Tasks;
+using EventStore.Replicator.Shared.Contracts;
 using EventStore.Replicator.Shared.Pipeline;
 using GreenPipes;
 
@@ -11,12 +12,17 @@ namespace EventStore.Replicator.Prepare {
         public TransformFilter(TransformEvent transform) => _transform = transform;
 
         public async Task Send(PrepareContext context, IPipe<PrepareContext> next) {
+            if (!(context.OriginalEvent is OriginalEvent oe)) {
+                await next.Send(context);
+                return;
+            }
+            
             using (var activity = new Activity("transform")) {
                 activity.SetParentId(context.Metadata.TraceId, context.Metadata.SpanId);
                 activity.Start();
 
                 var transformed = await _transform(
-                    context.OriginalEvent,
+                    oe,
                     context.CancellationToken
                 );
                 context.AddOrUpdatePayload(() => transformed, _ => transformed);

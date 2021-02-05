@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using EventStore.Replicator.Shared.Contracts;
 using EventStore.Replicator.Shared.Pipeline;
 using GreenPipes;
 
@@ -10,7 +11,7 @@ namespace EventStore.Replicator.Prepare {
         public EventFilterFilter(FilterEvent filter) => _filter = filter;
 
         public async Task Send(PrepareContext context, IPipe<PrepareContext> next) {
-            if (await _filter(context.OriginalEvent)) {
+            if (!(context.OriginalEvent is OriginalEvent oe) || await _filter(oe)) {
                 await next.Send(context);
             }
         }

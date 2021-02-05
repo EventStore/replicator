@@ -10,12 +10,12 @@ using EventStore.Replicator.Shared.Pipeline;
 using EventStore.Replicator.Sink;
 
 namespace EventStore.Replicator {
-    public class Replicator {
+    public static class Replicator {
         static readonly ILog Log = LogProvider.GetCurrentClassLogger();
 
         const int Capacity = 10240;
 
-        public async Task Replicate(
+        public static async Task Replicate(
             IEventReader      reader,
             IEventWriter      writer,
             ICheckpointStore  checkpointStore,
