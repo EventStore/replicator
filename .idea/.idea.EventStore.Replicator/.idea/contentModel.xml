@@ -31,7 +31,6 @@
             </e>
           </e>
         </e>
-        <e p="Options" t="Include" />
         <e p="Prepare" t="Include">
           <e p="EventFilterFilter.cs" t="Include" />
           <e p="PrepareContext.cs" t="Include" />

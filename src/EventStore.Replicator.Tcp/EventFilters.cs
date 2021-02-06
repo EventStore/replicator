@@ -11,7 +11,7 @@ namespace EventStore.Replicator.Tcp {
         readonly ConcurrentDictionary<string, StreamMeta> _streamsMeta = new();
         
         public async ValueTask<bool> Filter(
-            OriginalEvent originalEvent, IEventStoreConnection connection
+            BaseOriginalEvent originalEvent, IEventStoreConnection connection
         ) {
             var streamMeta = await _streamsMeta.GetOrAdd(
                 originalEvent.EventDetails.Stream,

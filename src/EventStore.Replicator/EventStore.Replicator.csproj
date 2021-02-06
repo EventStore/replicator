@@ -14,8 +14,4 @@
     <ProjectReference Include="..\EventStore.Replicator.Shared\EventStore.Replicator.Shared.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="Options" />
-  </ItemGroup>
-
 </Project>
