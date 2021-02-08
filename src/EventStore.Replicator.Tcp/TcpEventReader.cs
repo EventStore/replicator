@@ -18,11 +18,22 @@ namespace EventStore.Replicator.Tcp {
 
         readonly IEventStoreConnection _connection;
 
-        public TcpEventReader(IEventStoreConnection connection) => _connection = connection;
+        readonly ScavengedEventsFilter _filter;
+
+        readonly Realtime _realtime;
+
+        public TcpEventReader(IEventStoreConnection connection) {
+            _connection = connection;
+            var metaCache = new StreamMetaCache();
+            _filter = new ScavengedEventsFilter(connection, metaCache);
+            _realtime = new Realtime(connection, metaCache);
+        }
 
         public async IAsyncEnumerable<BaseOriginalEvent> ReadEvents(
             Shared.Position fromPosition, [EnumeratorCancellation] CancellationToken cancellationToken
         ) {
+            await _realtime.Start();
+            
             var sequence = 0;
             var start    = new Position(fromPosition.EventPosition, fromPosition.EventPosition);
 
@@ -35,19 +46,28 @@ namespace EventStore.Replicator.Tcp {
                 }
 
                 foreach (var sliceEvent in slice.Events) {
-                    if (sliceEvent.Event.EventType == "$metadata") {
+                    BaseOriginalEvent originalEvent;
+
+                    if (sliceEvent.Event.EventType == Predefined.MetadataEventType) {
                         if (Encoding.UTF8.GetString(sliceEvent.Event.Data) == StreamDeletedBody) {
-                            yield return MapStreamDeleted(
+                            originalEvent = MapStreamDeleted(
                                 sliceEvent,
                                 sequence++
                             );
                         }
-
-                        yield return MapMetadata(sliceEvent, sequence++);
+                        else {
+                            originalEvent = MapMetadata(sliceEvent, sequence++);
+                        }
+                    }
+                    else if (sliceEvent.Event.EventType[0] != '$') {
+                        originalEvent = Map(sliceEvent, sequence++);
+                    }
+                    else {
+                        continue;
                     }
 
-                    if (sliceEvent.Event.EventType[0] != '$') {
-                        yield return Map(sliceEvent, sequence++);
+                    if (await _filter.Filter(originalEvent)) {
+                        yield return originalEvent;
                     }
                 }
             }
@@ -102,10 +122,10 @@ namespace EventStore.Replicator.Tcp {
                 evt.EventType,
                 isJson ? ContentTypes.Json : ContentTypes.Binary
             );
-        
+
         static EventDetails MapSystemDetails(RecordedEvent evt) =>
             new(
-                evt.EventStreamId.Substring(2),
+                evt.EventStreamId[2..],
                 evt.EventId,
                 evt.EventType,
                 ""

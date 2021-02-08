@@ -1,5 +1,3 @@
-using System;
-using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 using EventStore.ClientAPI;
 
@@ -8,14 +6,14 @@ namespace EventStore.Replicator.Tcp {
         public static async Task<StreamSize> GetStreamSize(
             this IEventStoreConnection connection, string stream
         ) {
-            var first = await connection.ReadStreamEventsForwardAsync(
+            var last = await connection.ReadStreamEventsBackwardAsync(
                 stream,
-                StreamPosition.Start,
+                StreamPosition.End,
                 1,
                 false
             );
 
-            return new StreamSize(first.FromEventNumber);
+            return new StreamSize(last.LastEventNumber);
         }
 
         public static async Task<StreamMeta> GetStreamMeta(
@@ -26,12 +24,9 @@ namespace EventStore.Replicator.Tcp {
             return new StreamMeta(
                 streamMeta.IsStreamDeleted,
                 streamMeta.StreamMetadata.MaxAge,
-                streamMeta.StreamMetadata.MaxCount
+                streamMeta.StreamMetadata.MaxCount,
+                streamMeta.MetastreamVersion
             );
         }
     }
-
-    record StreamSize(long FirstEventNumber);
-
-    record StreamMeta(bool IsDeleted, TimeSpan? MaxAge, long? MaxCount);
 }
