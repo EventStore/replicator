@@ -17,7 +17,7 @@ namespace EventStore.Replicator.Tcp {
                 originalEvent.EventDetails.Stream,
                 connection.GetStreamMeta
             );
-            return !streamMeta.IsDeleted && !TtlExpired() && !(await OverMaxCount());
+            return !streamMeta.IsDeleted && !TtlExpired() && !await OverMaxCount();
             
             bool TtlExpired()
                 => streamMeta.MaxAge.HasValue && originalEvent.Created <

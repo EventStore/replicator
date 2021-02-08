@@ -18,7 +18,7 @@ namespace EventStore.Replicator.Prepare {
             }
             
             using (var activity = new Activity("transform")) {
-                activity.SetParentId(context.Metadata.TraceId, context.Metadata.SpanId);
+                activity.SetParentId(context.TracingMetadata.TraceId, context.TracingMetadata.SpanId);
                 activity.Start();
 
                 var transformed = await _transform(

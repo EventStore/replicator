@@ -46,7 +46,9 @@ namespace EventStore.Replicator.Tcp {
                         yield return MapMetadata(sliceEvent, sequence++);
                     }
 
-                    yield return Map(sliceEvent, sequence++);
+                    if (sliceEvent.Event.EventType[0] != '$') {
+                        yield return Map(sliceEvent, sequence++);
+                    }
                 }
             }
         }
@@ -66,7 +68,7 @@ namespace EventStore.Replicator.Tcp {
 
             return new StreamMetadataOriginalEvent(
                 evt.OriginalEvent.Created,
-                MapDetails(evt.OriginalEvent, true),
+                MapSystemDetails(evt.OriginalEvent),
                 new Shared.Contracts.StreamMetadata(
                     streamMeta.MaxCount,
                     streamMeta.MaxAge,
@@ -88,7 +90,7 @@ namespace EventStore.Replicator.Tcp {
         static StreamDeletedOriginalEvent MapStreamDeleted(ResolvedEvent evt, int sequence)
             => new(
                 evt.OriginalEvent.Created,
-                MapDetails(evt.OriginalEvent, true),
+                MapSystemDetails(evt.OriginalEvent),
                 MapPosition(evt),
                 sequence
             );
@@ -99,6 +101,14 @@ namespace EventStore.Replicator.Tcp {
                 evt.EventId,
                 evt.EventType,
                 isJson ? ContentTypes.Json : ContentTypes.Binary
+            );
+        
+        static EventDetails MapSystemDetails(RecordedEvent evt) =>
+            new(
+                evt.EventStreamId.Substring(2),
+                evt.EventId,
+                evt.EventType,
+                ""
             );
 
         static Shared.Position MapPosition(ResolvedEvent evt) =>

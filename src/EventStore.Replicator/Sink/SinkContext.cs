@@ -5,15 +5,15 @@ using GreenPipes;
 namespace EventStore.Replicator.Sink {
     public class SinkContext : BasePipeContext, PipeContext {
         public SinkContext(
-            ProposedEvent proposedEvent, Metadata metadata, CancellationToken cancellationToken
+            ProposedEvent proposedEvent, TracingMetadata tracingMetadata, CancellationToken cancellationToken
         )
             : base(cancellationToken) {
             ProposedEvent = proposedEvent;
-            Metadata      = metadata;
+            TracingMetadata      = tracingMetadata;
         }
 
         public ProposedEvent ProposedEvent { get; }
-        public Metadata      Metadata      { get; }
+        public TracingMetadata      TracingMetadata      { get; }
     }
 
 }

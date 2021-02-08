@@ -11,7 +11,7 @@ namespace EventStore.Replicator.Prepare {
         public EventFilterFilter(FilterEvent filter) => _filter = filter;
 
         public async Task Send(PrepareContext context, IPipe<PrepareContext> next) {
-            if (!(context.OriginalEvent is OriginalEvent oe) || await _filter(oe)) {
+            if (context.OriginalEvent != null && await _filter(context.OriginalEvent)) {
                 await next.Send(context);
             }
         }

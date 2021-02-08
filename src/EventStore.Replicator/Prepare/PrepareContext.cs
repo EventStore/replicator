@@ -5,14 +5,14 @@ using GreenPipes;
 namespace EventStore.Replicator.Prepare {
     public class PrepareContext : BasePipeContext, PipeContext {
         public PrepareContext(
-            BaseOriginalEvent originalEvent, Metadata metadata, CancellationToken cancellationToken
+            BaseOriginalEvent originalEvent, TracingMetadata tracingMetadata, CancellationToken cancellationToken
         )
             : base(cancellationToken) {
             OriginalEvent = originalEvent;
-            Metadata      = metadata;
+            TracingMetadata      = tracingMetadata;
         }
 
         public BaseOriginalEvent OriginalEvent { get; }
-        public Metadata      Metadata      { get; }
+        public TracingMetadata      TracingMetadata      { get; }
     }
 }

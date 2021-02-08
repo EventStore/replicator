@@ -27,7 +27,7 @@ namespace EventStore.Replicator.Prepare {
                         async ctx => await send(
                             new SinkContext(
                                 ctx.GetPayload<ProposedEvent>(),
-                                ctx.Metadata,
+                                ctx.TracingMetadata,
                                 ctx.CancellationToken
                             )
                         )

@@ -65,11 +65,11 @@
         <e p="bin" t="ExcludeRecursive" />
         <e p="Contracts" t="Include">
           <e p="EventDetails.cs" t="Include" />
-          <e p="Metadata.cs" t="Include" />
           <e p="OriginalEvent.cs" t="Include" />
           <e p="ProposedEvent.cs" t="Include" />
           <e p="StreamAcl.cs" t="Include" />
           <e p="StreamMetadata.cs" t="Include" />
+          <e p="TracingMetadata.cs" t="Include" />
         </e>
         <e p="EventStore.Replicator.Shared.csproj" t="IncludeRecursive" />
         <e p="extensions" t="Include">
@@ -131,6 +131,7 @@
             </e>
           </e>
         </e>
+        <e p="Realtime.cs" t="Include" />
         <e p="TcpEventReader.cs" t="Include" />
         <e p="TcpEventWriter.cs" t="Include" />
       </e>
@@ -138,7 +139,7 @@
         <e p="EventStore.Replicator.Transforms.NodeJS.csproj" t="IncludeRecursive" />
       </e>
     </e>
-    <e p="$USER_HOME$/Library/Caches/JetBrains/Rider2020.3/extResources" t="IncludeRecursive" />
-    <e p="$USER_HOME$/Library/Caches/JetBrains/Rider2020.3/resharper-host/local/Transient/Rider/v203/SolutionCaches/_EventStore.Replicator.-1625441423.00" t="ExcludeRecursive" />
+    <e p="$USER_HOME$/Library/Caches/JetBrains/Rider2021.1/extResources" t="IncludeRecursive" />
+    <e p="$USER_HOME$/Library/Caches/JetBrains/Rider2021.1/resharper-host/local/Transient/Rider/v211/SolutionCaches/_EventStore.Replicator.-1625441423.00" t="ExcludeRecursive" />
   </component>
 </project>
