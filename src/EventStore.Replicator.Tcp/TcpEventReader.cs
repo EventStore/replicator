@@ -25,7 +25,7 @@ namespace EventStore.Replicator.Tcp {
         public TcpEventReader(IEventStoreConnection connection) {
             _connection = connection;
             var metaCache = new StreamMetaCache();
-            _filter = new ScavengedEventsFilter(connection, metaCache);
+            _filter   = new ScavengedEventsFilter(connection, metaCache);
             _realtime = new Realtime(connection, metaCache);
         }
 
@@ -33,7 +33,9 @@ namespace EventStore.Replicator.Tcp {
             Shared.Position fromPosition, [EnumeratorCancellation] CancellationToken cancellationToken
         ) {
             await _realtime.Start();
-            
+
+            Log.Info("Starting TCP reader");
+
             var sequence = 0;
             var start    = new Position(fromPosition.EventPosition, fromPosition.EventPosition);
 
@@ -46,6 +48,16 @@ namespace EventStore.Replicator.Tcp {
                 }
 
                 foreach (var sliceEvent in slice.Events) {
+                    if (sliceEvent.OriginalStreamId.StartsWith("$")) continue;
+
+                    Log.Debug(
+                        "TCP: Read event with id {Id} of type {Type} from {Stream} at {Position}",
+                        sliceEvent.Event.EventId,
+                        sliceEvent.Event.EventType,
+                        sliceEvent.OriginalStreamId,
+                        sliceEvent.OriginalPosition
+                    );
+
                     BaseOriginalEvent originalEvent;
 
                     if (sliceEvent.Event.EventType == Predefined.MetadataEventType) {
@@ -70,6 +82,8 @@ namespace EventStore.Replicator.Tcp {
                         yield return originalEvent;
                     }
                 }
+
+                start = slice.NextPosition;
             }
         }
 
@@ -90,7 +104,7 @@ namespace EventStore.Replicator.Tcp {
                 evt.OriginalEvent.Created,
                 MapSystemDetails(evt.OriginalEvent),
                 new Shared.Contracts.StreamMetadata(
-                    streamMeta.MaxCount,
+                    (int?) streamMeta.MaxCount,
                     streamMeta.MaxAge,
                     streamMeta.TruncateBefore,
                     streamMeta.CacheControl,

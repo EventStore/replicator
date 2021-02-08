@@ -66,6 +66,8 @@ namespace EventStore.Replicator {
     }
 
     static class ChannelExtensions {
+        static readonly ILog Log = LogProvider.GetCurrentClassLogger();
+        
         public static async Task Shovel<T>(
             this Channel<T>   channel, Func<T, Task> send, Action beforeStart, Action afterStop,
             CancellationToken token

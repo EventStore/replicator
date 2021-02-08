@@ -1,9 +1,12 @@
 using System;
 using System.Threading.Tasks;
 using EventStore.ClientAPI;
+using EventStore.Replicator.Shared.Logging;
 
 namespace EventStore.Replicator.Tcp {
     class Realtime {
+        static readonly ILog Log = LogProvider.GetCurrentClassLogger();
+        
         readonly IEventStoreConnection _connection;
 
         readonly StreamMetaCache _metaCache;
@@ -13,11 +16,15 @@ namespace EventStore.Replicator.Tcp {
             _metaCache = metaCache;
         }
 
-        public Task Start() => _connection.SubscribeToAllAsync(
-            false,
-            (_, re) => HandleEvent(re),
-            HandleDrop
-        );
+        public Task Start() {
+            Log.Info("Starting realtime subscription for meta updates");
+            
+            return _connection.SubscribeToAllAsync(
+                false,
+                (_, re) => HandleEvent(re),
+                HandleDrop
+            );
+        }
 
         void HandleDrop(EventStoreSubscription subscription, SubscriptionDropReason reason, Exception exception) {
             if (reason == SubscriptionDropReason.UserInitiated) return;

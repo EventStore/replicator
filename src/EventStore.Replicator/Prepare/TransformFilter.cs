@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Threading.Tasks;
@@ -12,26 +13,47 @@ namespace EventStore.Replicator.Prepare {
         public TransformFilter(TransformEvent transform) => _transform = transform;
 
         public async Task Send(PrepareContext context, IPipe<PrepareContext> next) {
-            if (!(context.OriginalEvent is OriginalEvent oe)) {
-                await next.Send(context);
-                return;
-            }
-            
-            using (var activity = new Activity("transform")) {
+            var transformed = context.OriginalEvent is OriginalEvent oe
+                ? await Transform(oe)
+                : TransformMeta(context.OriginalEvent);
+
+            context.AddOrUpdatePayload(() => transformed, _ => transformed);
+
+            await next.Send(context);
+
+            async Task<ProposedEvent> Transform(OriginalEvent originalEvent) {
+                using var activity = new Activity("transform");
+
                 activity.SetParentId(context.TracingMetadata.TraceId, context.TracingMetadata.SpanId);
                 activity.Start();
 
-                var transformed = await _transform(
-                    oe,
+                return await _transform(
+                    originalEvent,
                     context.CancellationToken
                 );
-                context.AddOrUpdatePayload(() => transformed, _ => transformed);
             }
-
-            await next.Send(context);
         }
 
         public void Probe(ProbeContext context) => context.Add("eventTransform", _transform);
+
+        static BaseProposedEvent TransformMeta(BaseOriginalEvent originalEvent)
+            => originalEvent switch
+            {
+                StreamDeletedOriginalEvent deleted =>
+                    new ProposedDeleteStream(
+                        deleted.EventDetails,
+                        deleted.Position,
+                        deleted.SequenceNumber
+                    ),
+                StreamMetadataOriginalEvent meta =>
+                    new ProposedMetaEvent(
+                        meta.EventDetails,
+                        meta.Data,
+                        meta.Position,
+                        meta.SequenceNumber
+                    ),
+                _ => throw new InvalidOperationException("Unknown original event type")
+            };
     }
 
     public class TransformSpecification : IPipeSpecification<PrepareContext> {

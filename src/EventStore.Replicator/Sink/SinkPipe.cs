@@ -1,10 +1,14 @@
 using System;
 using System.Threading.Tasks;
 using EventStore.Replicator.Shared;
+using EventStore.Replicator.Shared.Logging;
+using EventStore.Replicator.Shared.Observe;
 using GreenPipes;
 
 namespace EventStore.Replicator.Sink {
     public class SinkPipe {
+        static readonly ILog Log = LogProvider.GetCurrentClassLogger();
+        
         readonly IPipe<SinkContext> _pipe;
 
         public SinkPipe(IEventWriter writer, ICheckpointStore checkpointStore)
@@ -13,11 +17,14 @@ namespace EventStore.Replicator.Sink {
                     cfg.UseRetry(
                         r => r.Incremental(10, TimeSpan.Zero, TimeSpan.FromMilliseconds(100))
                     );
-                    cfg.UseConcurrencyLimit(2);
-                    cfg.UsePartitioner(2, x => x.ProposedEvent.EventDetails.Stream);
+                    cfg.UseConcurrencyLimit(1);
+                    // cfg.UsePartitioner(2, x => x.ProposedEvent.EventDetails.Stream);
+                    
+                    cfg.UseLog();
 
-                    cfg.UseEventWriter(writer);
+                    cfg.UseEventWriter(writer, Log);
                     cfg.UseCheckpointStore(checkpointStore);
+                    cfg.UseExecute(ctx => Counters.SetLastProcessed(ctx.ProposedEvent.SourcePosition.EventPosition));
                 }
             );
 
@@ -25,11 +32,12 @@ namespace EventStore.Replicator.Sink {
     }
     
     static class SinkPipelineExtensions {
-        public static void UseEventWriter(
-            this IPipeConfigurator<SinkContext> cfg, IEventWriter writer
-        )
+        public static void UseEventWriter(this IPipeConfigurator<SinkContext> cfg, IEventWriter writer, ILog log)
             => cfg.UseExecuteAsync(
-                ctx => writer.WriteEvent(ctx.ProposedEvent, ctx.CancellationToken)
+                ctx => {
+                    // log.Debug("Sending to sink channel: {Event}", ctx.ProposedEvent);
+                    return writer.WriteEvent(ctx.ProposedEvent, ctx.CancellationToken);
+                }
             );
 
         public static void UseCheckpointStore(

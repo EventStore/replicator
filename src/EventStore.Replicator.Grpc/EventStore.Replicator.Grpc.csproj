@@ -2,10 +2,12 @@
 
     <PropertyGroup>
         <TargetFramework>net5.0</TargetFramework>
+        <Nullable>enable</Nullable>
     </PropertyGroup>
 
     <ItemGroup>
       <PackageReference Include="EventStore.Client.Grpc.Streams" Version="20.10.0" />
+      <PackageReference Include="Grpc.Net.Client" Version="2.35.0" />
     </ItemGroup>
 
     <ItemGroup>

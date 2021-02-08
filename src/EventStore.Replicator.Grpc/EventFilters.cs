@@ -1,18 +1,16 @@
 using System;
-using System.Collections.Concurrent;
 using System.Threading.Tasks;
-using EventStore.ClientAPI;
+using EventStore.Client;
 using EventStore.Replicator.Shared.Contracts;
-using EventStore.Replicator.Shared.Extensions;
 
-namespace EventStore.Replicator.Tcp {
+namespace EventStore.Replicator.Grpc {
     class ScavengedEventsFilter {
-        readonly IEventStoreConnection _connection;
+        readonly EventStoreClient _client;
 
         readonly StreamMetaCache _cache;
 
-        public ScavengedEventsFilter(IEventStoreConnection connection, StreamMetaCache cache) {
-            _connection = connection;
+        public ScavengedEventsFilter(EventStoreClient client, StreamMetaCache cache) {
+            _client = client;
             _cache = cache;
         }
 
@@ -21,7 +19,7 @@ namespace EventStore.Replicator.Tcp {
         ) {
             var meta = await _cache.GetOrAddStreamMeta(
                 originalEvent.EventDetails.Stream,
-                _connection.GetStreamMeta
+                _client.GetStreamMeta
             );
             return !meta.IsDeleted && !TtlExpired() && !await OverMaxCount();
             
@@ -34,7 +32,7 @@ namespace EventStore.Replicator.Tcp {
                 
                 var streamSize = await _cache.GetOrAddStreamSize(
                     originalEvent.EventDetails.Stream,
-                    _connection.GetStreamSize
+                    _client.GetStreamSize
                 );
 
                 return originalEvent.Position.EventNumber < streamSize.LastEventNumber - meta.MaxCount;

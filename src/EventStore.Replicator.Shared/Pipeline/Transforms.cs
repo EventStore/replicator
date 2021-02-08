@@ -14,8 +14,8 @@ namespace EventStore.Replicator.Shared.Pipeline {
         public static ValueTask<ProposedEvent> Default(
             OriginalEvent originalEvent, CancellationToken _
         ) {
-            Log.Debug("Transforming event {Event}", originalEvent);
-            return new ValueTask<ProposedEvent>(
+            // Log.Debug("Transforming event {Event}", originalEvent);
+            return new(
                 new ProposedEvent(
                     originalEvent.EventDetails,
                     originalEvent.Data,

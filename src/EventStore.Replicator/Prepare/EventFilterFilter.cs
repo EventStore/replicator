@@ -1,6 +1,5 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using EventStore.Replicator.Shared.Contracts;
 using EventStore.Replicator.Shared.Pipeline;
 using GreenPipes;
 
@@ -40,3 +39,4 @@ namespace EventStore.Replicator.Prepare {
             => configurator.AddPipeSpecification(new EventFilterSpecification(filter));
     }
 }
+

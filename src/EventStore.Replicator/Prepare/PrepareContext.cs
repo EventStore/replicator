@@ -9,10 +9,11 @@ namespace EventStore.Replicator.Prepare {
         )
             : base(cancellationToken) {
             OriginalEvent = originalEvent;
-            TracingMetadata      = tracingMetadata;
+            TracingMetadata = tracingMetadata;
         }
 
         public BaseOriginalEvent OriginalEvent { get; }
-        public TracingMetadata      TracingMetadata      { get; }
+
+        public TracingMetadata TracingMetadata { get; }
     }
 }

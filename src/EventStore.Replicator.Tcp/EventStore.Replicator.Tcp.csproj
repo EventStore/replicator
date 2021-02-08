@@ -8,10 +8,6 @@
 
   <ItemGroup>
     <PackageReference Include="EventStore.Client" Version="20.10.0" />
-<!--    <PackageReference Include="LibLog" Version="5.0.8">-->
-<!--      <PrivateAssets>all</PrivateAssets>-->
-<!--      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>-->
-<!--    </PackageReference>-->
   </ItemGroup>
 
   <ItemGroup>

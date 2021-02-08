@@ -9,12 +9,14 @@ using Serilog.Events;
 using Serilog.Formatting.Compact;
 
 var environment = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT");
+
 var logConfig = new LoggerConfiguration()
-    .MinimumLevel.Debug()
+    .MinimumLevel.Information()
     .MinimumLevel.Override("Microsoft", LogEventLevel.Information)
     .MinimumLevel.Override("Microsoft.AspNetCore", LogEventLevel.Warning)
     .MinimumLevel.Override("Grpc", LogEventLevel.Error)
     .Enrich.FromLogContext();
+    // .WriteTo.File("log.log");
 
 logConfig = environment?.ToLower() == "development"
     ? logConfig.WriteTo.Console(outputTemplate: "[{Timestamp:HH:mm:ss} {Level:u3}] {Message:lj} <s:{SourceContext}>;{NewLine}{Exception}")
