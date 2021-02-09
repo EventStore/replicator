@@ -4,16 +4,30 @@ using System.Threading.Tasks;
 using EventStore.ClientAPI;
 using EventStore.Replicator.Shared;
 using EventStore.Replicator.Shared.Contracts;
+using EventStore.Replicator.Shared.Logging;
+using EventStore.Replicator.Shared.Observe;
+using Ubiquitous.Metrics;
 using StreamAcl = EventStore.ClientAPI.StreamAcl;
 using StreamMetadata = EventStore.ClientAPI.StreamMetadata;
 
 namespace EventStore.Replicator.Tcp {
     public class TcpEventWriter : IEventWriter {
+        static readonly ILog Log = LogProvider.GetCurrentClassLogger();
+        
         readonly IEventStoreConnection _connection;
 
         public TcpEventWriter(IEventStoreConnection connection) => _connection = connection;
 
         public Task WriteEvent(BaseProposedEvent proposedEvent, CancellationToken cancellationToken) {
+            if (Log.IsDebugEnabled())
+                Log.Debug(
+                    "TCP: Write event with id {Id} of type {Type} to {Stream} with original position {Position}",
+                    proposedEvent.EventDetails.EventId,
+                    proposedEvent.EventDetails.EventType,
+                    proposedEvent.EventDetails.Stream,
+                    proposedEvent.SourcePosition.EventPosition
+                );
+
             Task task = proposedEvent switch
             {
                 ProposedEvent p => _connection.AppendToStreamAsync(
@@ -30,11 +44,11 @@ namespace EventStore.Replicator.Tcp {
                         meta.Data.TruncateBefore,
                         meta.Data.CacheControl,
                         new StreamAcl(
-                            meta.Data.StreamAcl.ReadRoles,
-                            meta.Data.StreamAcl.WriteRoles,
-                            meta.Data.StreamAcl.DeleteRoles,
-                            meta.Data.StreamAcl.MetaReadRoles,
-                            meta.Data.StreamAcl.MetaWriteRoles
+                            meta.Data.StreamAcl?.ReadRoles,
+                            meta.Data.StreamAcl?.WriteRoles,
+                            meta.Data.StreamAcl?.DeleteRoles,
+                            meta.Data.StreamAcl?.MetaReadRoles,
+                            meta.Data.StreamAcl?.MetaWriteRoles
                         )
                     )
                 ),
@@ -45,7 +59,7 @@ namespace EventStore.Replicator.Tcp {
                 _ => throw new InvalidOperationException("Unknown proposed event type")
             };
 
-            return task;
+            return Metrics.Measure(() => task, ReplicationMetrics.WritesHistogram, ReplicationMetrics.WriteErrorsCount);
 
             static EventData Map(ProposedEvent evt) {
                 return

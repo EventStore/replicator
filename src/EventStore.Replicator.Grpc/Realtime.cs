@@ -10,19 +10,27 @@ namespace EventStore.Replicator.Grpc {
 
         readonly StreamMetaCache _metaCache;
 
+        bool _started;
+
         public Realtime(EventStoreClient client, StreamMetaCache metaCache) {
             _client    = client;
             _metaCache = metaCache;
         }
 
-        public Task Start() => _client.SubscribeToAllAsync(
-            (_, evt, _) => HandleEvent(evt),
-            subscriptionDropped: HandleDrop
-        );
+        public Task Start() {
+            if (_started) return Task.CompletedTask;
+
+            _started = true;
+            return _client.SubscribeToAllAsync(
+                (_, evt, _) => HandleEvent(evt),
+                subscriptionDropped: HandleDrop
+            );
+        }
 
         void HandleDrop(StreamSubscription subscription, SubscriptionDroppedReason reason, Exception? exception) {
             if (reason == SubscriptionDroppedReason.Disposed) return;
 
+            _started = false;
             Task.Run(Start);
         }
 

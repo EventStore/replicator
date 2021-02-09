@@ -11,13 +11,18 @@ namespace EventStore.Replicator.Tcp {
 
         readonly StreamMetaCache _metaCache;
 
+        bool _started;
+
         public Realtime(IEventStoreConnection connection, StreamMetaCache metaCache) {
             _connection = connection;
             _metaCache = metaCache;
         }
 
         public Task Start() {
+            if (_started) return Task.CompletedTask;
+            
             Log.Info("Starting realtime subscription for meta updates");
+            _started = true;
             
             return _connection.SubscribeToAllAsync(
                 false,
@@ -29,6 +34,7 @@ namespace EventStore.Replicator.Tcp {
         void HandleDrop(EventStoreSubscription subscription, SubscriptionDropReason reason, Exception exception) {
             if (reason == SubscriptionDropReason.UserInitiated) return;
 
+            _started = false;
             Task.Run(Start);
         }
 
@@ -39,6 +45,10 @@ namespace EventStore.Replicator.Tcp {
             if (IsMetadataUpdate()) {
                 var stream = re.OriginalStreamId[2..];
                 var meta   = StreamMetadata.FromJsonBytes(re.Event.Data);
+                
+                if (Log.IsDebugEnabled())
+                    Log.Debug("Real-time meta update {Stream}: {Meta}", stream, meta);
+                
                 _metaCache.UpdateStreamMeta(stream, meta, re.OriginalEventNumber);
             }
             else {

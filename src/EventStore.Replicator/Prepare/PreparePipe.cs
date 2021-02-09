@@ -1,5 +1,6 @@
 using System;
 using System.Threading.Tasks;
+using EventStore.Replicator.Observers;
 using EventStore.Replicator.Shared.Contracts;
 using EventStore.Replicator.Shared.Logging;
 using EventStore.Replicator.Shared.Pipeline;
@@ -8,8 +9,6 @@ using GreenPipes;
 
 namespace EventStore.Replicator.Prepare {
     public class PreparePipe {
-        static readonly ILog Log = LogProvider.GetCurrentClassLogger();
-        
         readonly IPipe<PrepareContext> _pipe;
 
         public PreparePipe(
@@ -18,7 +17,10 @@ namespace EventStore.Replicator.Prepare {
             => _pipe = Pipe.New<PrepareContext>(
                 cfg => {
                     cfg.UseRetry(
-                        r => r.Incremental(10, TimeSpan.Zero, TimeSpan.FromMilliseconds(100))
+                        r => {
+                            r.Incremental(10, TimeSpan.Zero, TimeSpan.FromMilliseconds(100));
+                            r.ConnectRetryObserver(new LoggingRetryObserver());
+                        }
                     );
                     cfg.UseLog();
                     // cfg.UseConcurrencyLimit(10);
@@ -30,10 +32,10 @@ namespace EventStore.Replicator.Prepare {
                     cfg.UseExecuteAsync(
                         async ctx => {
                             var proposedEvent = ctx.GetPayload<BaseProposedEvent>();
+
                             await send(
                                 new SinkContext(
                                     proposedEvent,
-                                    ctx.TracingMetadata,
                                     ctx.CancellationToken
                                 )
                             );

@@ -1,15 +1,13 @@
 using System;
-using System.Collections.Generic;
 using System.Net;
-using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using es_replicator.Settings;
 using EventStore.Client;
 using EventStore.ClientAPI;
+using EventStore.Replicator;
 using EventStore.Replicator.Grpc;
 using EventStore.Replicator.Shared;
-using EventStore.Replicator.Shared.Contracts;
 using EventStore.Replicator.Tcp;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -43,9 +41,8 @@ namespace es_replicator {
 
             services.AddSingleton(reader);
             services.AddSingleton(sink);
-            services.AddSingleton<ICheckpointStore, FakeCheckpointStore>();
+            services.AddSingleton<ICheckpointStore>(new FileCheckpointStore("checkpoint", 1000));
             services.AddHostedService<ReplicatorService>();
-            services.AddHostedService<MeasurementService>();
 
             services.AddControllers();
         }
@@ -84,7 +81,6 @@ namespace es_replicator {
         ) {
             var builder = ConnectionSettings.Create()
                 .KeepReconnecting()
-                .UseConsoleLogger()
                 .KeepRetrying();
 
             if (follower) builder = builder.PreferFollowerNode();
@@ -102,61 +98,6 @@ namespace es_replicator {
             if (follower)
                 settings.ConnectivitySettings.NodePreference = NodePreference.Follower;
             return new EventStoreClient(settings);
-        }
-    }
-
-    class FakeReader : IEventReader {
-        readonly ILogger<FakeReader> _log;
-
-        public FakeReader(ILogger<FakeReader> log) => _log = log;
-
-        public async IAsyncEnumerable<BaseOriginalEvent> ReadEvents(
-            Position                                   fromPosition,
-            [EnumeratorCancellation] CancellationToken cancellationToken
-        ) {
-            while (!cancellationToken.IsCancellationRequested) {
-                _log.LogDebug("Read an event");
-
-                yield return new OriginalEvent(
-                    DateTimeOffset.Now,
-                    new EventDetails("stream", Guid.NewGuid(), "type", "application/json"),
-                    new byte[] {0},
-                    new byte[] {1},
-                    new Position(1, 1),
-                    1
-                );
-
-                await Task.Delay(2, cancellationToken);
-            }
-        }
-    }
-
-    class FakeWriter : IEventWriter {
-        readonly ILogger<FakeWriter> _log;
-
-        public FakeWriter(ILogger<FakeWriter> log) => _log = log;
-
-        public async Task WriteEvent(
-            BaseProposedEvent proposedEvent, CancellationToken cancellationToken
-        ) {
-            _log.LogDebug("Writing event {Event}", proposedEvent);
-            await Task.Delay(3, cancellationToken);
-        }
-    }
-
-    class FakeCheckpointStore : ICheckpointStore {
-        readonly ILogger<FakeCheckpointStore> _log;
-
-        public FakeCheckpointStore(ILogger<FakeCheckpointStore> log) => _log = log;
-
-        public ValueTask<Position> LoadCheckpoint(CancellationToken cancellationToken) {
-            _log.LogInformation("Loading checkpoint");
-            return new ValueTask<Position>(new Position(0, 0));
-        }
-
-        public ValueTask StoreCheckpoint(Position position, CancellationToken cancellationToken) {
-            _log.LogDebug("Storing checkpoint {Position}", position);
-            return new ValueTask();
         }
     }
 }

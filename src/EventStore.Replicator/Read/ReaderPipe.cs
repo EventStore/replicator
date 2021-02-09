@@ -1,63 +1,63 @@
 using System;
-using System.Diagnostics;
 using System.Threading;
 using System.Threading.Channels;
 using System.Threading.Tasks;
+using EventStore.Replicator.Observers;
 using EventStore.Replicator.Prepare;
 using EventStore.Replicator.Shared;
-using EventStore.Replicator.Shared.Contracts;
 using EventStore.Replicator.Shared.Logging;
 using EventStore.Replicator.Shared.Observe;
 using GreenPipes;
 
 namespace EventStore.Replicator.Read {
     public class ReaderPipe {
-        static readonly ILog Log = LogProvider.GetCurrentClassLogger();
-
         readonly IPipe<ReaderContext> _pipe;
 
-        public ReaderPipe(IEventReader reader, Position start, ChannelWriter<PrepareContext> channel) {
+        public ReaderPipe(IEventReader reader, ICheckpointStore checkpointStore, ChannelWriter<PrepareContext> channel) {
+            ILog log = LogProvider.GetCurrentClassLogger();
+
             _pipe = Pipe.New<ReaderContext>(
                 cfg => {
                     cfg.UseConcurrencyLimit(1);
+
                     cfg.UseRetry(
-                        retry => retry.Incremental(
-                            100,
-                            TimeSpan.Zero,
-                            TimeSpan.FromMilliseconds(100)
-                        )
+                        retry => {
+                            retry.Incremental(
+                                100,
+                                TimeSpan.Zero,
+                                TimeSpan.FromMilliseconds(100)
+                            );
+                            retry.ConnectRetryObserver(new LoggingRetryObserver());
+                        }
                     );
                     cfg.UseLog();
 
-                    cfg.UseInlineFilter(Reader);
+                    cfg.UseExecuteAsync(Reader);
                 }
             );
 
-            async Task Reader(ReaderContext ctx, IPipe<ReaderContext> next) {
+            async Task Reader(ReaderContext ctx) {
                 try {
-                    while (!ctx.CancellationToken.IsCancellationRequested) {
-                        await foreach (var read in reader.ReadEvents(
-                            start,
+                    var start = await checkpointStore.LoadCheckpoint(ctx.CancellationToken);
+                    log.Info("Reading from {Position}", start);
+                    
+                    await foreach (var read in reader.ReadEvents(
+                        start,
+                        ctx.CancellationToken
+                    )) {
+                        Counters.SetLastRead(read.Position.EventPosition);
+
+                        await channel.WriteAsync(
+                            new PrepareContext(read, ctx.CancellationToken),
                             ctx.CancellationToken
-                        )) {
-                            Counters.SetLastRead(read.Position.EventPosition);
-
-                            using var activity = new Activity("read").Start();
-
-                            var meta = new TracingMetadata(activity.TraceId, activity.SpanId);
-
-                            await channel.WriteAsync(
-                                new PrepareContext(read, meta, ctx.CancellationToken),
-                                ctx.CancellationToken
-                            );
-                        }
+                        );
                     }
                 }
                 catch (OperationCanceledException) {
                     // it's ok
                 }
                 finally {
-                    Log.Info("Reader stopped");
+                    log.Info("Reader stopped");
                 }
             }
         }

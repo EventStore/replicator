@@ -24,7 +24,10 @@ namespace EventStore.Replicator.Prepare {
             async Task<ProposedEvent> Transform(OriginalEvent originalEvent) {
                 using var activity = new Activity("transform");
 
-                activity.SetParentId(context.TracingMetadata.TraceId, context.TracingMetadata.SpanId);
+                activity.SetParentId(
+                    context.OriginalEvent.TracingMetadata.TraceId,
+                    context.OriginalEvent.TracingMetadata.SpanId
+                );
                 activity.Start();
 
                 return await _transform(
@@ -37,8 +40,7 @@ namespace EventStore.Replicator.Prepare {
         public void Probe(ProbeContext context) => context.Add("eventTransform", _transform);
 
         static BaseProposedEvent TransformMeta(BaseOriginalEvent originalEvent)
-            => originalEvent switch
-            {
+            => originalEvent switch {
                 StreamDeletedOriginalEvent deleted =>
                     new ProposedDeleteStream(
                         deleted.EventDetails,

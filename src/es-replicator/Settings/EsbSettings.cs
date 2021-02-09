@@ -1,17 +1,19 @@
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+// ReSharper disable UnusedAutoPropertyAccessor.Global
 
+#nullable disable
 namespace es_replicator.Settings {
-    public class EsdbSettings {
-        public string ConnectionString { get; set; }
+    public record EsdbSettings {
+        public string ConnectionString { get; init; }
 
-        public string Protocol { get; set; }
+        public string Protocol { get; init; }
     }
 
-    public class ReplicatorOptions {
-        public EsdbSettings Reader { get; set; }
+    public record ReplicatorOptions {
+        public EsdbSettings Reader { get; init; }
 
-        public EsdbSettings Sink { get; set; }
+        public EsdbSettings Sink { get; init; }
     }
 
     public static class ConfigExtensions {
@@ -27,3 +29,4 @@ namespace es_replicator.Settings {
         }
     }
 }
+#nullable enable

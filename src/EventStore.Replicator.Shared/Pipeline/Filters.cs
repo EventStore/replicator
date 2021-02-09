@@ -30,11 +30,6 @@ namespace EventStore.Replicator.Shared.Pipeline {
             return new ValueTask<bool>(pass);
         }
         
-        static readonly ILog Log = LogProvider.GetCurrentClassLogger();
-        
-        public static ValueTask<bool> EmptyFilter(BaseOriginalEvent originalEvent) {
-            // Log.Debug("Filtering event {Event}", originalEvent);
-            return new ValueTask<bool>(true);
-        }
+        public static ValueTask<bool> EmptyFilter(BaseOriginalEvent originalEvent) => new(true);
     }
 }

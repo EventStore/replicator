@@ -1,4 +1,6 @@
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading;
@@ -6,6 +8,7 @@ using EventStore.ClientAPI;
 using EventStore.Replicator.Shared;
 using EventStore.Replicator.Shared.Contracts;
 using EventStore.Replicator.Shared.Logging;
+using EventStore.Replicator.Shared.Observe;
 using Position = EventStore.ClientAPI.Position;
 using StreamAcl = EventStore.Replicator.Shared.Contracts.StreamAcl;
 using StreamMetadata = EventStore.ClientAPI.StreamMetadata;
@@ -37,67 +40,94 @@ namespace EventStore.Replicator.Tcp {
             Log.Info("Starting TCP reader");
 
             var sequence = 0;
-            var start    = new Position(fromPosition.EventPosition, fromPosition.EventPosition);
+
+            var start =
+                fromPosition != Shared.Position.Start
+                    ? new Position(fromPosition.EventPosition, fromPosition.EventPosition)
+                    : new Position(0, 0);
 
             while (!cancellationToken.IsCancellationRequested) {
-                var slice = await _connection.ReadAllEventsForwardAsync(start, 1024, true);
-
-                if (slice.IsEndOfStream) {
-                    Log.Info("Reached the end of the stream at {@Position}", fromPosition);
-                    break;
+                if (fromPosition != Shared.Position.Start) {
+                    // skip one
+                    var e = await _connection.ReadAllEventsForwardAsync(start, 1, false);
+                    start = e.NextPosition;
                 }
 
-                foreach (var sliceEvent in slice.Events) {
-                    if (sliceEvent.OriginalStreamId.StartsWith("$")) continue;
+                using var activity = new Activity("read");
+                activity.Start();
 
-                    Log.Debug(
-                        "TCP: Read event with id {Id} of type {Type} from {Stream} at {Position}",
-                        sliceEvent.Event.EventId,
-                        sliceEvent.Event.EventType,
-                        sliceEvent.OriginalStreamId,
-                        sliceEvent.OriginalPosition
+                var slice = await
+                    ReplicationMetrics.Measure(
+                        () => _connection.ReadAllEventsForwardAsync(start, 1024, false),
+                        ReplicationMetrics.ReadsHistogram,
+                        x => x.Events.Length,
+                        ReplicationMetrics.ReadErrorsCount
                     );
 
-                    BaseOriginalEvent originalEvent;
+                foreach (var sliceEvent in slice?.Events ?? Enumerable.Empty<ResolvedEvent>()) {
+                    if (sliceEvent.Event.EventType.StartsWith('$') &&
+                        sliceEvent.Event.EventType != Predefined.MetadataEventType)
+                        continue;
+
+                    if (Log.IsDebugEnabled())
+                        Log.Debug(
+                            "TCP: Read event with id {Id} of type {Type} from {Stream} at {Position}",
+                            sliceEvent.Event.EventId,
+                            sliceEvent.Event.EventType,
+                            sliceEvent.OriginalStreamId,
+                            sliceEvent.OriginalPosition
+                        );
 
                     if (sliceEvent.Event.EventType == Predefined.MetadataEventType) {
                         if (Encoding.UTF8.GetString(sliceEvent.Event.Data) == StreamDeletedBody) {
-                            originalEvent = MapStreamDeleted(
+                            if (Log.IsDebugEnabled())
+                                Log.Debug("Stream deletion {Stream}", sliceEvent.Event.EventStreamId);
+
+                            yield return MapStreamDeleted(
                                 sliceEvent,
-                                sequence++
+                                sequence++,
+                                activity
                             );
                         }
                         else {
-                            originalEvent = MapMetadata(sliceEvent, sequence++);
+                            var meta = MapMetadata(sliceEvent, sequence++, activity);
+
+                            if (Log.IsDebugEnabled())
+                                Log.Debug("Stream meta {Stream}: {Meta}", sliceEvent.Event.EventStreamId, meta);
+
+                            yield return meta;
                         }
                     }
                     else if (sliceEvent.Event.EventType[0] != '$') {
-                        originalEvent = Map(sliceEvent, sequence++);
-                    }
-                    else {
-                        continue;
-                    }
+                        var originalEvent = Map(sliceEvent, sequence++, activity);
 
-                    if (await _filter.Filter(originalEvent)) {
-                        yield return originalEvent;
+                        if (await _filter.Filter(originalEvent)) {
+                            yield return originalEvent;
+                        }
                     }
+                }
+
+                if (slice!.IsEndOfStream) {
+                    Log.Info("Reached the end of the stream at {Position}", slice.NextPosition);
+                    break;
                 }
 
                 start = slice.NextPosition;
             }
         }
 
-        static OriginalEvent Map(ResolvedEvent evt, int sequence)
+        static OriginalEvent Map(ResolvedEvent evt, int sequence, Activity activity)
             => new(
                 evt.OriginalEvent.Created,
                 MapDetails(evt.OriginalEvent, evt.OriginalEvent.IsJson),
                 evt.OriginalEvent.Data,
                 evt.OriginalEvent.Metadata,
                 MapPosition(evt),
-                sequence
+                sequence,
+                new TracingMetadata(activity.TraceId, activity.SpanId)
             );
 
-        static StreamMetadataOriginalEvent MapMetadata(ResolvedEvent evt, int sequence) {
+        static StreamMetadataOriginalEvent MapMetadata(ResolvedEvent evt, int sequence, Activity activity) {
             var streamMeta = StreamMetadata.FromJsonBytes(evt.OriginalEvent.Data);
 
             return new StreamMetadataOriginalEvent(
@@ -109,24 +139,26 @@ namespace EventStore.Replicator.Tcp {
                     streamMeta.TruncateBefore,
                     streamMeta.CacheControl,
                     new StreamAcl(
-                        streamMeta.Acl.ReadRoles,
-                        streamMeta.Acl.WriteRoles,
-                        streamMeta.Acl.DeleteRoles,
-                        streamMeta.Acl.MetaReadRoles,
-                        streamMeta.Acl.MetaWriteRoles
+                        streamMeta.Acl?.ReadRoles,
+                        streamMeta.Acl?.WriteRoles,
+                        streamMeta.Acl?.DeleteRoles,
+                        streamMeta.Acl?.MetaReadRoles,
+                        streamMeta.Acl?.MetaWriteRoles
                     )
                 ),
                 MapPosition(evt),
-                sequence
+                sequence,
+                new TracingMetadata(activity.TraceId, activity.SpanId)
             );
         }
 
-        static StreamDeletedOriginalEvent MapStreamDeleted(ResolvedEvent evt, int sequence)
+        static StreamDeletedOriginalEvent MapStreamDeleted(ResolvedEvent evt, int sequence, Activity activity)
             => new(
                 evt.OriginalEvent.Created,
                 MapSystemDetails(evt.OriginalEvent),
                 MapPosition(evt),
-                sequence
+                sequence,
+                new TracingMetadata(activity.TraceId, activity.SpanId)
             );
 
         static EventDetails MapDetails(RecordedEvent evt, bool isJson) =>

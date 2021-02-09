@@ -25,6 +25,7 @@
       <e p="src/es-replicator" t="IncludeRecursive">
         <e p="appsettings.json" t="Include" />
         <e p="bin" t="ExcludeRecursive" />
+        <e p="checkpoint" t="Include" />
         <e p="es-replicator.csproj" t="IncludeRecursive" />
         <e p="HealthController.cs" t="Include" />
         <e p="Measurements.cs" t="Include" />
@@ -54,6 +55,9 @@
               <e p="EventStore.Replicator.AssemblyInfo.cs" t="Include" />
             </e>
           </e>
+        </e>
+        <e p="Observers" t="Include">
+          <e p="LoggingRetryObserver.cs" t="Include" />
         </e>
         <e p="Prepare" t="Include">
           <e p="EventFilterFilter.cs" t="Include" />
@@ -150,6 +154,7 @@
         </e>
         <e p="Observe" t="Include">
           <e p="Counters.cs" t="Include" />
+          <e p="ReplicationMetrics.cs" t="Include" />
         </e>
         <e p="Pipeline" t="Include">
           <e p="Filters.cs" t="Include" />

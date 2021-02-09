@@ -33,6 +33,7 @@ namespace es_replicator {
                 _writer,
                 _checkpointStore,
                 stoppingToken,
+                true,
                 _filter,
                 _transform
             );
