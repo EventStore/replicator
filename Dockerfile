@@ -6,6 +6,7 @@ FROM $BUILDER_IMG AS builder
 WORKDIR /app
 
 # copy csproj and restore as distinct layers
+COPY NuGet.config ./src/*/*.csproj ./src/
 COPY ./src/*/*.csproj ./src/
 RUN for file in $(ls src/*.csproj); do mkdir -p ./${file%.*}/ && mv $file ./${file%.*}/; done
 RUN dotnet restore ./src/es-replicator -nowarn:msb3202,nu1503 -r linux-x64
