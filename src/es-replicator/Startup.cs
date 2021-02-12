@@ -41,7 +41,7 @@ namespace es_replicator {
             services.AddSingleton(sink);
 
             services.AddSingleton<ICheckpointStore>(
-                new FileCheckpointStore($"{Configuration["Checkpoint:Path"]}/checkpoint", 1000)
+                new FileCheckpointStore(Configuration["Checkpoint:Path"], 1000)
             );
             services.AddHostedService<ReplicatorService>();
 

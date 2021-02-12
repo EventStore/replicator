@@ -21,7 +21,7 @@ namespace Deployment {
                     container.VolumeMounts = new[] {
                         new VolumeMountArgs {
                             Name      = "checkpoint-storage",
-                            MountPath = "/data/checkpoint"
+                            MountPath = "/data"
                         }
                     };
                 },

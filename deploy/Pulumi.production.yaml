@@ -29,4 +29,4 @@ config:
     Type: ClusterIP
   es-replicator:env:
     - Name: Checkpoint__Path
-      Value: /data
+      Value: /data/checkpoint
