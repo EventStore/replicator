@@ -31,7 +31,7 @@ build:
   dependencies:
     - version
 
-deploy:
+.deploy:
   allow_failure: false
   image: registry.ubiquitous.no/gitlab/auto-deploy-image:latest
   stage: deploy
