@@ -1,14 +1,14 @@
 using Microsoft.AspNetCore.Mvc;
 
-namespace es_replicator {
+namespace es_replicator.HttpApi {
     [Route("")]
-    public class HealthController : ControllerBase {
+    public class Health : ControllerBase {
         [HttpGet]
         [Route("/ping")]
         public string Ping() => "Pong";
         
         [HttpGet]
         [Route("/health")]
-        public string Health() => "OK";
+        public string Healthy() => "OK";
     }
 }

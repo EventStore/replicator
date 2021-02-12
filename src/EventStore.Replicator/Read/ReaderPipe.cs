@@ -8,12 +8,15 @@ using EventStore.Replicator.Shared;
 using EventStore.Replicator.Shared.Logging;
 using EventStore.Replicator.Shared.Observe;
 using GreenPipes;
+using Ubiquitous.Metrics;
 
 namespace EventStore.Replicator.Read {
     public class ReaderPipe {
         readonly IPipe<ReaderContext> _pipe;
 
-        public ReaderPipe(IEventReader reader, ICheckpointStore checkpointStore, ChannelWriter<PrepareContext> channel) {
+        public ReaderPipe(
+            IEventReader reader, ICheckpointStore checkpointStore, Func<PrepareContext, ValueTask> send
+        ) {
             ILog log = LogProvider.GetCurrentClassLogger();
 
             _pipe = Pipe.New<ReaderContext>(
@@ -40,18 +43,16 @@ namespace EventStore.Replicator.Read {
                 try {
                     var start = await checkpointStore.LoadCheckpoint(ctx.CancellationToken);
                     log.Info("Reading from {Position}", start);
-                    
-                    await foreach (var read in reader.ReadEvents(
-                        start,
-                        ctx.CancellationToken
-                    )) {
-                        Counters.SetLastRead(read.Position.EventPosition);
 
-                        await channel.WriteAsync(
-                            new PrepareContext(read, ctx.CancellationToken),
-                            ctx.CancellationToken
-                        );
-                    }
+                    await reader.ReadEvents(
+                        start,
+                        async read => {
+                            ReplicationMetrics.ReadingPosition.Set(read.Position.EventPosition);
+
+                            await send(new PrepareContext(read, ctx.CancellationToken));
+                        },
+                        ctx.CancellationToken
+                    );
                 }
                 catch (OperationCanceledException) {
                     // it's ok

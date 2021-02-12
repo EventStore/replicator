@@ -1,0 +1,54 @@
+include:
+  - project: "eventstoredb/devops/ci-templates"
+  file: "/autodevops-ci.yml"
+
+variables:
+  DOTNET_SDK_VERSION: "5.0"
+  DOTNET_RUNTIME_VERSION: "5.0"
+
+stages:
+  - prebuild
+  - build
+
+version:
+  extends: .version
+  stage: prebuild
+  tags:
+    - kubernetes
+
+warmer:
+  extends: .kanikocache
+  stage: prebuild
+  tags:
+    - kubernetes
+
+build:
+  extends: .kanikobuild
+  tags:
+    - kubernetes
+  services: [ ]
+  stage: build
+  dependencies:
+    - version
+
+deploy:
+  allow_failure: false
+  image: registry.gitlab.com/eventstoredb/devops/auto-deploy-image:latest
+  stage: deploy
+  tags:
+    - kubernetes
+  script:
+    - auto-deploy check_kube_domain
+    - pulumi_deploy
+    - auto-deploy persist_environment_url
+  dependencies:
+    - version
+    - build
+  environment:
+    name: "$SIZE"
+    kubernetes:
+      namespace: "simulator-$SIZE"
+  parallel:
+    matrix:
+      - SIZE: [ c4, m8 ]
+

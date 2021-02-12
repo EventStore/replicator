@@ -18,17 +18,25 @@ namespace EventStore.Replicator.Grpc {
 
         public GrpcEventWriter(EventStoreClient client) => _client = client;
 
-        public Task WriteEvent(BaseProposedEvent proposedEvent, CancellationToken cancellationToken) {
-            Task task = proposedEvent switch {
+        public async Task<long> WriteEvent(BaseProposedEvent proposedEvent, CancellationToken cancellationToken) {
+            Task<long> task = proposedEvent switch {
                 ProposedEvent p             => AppendEvent(p),
                 ProposedDeleteStream delete => DeleteStream(delete.EventDetails.Stream),
                 ProposedMetaEvent meta      => SetStreamMeta(meta),
-                _                           => Task.CompletedTask
+                IgnoredEvent _              => Task.FromResult(-1L),
+                _                           => throw new InvalidOperationException("Unknown proposed event type")
             };
 
-            return Metrics.Measure(() => task, ReplicationMetrics.WritesHistogram, ReplicationMetrics.WriteErrorsCount);
+            return
+                task.IsCompleted
+                    ? task.Result
+                    : await Metrics.Measure(
+                        () => task,
+                        ReplicationMetrics.WritesHistogram,
+                        ReplicationMetrics.WriteErrorsCount
+                    );
 
-            async Task AppendEvent(ProposedEvent p) {
+            async Task<long> AppendEvent(ProposedEvent p) {
                 if (Log.IsDebugEnabled())
                     Log.Debug(
                         "gRPC: Write event with id {Id} of type {Type} to {Stream} with original position {Position}",
@@ -38,30 +46,32 @@ namespace EventStore.Replicator.Grpc {
                         p.SourcePosition.EventPosition
                     );
 
-                await _client.AppendToStreamAsync(
+                var result = await _client.AppendToStreamAsync(
                     proposedEvent.EventDetails.Stream,
                     StreamState.Any,
                     new[] {Map(p)},
                     cancellationToken: cancellationToken
                 );
+                return (long) result.LogPosition.CommitPosition;
             }
 
-            async Task DeleteStream(string stream) {
+            async Task<long> DeleteStream(string stream) {
                 if (Log.IsDebugEnabled())
                     Log.Debug("Deleting stream {Stream}", stream);
 
-                await _client.SoftDeleteAsync(
+                var result = await _client.SoftDeleteAsync(
                     stream,
                     StreamState.Any,
                     cancellationToken: cancellationToken
                 );
+                return (long) result.LogPosition.CommitPosition;
             }
 
-            async Task SetStreamMeta(ProposedMetaEvent meta) {
+            async Task<long> SetStreamMeta(ProposedMetaEvent meta) {
                 if (Log.IsDebugEnabled())
                     Log.Debug("Setting meta for {Stream} to {Meta}", meta.EventDetails.Stream, meta);
 
-                await _client.SetStreamMetadataAsync(
+                var result = await _client.SetStreamMetadataAsync(
                     meta.EventDetails.Stream,
                     StreamState.Any,
                     new StreamMetadata(
@@ -83,6 +93,7 @@ namespace EventStore.Replicator.Grpc {
                     ),
                     cancellationToken: cancellationToken
                 );
+                return (long) result.LogPosition.CommitPosition;
             }
         }
 

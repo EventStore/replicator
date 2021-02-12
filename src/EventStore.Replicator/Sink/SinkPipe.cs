@@ -2,7 +2,6 @@ using System;
 using System.Threading.Tasks;
 using EventStore.Replicator.Observers;
 using EventStore.Replicator.Shared;
-using EventStore.Replicator.Shared.Logging;
 using EventStore.Replicator.Shared.Observe;
 using GreenPipes;
 
@@ -26,7 +25,10 @@ namespace EventStore.Replicator.Sink {
 
                     cfg.UseEventWriter(writer);
                     cfg.UseCheckpointStore(checkpointStore);
-                    cfg.UseExecute(ctx => Counters.SetLastProcessed(ctx.ProposedEvent.SourcePosition.EventPosition));
+
+                    cfg.UseExecute(
+                        ctx => ReplicationMetrics.ProcessedPosition.Set(ctx.ProposedEvent.SourcePosition.EventPosition)
+                    );
                 }
             );
 
@@ -36,7 +38,11 @@ namespace EventStore.Replicator.Sink {
     static class SinkPipelineExtensions {
         public static void UseEventWriter(this IPipeConfigurator<SinkContext> cfg, IEventWriter writer)
             => cfg.UseExecuteAsync(
-                ctx => writer.WriteEvent(ctx.ProposedEvent, ctx.CancellationToken)
+                async ctx => {
+                    var position = await writer.WriteEvent(ctx.ProposedEvent, ctx.CancellationToken);
+                    if (position != -1)
+                        ReplicationMetrics.WriterPosition.Set(position);
+                }
             );
 
         public static void UseCheckpointStore(

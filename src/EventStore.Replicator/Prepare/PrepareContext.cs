@@ -11,6 +11,16 @@ namespace EventStore.Replicator.Prepare {
             OriginalEvent = originalEvent;
         }
 
-        public BaseOriginalEvent OriginalEvent { get; }
+        public BaseOriginalEvent OriginalEvent { get; private set; }
+
+        public void IgnoreEvent() {
+            OriginalEvent = new IgnoredOriginalEvent(
+                OriginalEvent.Created,
+                OriginalEvent.EventDetails,
+                OriginalEvent.Position,
+                OriginalEvent.SequenceNumber,
+                OriginalEvent.TracingMetadata
+            );
+        }
     }
 }

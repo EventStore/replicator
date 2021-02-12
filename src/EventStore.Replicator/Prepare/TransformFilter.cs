@@ -3,8 +3,10 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Threading.Tasks;
 using EventStore.Replicator.Shared.Contracts;
+using EventStore.Replicator.Shared.Observe;
 using EventStore.Replicator.Shared.Pipeline;
 using GreenPipes;
+using Ubiquitous.Metrics;
 
 namespace EventStore.Replicator.Prepare {
     public class TransformFilter : IFilter<PrepareContext> {
@@ -14,7 +16,7 @@ namespace EventStore.Replicator.Prepare {
 
         public async Task Send(PrepareContext context, IPipe<PrepareContext> next) {
             var transformed = context.OriginalEvent is OriginalEvent oe
-                ? await Transform(oe)
+                ? await Metrics.Measure(() => Transform(oe), ReplicationMetrics.PrepareHistogram)
                 : TransformMeta(context.OriginalEvent);
 
             context.AddOrUpdatePayload(() => transformed, _ => transformed);
@@ -54,6 +56,11 @@ namespace EventStore.Replicator.Prepare {
                         meta.Position,
                         meta.SequenceNumber
                     ),
+                IgnoredOriginalEvent ignored => new IgnoredEvent(
+                    ignored.EventDetails,
+                    ignored.Position,
+                    ignored.SequenceNumber
+                ),
                 _ => throw new InvalidOperationException("Unknown original event type")
             };
     }

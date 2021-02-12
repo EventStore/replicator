@@ -37,4 +37,13 @@ namespace EventStore.Replicator.Shared.Contracts {
         long            SequenceNumber,
         TracingMetadata TracingMetadata
     ) : BaseOriginalEvent(Created, EventDetails, Position, SequenceNumber, TracingMetadata);
+
+    public record IgnoredOriginalEvent(
+            DateTimeOffset  Created,
+            EventDetails    EventDetails,
+            Position        Position,
+            long            SequenceNumber,
+            TracingMetadata TracingMetadata
+        )
+        : BaseOriginalEvent(Created, EventDetails, Position, SequenceNumber, TracingMetadata);
 }

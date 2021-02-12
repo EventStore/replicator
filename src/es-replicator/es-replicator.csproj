@@ -4,6 +4,8 @@
         <TargetFramework>net5.0</TargetFramework>
         <RootNamespace>es_replicator</RootNamespace>
         <Nullable>enable</Nullable>
+        <SpaRoot>ClientApp\</SpaRoot>
+        <DefaultItemExcludes>$(DefaultItemExcludes);$(SpaRoot)node_modules\**</DefaultItemExcludes>
     </PropertyGroup>
 
     <ItemGroup>
@@ -11,7 +13,8 @@
         <PackageReference Include="Serilog.AspNetCore" Version="3.4.0" />
         <PackageReference Include="prometheus-net.AspNetCore" Version="4.1.1" />
         <PackageReference Include="Serilog.Sinks.File" Version="4.1.0" />
-        <PackageReference Include="Ubiquitous.Metrics.Prometheus" Version="0.0.0-alpha.0.10" />
+        <PackageReference Include="Ubiquitous.Metrics.Prometheus" Version="0.0.0-alpha.0.20" />
+        <PackageReference Include="Microsoft.AspNetCore.SpaServices.Extensions" Version="5.0.3" />
         <PackageReference Include="MinVer" Version="2.4.0">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
@@ -23,5 +26,28 @@
         <ProjectReference Include="..\EventStore.Replicator.Tcp\EventStore.Replicator.Tcp.csproj" />
         <ProjectReference Include="..\EventStore.Replicator\EventStore.Replicator.csproj" />
     </ItemGroup>
+
+    <Target Name="DebugEnsureNodeEnv" BeforeTargets="Build" Condition=" '$(Configuration)' == 'Debug' And !Exists('$(SpaRoot)node_modules') ">
+        <Exec Command="node --version" ContinueOnError="true">
+            <Output TaskParameter="ExitCode" PropertyName="ErrorCode" />
+        </Exec>
+        <Error Condition="'$(ErrorCode)' != '0'" Text="Node.js is required to build and run this project." />
+        <Message Importance="high" Text="Restoring dependencies using 'yarn'. This may take several minutes..." />
+        <Exec WorkingDirectory="$(SpaRoot)" Command="yarn install" />
+    </Target>
+
+    <Target Name="PublishRunWebpack" AfterTargets="ComputeFilesToPublish">
+        <Exec WorkingDirectory="$(SpaRoot)" Command="yarn install" />
+        <Exec WorkingDirectory="$(SpaRoot)" Command="yarn build" />
+
+        <ItemGroup>
+            <DistFiles Include="$(SpaRoot)dist\**" />
+            <ResolvedFileToPublish Include="@(DistFiles->'%(FullPath)')" Exclude="@(ResolvedFileToPublish)">
+                <RelativePath>%(DistFiles.Identity)</RelativePath>
+                <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+                <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
+            </ResolvedFileToPublish>
+        </ItemGroup>
+    </Target>
 
 </Project>

@@ -9,12 +9,9 @@ namespace EventStore.Replicator.Shared.Pipeline {
     );
 
     public static class Transforms {
-        static readonly ILog Log = LogProvider.GetCurrentClassLogger();
-        
         public static ValueTask<ProposedEvent> Default(
             OriginalEvent originalEvent, CancellationToken _
         ) {
-            // Log.Debug("Transforming event {Event}", originalEvent);
             return new(
                 new ProposedEvent(
                     originalEvent.EventDetails,

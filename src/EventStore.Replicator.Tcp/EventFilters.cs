@@ -19,6 +19,8 @@ namespace EventStore.Replicator.Tcp {
         public async ValueTask<bool> Filter(
             BaseOriginalEvent originalEvent
         ) {
+            if (!(originalEvent is OriginalEvent)) return true;
+            
             var meta = await _cache.GetOrAddStreamMeta(
                 originalEvent.EventDetails.Stream,
                 _connection.GetStreamMeta

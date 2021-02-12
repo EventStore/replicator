@@ -1,11 +1,7 @@
 // ReSharper disable SuggestBaseTypeForParameter
 
 namespace EventStore.Replicator.Shared.Contracts {
-    public abstract record BaseProposedEvent(
-        EventDetails EventDetails,
-        Position     SourcePosition,
-        long         SequenceNumber
-    );
+    public abstract record BaseProposedEvent(EventDetails EventDetails, Position SourcePosition, long SequenceNumber);
 
     public record ProposedEvent(
         EventDetails EventDetails,
@@ -23,5 +19,8 @@ namespace EventStore.Replicator.Shared.Contracts {
     ) : BaseProposedEvent(EventDetails, SourcePosition, SequenceNumber);
 
     public record ProposedDeleteStream(EventDetails EventDetails, Position SourcePosition, long SequenceNumber)
+        : BaseProposedEvent(EventDetails, SourcePosition, SequenceNumber);
+
+    public record IgnoredEvent(EventDetails EventDetails, Position SourcePosition, long SequenceNumber)
         : BaseProposedEvent(EventDetails, SourcePosition, SequenceNumber);
 }

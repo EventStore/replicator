@@ -1,5 +1,7 @@
 using System.Threading.Tasks;
 using EventStore.ClientAPI;
+using EventStore.Replicator.Shared.Observe;
+using Ubiquitous.Metrics;
 
 namespace EventStore.Replicator.Tcp {
     static class ConnectionExtensions {
@@ -19,7 +21,11 @@ namespace EventStore.Replicator.Tcp {
         public static async Task<StreamMeta> GetStreamMeta(
             this IEventStoreConnection connection, string stream
         ) {
-            var streamMeta = await connection.GetStreamMetadataAsync(stream);
+            var streamMeta = await
+                    Metrics.Measure(
+                        () => connection.GetStreamMetadataAsync(stream),
+                        ReplicationMetrics.MetaReadsHistogram
+                    );
 
             return new StreamMeta(
                 streamMeta.IsStreamDeleted,

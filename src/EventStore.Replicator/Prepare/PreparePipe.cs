@@ -23,7 +23,7 @@ namespace EventStore.Replicator.Prepare {
                         }
                     );
                     cfg.UseLog();
-                    // cfg.UseConcurrencyLimit(10);
+                    cfg.UseConcurrencyLimit(10);
 
                     cfg.UseEventFilter(filter ?? Filters.EmptyFilter);
 
@@ -33,12 +33,15 @@ namespace EventStore.Replicator.Prepare {
                         async ctx => {
                             var proposedEvent = ctx.GetPayload<BaseProposedEvent>();
 
-                            await send(
-                                new SinkContext(
-                                    proposedEvent,
-                                    ctx.CancellationToken
-                                )
-                            );
+                            try {
+                                await send(
+                                    new SinkContext(
+                                        proposedEvent,
+                                        ctx.CancellationToken
+                                    )
+                                );
+                            }
+                            catch (OperationCanceledException) { }
                         }
                     );
                 }

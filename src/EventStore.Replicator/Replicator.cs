@@ -15,7 +15,7 @@ namespace EventStore.Replicator {
     public static class Replicator {
         static readonly ILog Log = LogProvider.GetCurrentClassLogger();
 
-        const int Capacity = 10240;
+        const int Capacity = 50000;
 
         public static async Task Replicate(
             IEventReader      reader,
@@ -26,6 +26,8 @@ namespace EventStore.Replicator {
             FilterEvent?      filter              = null,
             TransformEvent?   transform           = null
         ) {
+            ReplicationMetrics.SetCapacity(Capacity, Capacity);
+            
             var cts = new CancellationTokenSource();
 
             var linkedCts =
@@ -34,8 +36,11 @@ namespace EventStore.Replicator {
             var prepareChannel = Channel.CreateBounded<PrepareContext>(Capacity);
             var sinkChannel    = Channel.CreateBounded<SinkContext>(Capacity);
 
-            var readerPipe = new ReaderPipe(reader, checkpointStore, prepareChannel.Writer);
-
+            var readerPipe = new ReaderPipe(
+                reader,
+                checkpointStore,
+                ctx => prepareChannel.Writer.WriteAsync(ctx, ctx.CancellationToken)
+            );
             var preparePipe = new PreparePipe(
                 filter,
                 transform,
@@ -43,12 +48,28 @@ namespace EventStore.Replicator {
             );
             var sinkPipe = new SinkPipe(writer, checkpointStore);
 
-            var prepareTask = CreateChannelShovel("Prepare", prepareChannel, preparePipe.Send, ReplicationMetrics.PrepareChannelSize);
-            var writerTask  = CreateChannelShovel("Writer", sinkChannel, sinkPipe.Send, ReplicationMetrics.SinkChannelSize);
+            var prepareTask = CreateChannelShovel(
+                "Prepare",
+                prepareChannel,
+                preparePipe.Send,
+                ReplicationMetrics.PrepareChannelSize
+            );
+
+            var writerTask = CreateChannelShovel(
+                "Writer",
+                sinkChannel,
+                sinkPipe.Send,
+                ReplicationMetrics.SinkChannelSize
+            );
+            var reporter = Task.Run(Report, stoppingToken);
 
             while (true) {
+                ReplicationStatus.Start();
+                
                 await readerPipe.Start(linkedCts.Token);
 
+                ReplicationStatus.Stop();
+                
                 while (prepareChannel.Reader.Count > 0 || sinkChannel.Reader.Count > 0) {
                     Log.Info("Waiting for the sink pipe to exhaust...");
                     await Task.Delay(1000, stoppingToken);
@@ -65,6 +86,7 @@ namespace EventStore.Replicator {
             try {
                 await prepareTask;
                 await writerTask;
+                await reporter;
             }
             catch (OperationCanceledException) { }
 
@@ -79,12 +101,18 @@ namespace EventStore.Replicator {
                     ),
                     linkedCts.Token
                 );
+
+            async Task Report() {
+                while (!stoppingToken.IsCancellationRequested) {
+                    var position = await reader.GetLastPosition(stoppingToken);
+                    ReplicationMetrics.LastSourcePosition.Set(position);
+                    await Task.Delay(5000, stoppingToken);
+                }
+            }
         }
     }
 
     static class ChannelExtensions {
-        static readonly ILog Log = LogProvider.GetCurrentClassLogger();
-        
         public static async Task Shovel<T>(
             this Channel<T>   channel,
             Func<T, Task>     send,

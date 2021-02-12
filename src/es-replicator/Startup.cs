@@ -1,25 +1,20 @@
 using System;
-using System.Net;
-using System.Threading;
-using System.Threading.Tasks;
 using es_replicator.Settings;
 using EventStore.Client;
 using EventStore.ClientAPI;
 using EventStore.Replicator;
 using EventStore.Replicator.Grpc;
 using EventStore.Replicator.Shared;
+using EventStore.Replicator.Shared.Pipeline;
 using EventStore.Replicator.Tcp;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
 using Prometheus;
 using Serilog;
 using NodePreference = EventStore.Client.NodePreference;
-using Position = EventStore.Replicator.Shared.Position;
 
 namespace es_replicator {
     public class Startup {
@@ -36,20 +31,38 @@ namespace es_replicator {
             Measurements.ConfigureMetrics(Environment.EnvironmentName);
 
             var replicatorOptions = Configuration.GetAs<ReplicatorOptions>();
-            var reader            = ConfigureReader(replicatorOptions.Reader, services);
-            var sink              = ConfigureSink(replicatorOptions.Sink, services);
 
+            var reader = ConfigureReader(replicatorOptions.Reader, services);
+            var sink   = ConfigureSink(replicatorOptions.Sink, services);
+
+            if (replicatorOptions.Scavenge)
+                services.AddSingleton<FilterEvent>(ctx => ctx.GetRequiredService<IEventReader>().Filter);
             services.AddSingleton(reader);
             services.AddSingleton(sink);
             services.AddSingleton<ICheckpointStore>(new FileCheckpointStore("checkpoint", 1000));
             services.AddHostedService<ReplicatorService>();
 
+            services.AddSpaStaticFiles(configuration => configuration.RootPath = "ClientApp/dist");
             services.AddControllers();
+            services.AddCors();
         }
 
         public void Configure(IApplicationBuilder app) {
             app.UseDeveloperExceptionPage();
-            app.UseSerilogRequestLogging();
+            // app.UseSerilogRequestLogging();
+            
+            app.UseCors(
+                cfg => {
+                    cfg.AllowAnyMethod();
+                    cfg.AllowAnyOrigin();
+                    cfg.AllowAnyHeader();
+                }
+            );
+
+            app.UseDefaultFiles();
+            app.UseStaticFiles();
+            app.UseSpaStaticFiles();
+            
             app.UseRouting();
 
             app.UseEndpoints(
@@ -58,6 +71,8 @@ namespace es_replicator {
                     endpoints.MapMetrics();
                 }
             );
+            
+            app.UseSpa(spa => spa.Options.SourcePath = "ClientApp");
         }
 
         static IEventReader ConfigureReader(EsdbSettings settings, IServiceCollection services) {
@@ -88,7 +103,7 @@ namespace es_replicator {
             var connection = EventStoreConnection.Create(connectionString, builder);
 
             services.AddSingleton<IHostedService>(new TcpConnectionService(connection));
-            
+
             return connection;
         }
 

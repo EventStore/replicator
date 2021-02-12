@@ -13,12 +13,12 @@ using StreamMetadata = EventStore.ClientAPI.StreamMetadata;
 namespace EventStore.Replicator.Tcp {
     public class TcpEventWriter : IEventWriter {
         static readonly ILog Log = LogProvider.GetCurrentClassLogger();
-        
+
         readonly IEventStoreConnection _connection;
 
         public TcpEventWriter(IEventStoreConnection connection) => _connection = connection;
 
-        public Task WriteEvent(BaseProposedEvent proposedEvent, CancellationToken cancellationToken) {
+        public Task<long> WriteEvent(BaseProposedEvent proposedEvent, CancellationToken cancellationToken) {
             if (Log.IsDebugEnabled())
                 Log.Debug(
                     "TCP: Write event with id {Id} of type {Type} to {Stream} with original position {Position}",
@@ -28,14 +28,27 @@ namespace EventStore.Replicator.Tcp {
                     proposedEvent.SourcePosition.EventPosition
                 );
 
-            Task task = proposedEvent switch
-            {
-                ProposedEvent p => _connection.AppendToStreamAsync(
+            Task<long> task = proposedEvent switch {
+                ProposedEvent p             => Append(p),
+                ProposedMetaEvent meta      => SetMeta(meta),
+                ProposedDeleteStream delete => Delete(delete),
+                IgnoredEvent _              => Task.FromResult(-1L),
+                _                           => throw new InvalidOperationException("Unknown proposed event type")
+            };
+
+            return Metrics.Measure(() => task, ReplicationMetrics.WritesHistogram, ReplicationMetrics.WriteErrorsCount);
+
+            async Task<long> Append(ProposedEvent p) {
+                var result = await _connection.AppendToStreamAsync(
                     p.EventDetails.Stream,
                     ExpectedVersion.Any,
                     Map(p)
-                ),
-                ProposedMetaEvent meta => _connection.SetStreamMetadataAsync(
+                );
+                return result.LogPosition.CommitPosition;
+            }
+
+            async Task<long> SetMeta(ProposedMetaEvent meta) {
+                var result = await _connection.SetStreamMetadataAsync(
                     meta.EventDetails.Stream,
                     ExpectedVersion.Any,
                     StreamMetadata.Create(
@@ -51,15 +64,17 @@ namespace EventStore.Replicator.Tcp {
                             meta.Data.StreamAcl?.MetaWriteRoles
                         )
                     )
-                ),
-                ProposedDeleteStream delete => _connection.DeleteStreamAsync(
+                );
+                return result.LogPosition.CommitPosition;
+            }
+
+            async Task<long> Delete(ProposedDeleteStream delete) {
+                var result = await _connection.DeleteStreamAsync(
                     delete.EventDetails.Stream,
                     ExpectedVersion.Any
-                ),
-                _ => throw new InvalidOperationException("Unknown proposed event type")
-            };
-
-            return Metrics.Measure(() => task, ReplicationMetrics.WritesHistogram, ReplicationMetrics.WriteErrorsCount);
+                );
+                return result.LogPosition.CommitPosition;
+            }
 
             static EventData Map(ProposedEvent evt) {
                 return

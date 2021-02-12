@@ -14,6 +14,8 @@ namespace es_replicator.Settings {
         public EsdbSettings Reader { get; init; }
 
         public EsdbSettings Sink { get; init; }
+        
+        public bool Scavenge { get; init; }
     }
 
     public static class ConfigExtensions {

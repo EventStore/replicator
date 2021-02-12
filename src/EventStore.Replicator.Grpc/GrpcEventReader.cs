@@ -1,9 +1,12 @@
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text;
 using System.Text.Json;
 using System.Threading;
+using System.Threading.Tasks;
 using EventStore.Client;
 using EventStore.Replicator.Grpc.Internals;
 using EventStore.Replicator.Shared;
@@ -32,9 +35,8 @@ namespace EventStore.Replicator.Grpc {
             _realtime = new Realtime(client, metaCache);
         }
 
-        public async IAsyncEnumerable<BaseOriginalEvent> ReadEvents(
-            Shared.Position                            fromPosition,
-            [EnumeratorCancellation] CancellationToken cancellationToken
+        public async Task ReadEvents(
+            Shared.Position fromPosition, Func<BaseOriginalEvent, ValueTask> next, CancellationToken cancellationToken
         ) {
             var sequence     = 0;
             var lastPosition = 0L;
@@ -42,7 +44,7 @@ namespace EventStore.Replicator.Grpc {
             Log.Info("Starting gRPC reader");
 
             await _realtime.Start();
-
+            
             var read = _client.ReadAllAsync(
                 Direction.Forwards,
                 new Position(
@@ -96,16 +98,40 @@ namespace EventStore.Replicator.Grpc {
                     originalEvent = Map(evt, sequence++, activity);
                 }
                 else {
+                    await next(MapIgnored(evt, sequence++, activity));
                     continue;
                 }
 
                 if (await _filter.Filter(originalEvent)) {
-                    yield return originalEvent;
+                    await next(originalEvent);
+                }
+                else {
+                    await next(MapIgnored(evt, sequence++, activity));
                 }
             } while (true);
 
             Log.Info("Reached the end of the stream at {Position}", lastPosition);
         }
+
+        public async Task<long> GetLastPosition(CancellationToken cancellationToken) {
+            var events = await _client.ReadAllAsync(
+                Direction.Backwards,
+                Position.End,
+                1,
+                resolveLinkTos: false,
+                cancellationToken: cancellationToken
+            ).ToArrayAsync(cancellationToken);
+            return (long) events[0].OriginalPosition?.CommitPosition;
+        }
+
+        static IgnoredOriginalEvent MapIgnored(ResolvedEvent evt, int sequence, Activity activity)
+            => new(
+                evt.Event.Created,
+                MapDetails(evt.Event),
+                MapPosition(evt),
+                sequence,
+                new TracingMetadata(activity.TraceId, activity.SpanId)
+            );
 
         static OriginalEvent Map(ResolvedEvent evt, int sequence, Activity activity)
             => new(
@@ -173,5 +199,7 @@ namespace EventStore.Replicator.Grpc {
 
         static Shared.Position MapPosition(ResolvedEvent evt) =>
             new(evt.OriginalEventNumber.ToInt64(), (long) evt.OriginalPosition!.Value.CommitPosition);
+        
+        public ValueTask<bool> Filter(BaseOriginalEvent originalEvent) => _filter.Filter(originalEvent);
     }
 }

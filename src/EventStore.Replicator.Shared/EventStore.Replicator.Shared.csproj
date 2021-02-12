@@ -13,7 +13,7 @@
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
         <PackageReference Include="YamlDotNet" Version="8.1.2" />
-        <PackageReference Include="Ubiquitous.Metrics" Version="0.0.0-alpha.0.10" />
+        <PackageReference Include="Ubiquitous.Metrics" Version="0.0.0-alpha.0.20" />
     </ItemGroup>
 
 </Project>

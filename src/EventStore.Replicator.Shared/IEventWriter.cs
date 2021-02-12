@@ -4,6 +4,6 @@ using EventStore.Replicator.Shared.Contracts;
 
 namespace EventStore.Replicator.Shared {
     public interface IEventWriter {
-        Task WriteEvent(BaseProposedEvent proposedEvent, CancellationToken cancellationToken);
+        Task<long> WriteEvent(BaseProposedEvent proposedEvent, CancellationToken cancellationToken);
     }
 }

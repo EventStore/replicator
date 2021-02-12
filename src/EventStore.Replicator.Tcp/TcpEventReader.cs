@@ -1,9 +1,9 @@
-using System.Collections.Generic;
+using System;
 using System.Diagnostics;
 using System.Linq;
-using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading;
+using System.Threading.Tasks;
 using EventStore.ClientAPI;
 using EventStore.Replicator.Shared;
 using EventStore.Replicator.Shared.Contracts;
@@ -32,8 +32,8 @@ namespace EventStore.Replicator.Tcp {
             _realtime = new Realtime(connection, metaCache);
         }
 
-        public async IAsyncEnumerable<BaseOriginalEvent> ReadEvents(
-            Shared.Position fromPosition, [EnumeratorCancellation] CancellationToken cancellationToken
+        public async Task ReadEvents(
+            Shared.Position fromPosition, Func<BaseOriginalEvent, ValueTask> next, CancellationToken cancellationToken
         ) {
             await _realtime.Start();
 
@@ -46,28 +46,37 @@ namespace EventStore.Replicator.Tcp {
                     ? new Position(fromPosition.EventPosition, fromPosition.EventPosition)
                     : new Position(0, 0);
 
-            while (!cancellationToken.IsCancellationRequested) {
-                if (fromPosition != Shared.Position.Start) {
-                    // skip one
-                    var e = await _connection.ReadAllEventsForwardAsync(start, 1, false);
-                    start = e.NextPosition;
-                }
+            if (fromPosition != Shared.Position.Start) {
+                // skip one
+                var e = await _connection.ReadAllEventsForwardAsync(start, 1, false);
 
-                using var activity = new Activity("read");
+                start = e.NextPosition;
+            }
+
+            while (!cancellationToken.IsCancellationRequested) {
+                var activity = new Activity("read");
                 activity.Start();
 
-                var slice = await
-                    ReplicationMetrics.Measure(
-                        () => _connection.ReadAllEventsForwardAsync(start, 1024, false),
-                        ReplicationMetrics.ReadsHistogram,
-                        x => x.Events.Length,
-                        ReplicationMetrics.ReadErrorsCount
-                    );
+                // var slice = await _connection.ReadAllEventsForwardAsync(start, 1024, false);
+                var slice = await ReplicationMetrics.Measure(
+                    () => _connection.ReadAllEventsForwardAsync(start, 4096, false),
+                    ReplicationMetrics.ReadsHistogram,
+                    x => x.Events.Length,
+                    ReplicationMetrics.ReadErrorsCount
+                );
+                activity.Stop();
+                activity.Dispose();
+                Log.Info("Read: {Count} {Duration}", slice?.Events?.Length, activity.Duration.TotalSeconds);
 
+                activity = new Activity("reader-emit");
+                activity.Start();
+                
                 foreach (var sliceEvent in slice?.Events ?? Enumerable.Empty<ResolvedEvent>()) {
                     if (sliceEvent.Event.EventType.StartsWith('$') &&
-                        sliceEvent.Event.EventType != Predefined.MetadataEventType)
+                        sliceEvent.Event.EventType != Predefined.MetadataEventType) {
+                        await next(MapIgnored(sliceEvent, sequence++, activity));
                         continue;
+                    }
 
                     if (Log.IsDebugEnabled())
                         Log.Debug(
@@ -83,11 +92,7 @@ namespace EventStore.Replicator.Tcp {
                             if (Log.IsDebugEnabled())
                                 Log.Debug("Stream deletion {Stream}", sliceEvent.Event.EventStreamId);
 
-                            yield return MapStreamDeleted(
-                                sliceEvent,
-                                sequence++,
-                                activity
-                            );
+                            await next(MapStreamDeleted(sliceEvent, sequence++, activity));
                         }
                         else {
                             var meta = MapMetadata(sliceEvent, sequence++, activity);
@@ -95,17 +100,23 @@ namespace EventStore.Replicator.Tcp {
                             if (Log.IsDebugEnabled())
                                 Log.Debug("Stream meta {Stream}: {Meta}", sliceEvent.Event.EventStreamId, meta);
 
-                            yield return meta;
+                            await next(meta);
                         }
                     }
                     else if (sliceEvent.Event.EventType[0] != '$') {
                         var originalEvent = Map(sliceEvent, sequence++, activity);
 
-                        if (await _filter.Filter(originalEvent)) {
-                            yield return originalEvent;
-                        }
+                        // if (await _filter.Filter(originalEvent)) {
+                             await next(originalEvent);
+                        // }
+                        // else {
+                            // await next(MapIgnored(sliceEvent, sequence++, activity));
+                        // }
                     }
                 }
+                activity.Stop();
+                activity.Dispose();
+                Log.Info("Read emit: {Count} {Duration}", slice?.Events?.Length, activity.Duration.TotalSeconds);
 
                 if (slice!.IsEndOfStream) {
                     Log.Info("Reached the end of the stream at {Position}", slice.NextPosition);
@@ -115,6 +126,22 @@ namespace EventStore.Replicator.Tcp {
                 start = slice.NextPosition;
             }
         }
+
+        public async Task<long> GetLastPosition(CancellationToken cancellationToken) {
+            var last = await _connection.ReadAllEventsBackwardAsync(Position.End, 1, false);
+            return last.NextPosition.CommitPosition;
+        }
+
+        public ValueTask<bool> Filter(BaseOriginalEvent originalEvent) => _filter.Filter(originalEvent);
+
+        static IgnoredOriginalEvent MapIgnored(ResolvedEvent evt, int sequence, Activity activity)
+            => new(
+                evt.OriginalEvent.Created,
+                MapDetails(evt.OriginalEvent, evt.OriginalEvent.IsJson),
+                MapPosition(evt),
+                sequence,
+                new TracingMetadata(activity.TraceId, activity.SpanId)
+            );
 
         static OriginalEvent Map(ResolvedEvent evt, int sequence, Activity activity)
             => new(

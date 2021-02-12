@@ -1,7 +1,10 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using EventStore.Replicator.Shared.Contracts;
+using EventStore.Replicator.Shared.Observe;
 using EventStore.Replicator.Shared.Pipeline;
 using GreenPipes;
+using Ubiquitous.Metrics;
 
 namespace EventStore.Replicator.Prepare {
     public class EventFilterFilter : IFilter<PrepareContext> {
@@ -10,7 +13,13 @@ namespace EventStore.Replicator.Prepare {
         public EventFilterFilter(FilterEvent filter) => _filter = filter;
 
         public async Task Send(PrepareContext context, IPipe<PrepareContext> next) {
-            if (context.OriginalEvent != null && await _filter(context.OriginalEvent)) {
+            if (context.OriginalEvent != null) {
+                var accept = await Metrics.Measure(
+                    () => _filter(context.OriginalEvent),
+                    ReplicationMetrics.PrepareHistogram
+                );
+
+                if (!accept) context.IgnoreEvent();
                 await next.Send(context);
             }
         }
@@ -39,4 +48,3 @@ namespace EventStore.Replicator.Prepare {
             => configurator.AddPipeSpecification(new EventFilterSpecification(filter));
     }
 }
-
