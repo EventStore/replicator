@@ -54,22 +54,15 @@ namespace EventStore.Replicator.Tcp {
             }
 
             while (!cancellationToken.IsCancellationRequested) {
-                var activity = new Activity("read");
+                using var activity = new Activity("read");
                 activity.Start();
 
-                // var slice = await _connection.ReadAllEventsForwardAsync(start, 1024, false);
                 var slice = await ReplicationMetrics.Measure(
                     () => _connection.ReadAllEventsForwardAsync(start, 4096, false),
                     ReplicationMetrics.ReadsHistogram,
                     x => x.Events.Length,
                     ReplicationMetrics.ReadErrorsCount
                 );
-                activity.Stop();
-                activity.Dispose();
-                Log.Info("Read: {Count} {Duration}", slice?.Events?.Length, activity.Duration.TotalSeconds);
-
-                activity = new Activity("reader-emit");
-                activity.Start();
                 
                 foreach (var sliceEvent in slice?.Events ?? Enumerable.Empty<ResolvedEvent>()) {
                     if (sliceEvent.Event.EventType.StartsWith('$') &&
@@ -106,17 +99,14 @@ namespace EventStore.Replicator.Tcp {
                     else if (sliceEvent.Event.EventType[0] != '$') {
                         var originalEvent = Map(sliceEvent, sequence++, activity);
 
-                        // if (await _filter.Filter(originalEvent)) {
+                        if (await _filter.Filter(originalEvent)) {
                              await next(originalEvent);
-                        // }
-                        // else {
-                            // await next(MapIgnored(sliceEvent, sequence++, activity));
-                        // }
+                        }
+                        else {
+                            await next(MapIgnored(sliceEvent, sequence++, activity));
+                        }
                     }
                 }
-                activity.Stop();
-                activity.Dispose();
-                Log.Info("Read emit: {Count} {Duration}", slice?.Events?.Length, activity.Duration.TotalSeconds);
 
                 if (slice!.IsEndOfStream) {
                     Log.Info("Reached the end of the stream at {Position}", slice.NextPosition);

@@ -31,7 +31,7 @@ build:
   dependencies:
     - version
 
-.deploy:
+deploy:
   allow_failure: false
   image: registry.ubiquitous.no/gitlab/auto-deploy-image:latest
   stage: deploy
@@ -45,10 +45,6 @@ build:
     - version
     - build
   environment:
-    name: "$SIZE"
+    name: production
     kubernetes:
-      namespace: "simulator-$SIZE"
-  parallel:
-    matrix:
-      - SIZE: [ c4, m8 ]
-
+      namespace: replicator
