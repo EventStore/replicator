@@ -27,9 +27,4 @@ config:
     Enabled: true
     ExternalPort: 5000
     Type: ClusterIP
-  es-replicator:env:
-    - Name: EventStoreOptions__ClusterId
-      Value: c0brjdirh41g7drr2i50
-    - Name: SimulationOptions__Protocol
-      Value: tcp
   

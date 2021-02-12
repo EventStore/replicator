@@ -15,7 +15,7 @@
           </e>
         </e>
         <e p="Program.cs" t="Include" />
-        <e p="Pulumi.c4.yaml" t="Include" />
+        <e p="Pulumi.production.yaml" t="Include" />
         <e p="Pulumi.yaml" t="Include" />
         <e p="Stack.cs" t="Include" />
       </e>

@@ -9,6 +9,7 @@ variables:
 stages:
   - prebuild
   - build
+  - deploy
 
 version:
   extends: .version
