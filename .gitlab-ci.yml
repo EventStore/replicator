@@ -1,5 +1,5 @@
 include:
-  - project: "eventstoredb/devops/ci-templates"
+  - project: "gitlab/ci-templates"
     file: "/autodevops-ci.yml"
 
 variables:
