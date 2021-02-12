@@ -27,4 +27,6 @@ config:
     Enabled: true
     ExternalPort: 5000
     Type: ClusterIP
-  
+  es-replicator:env:
+    - Name: Checkpoint__Path
+      Value: /data

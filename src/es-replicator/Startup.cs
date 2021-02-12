@@ -39,7 +39,10 @@ namespace es_replicator {
                 services.AddSingleton<FilterEvent>(ctx => ctx.GetRequiredService<IEventReader>().Filter);
             services.AddSingleton(reader);
             services.AddSingleton(sink);
-            services.AddSingleton<ICheckpointStore>(new FileCheckpointStore("checkpoint", 1000));
+
+            services.AddSingleton<ICheckpointStore>(
+                new FileCheckpointStore($"{Configuration["Checkpoint:Path"]}/checkpoint", 1000)
+            );
             services.AddHostedService<ReplicatorService>();
 
             services.AddSpaStaticFiles(configuration => configuration.RootPath = "ClientApp/dist");
@@ -50,7 +53,7 @@ namespace es_replicator {
         public void Configure(IApplicationBuilder app) {
             app.UseDeveloperExceptionPage();
             // app.UseSerilogRequestLogging();
-            
+
             app.UseCors(
                 cfg => {
                     cfg.AllowAnyMethod();
@@ -62,7 +65,7 @@ namespace es_replicator {
             app.UseDefaultFiles();
             app.UseStaticFiles();
             app.UseSpaStaticFiles();
-            
+
             app.UseRouting();
 
             app.UseEndpoints(
@@ -71,7 +74,7 @@ namespace es_replicator {
                     endpoints.MapMetrics();
                 }
             );
-            
+
             app.UseSpa(spa => spa.Options.SourcePath = "ClientApp");
         }
 
