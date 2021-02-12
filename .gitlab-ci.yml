@@ -1,6 +1,6 @@
 include:
   - project: "eventstoredb/devops/ci-templates"
-  file: "/autodevops-ci.yml"
+    file: "/autodevops-ci.yml"
 
 variables:
   DOTNET_SDK_VERSION: "5.0"
@@ -33,7 +33,7 @@ build:
 
 deploy:
   allow_failure: false
-  image: registry.gitlab.com/eventstoredb/devops/auto-deploy-image:latest
+  image: registry.ubiquitous.no/gitlab/auto-deploy-image:latest
   stage: deploy
   tags:
     - kubernetes
