@@ -24,7 +24,7 @@ RUN dotnet publish ./src/es-replicator -c Release -r linux-x64 --no-restore --no
 # Create final runtime image
 FROM $RUNNER_IMG AS runner
 
-USER 1001
+#USER 1001
 
 WORKDIR /app
 COPY --from=builder /app/publish .
