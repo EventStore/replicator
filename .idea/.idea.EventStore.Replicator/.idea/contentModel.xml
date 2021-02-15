@@ -369,6 +369,7 @@
         <e p="Predefined.cs" t="Include" />
         <e p="Realtime.cs" t="Include" />
         <e p="StreamMetaCache.cs" t="Include" />
+        <e p="TcpClientLogger.cs" t="Include" />
         <e p="TcpEventReader.cs" t="Include" />
         <e p="TcpEventWriter.cs" t="Include" />
       </e>

@@ -11,7 +11,37 @@ namespace Deployment {
         public AppStack() {
             var config   = new Config();
             var settings = new AutoDevOpsSettings(config);
-            
+
+            var volume = new PersistentVolume(
+                "checkpoint-pv",
+                new PersistentVolumeArgs {
+                    Metadata = new ObjectMetaArgs {
+                        Namespace = settings.Deploy.Namespace,
+                        Name      = "checkpoint-pv"
+                    },
+                    Spec = new PersistentVolumeSpecArgs {
+                        Capacity    = new Dictionary<string, string> {{"storage", "1Mi"}},
+                        AccessModes = new[] {"ReadWriteOnce"}
+                    }
+                }
+            );
+
+            var claim = new PersistentVolumeClaim(
+                "checkpoint-pvc",
+                new PersistentVolumeClaimArgs {
+                    Metadata = new ObjectMetaArgs {
+                        Namespace = settings.Deploy.Namespace,
+                        Name      = "checkpoint-pvc"
+                    },
+                    Spec = new PersistentVolumeClaimSpecArgs {
+                        AccessModes = new[] {"ReadWriteOnce"},
+                        Resources = new ResourceRequirementsArgs {
+                            Requests = new Dictionary<string, string> {{"storage", "1Mi"}},
+                        }
+                    }
+                }
+            );
+
             var autoDevOps = new AutoDevOps.AutoDevOps(
                 settings,
                 configureContainer: container => {
@@ -25,10 +55,12 @@ namespace Deployment {
                         }
                     };
                 },
-                configurePod: pod => pod.Volumes = new [] {
+                configurePod: pod => pod.Volumes = new[] {
                     new VolumeArgs {
-                        Name = "checkpoint-storage",
-                        EmptyDir = new EmptyDirVolumeSourceArgs()
+                        Name     = "checkpoint-storage",
+                        PersistentVolumeClaim = new PersistentVolumeClaimVolumeSourceArgs {
+                            ClaimName = claim.Metadata.Apply(x => x.Name)
+                        }
                     }
                 }
                 // configureDeployment: deployment => {

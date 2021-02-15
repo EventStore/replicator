@@ -14,6 +14,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Prometheus;
 using Serilog;
+using ILogger = EventStore.ClientAPI.ILogger;
 using NodePreference = EventStore.Client.NodePreference;
 
 namespace es_replicator {
@@ -32,8 +33,17 @@ namespace es_replicator {
 
             var replicatorOptions = Configuration.GetAs<ReplicatorOptions>();
 
-            var reader = ConfigureReader(replicatorOptions.Reader, services);
-            var sink   = ConfigureSink(replicatorOptions.Sink, services);
+            var reader = ConfigureReader(
+                replicatorOptions.Reader.ConnectionString,
+                replicatorOptions.Reader.Protocol,
+                services
+            );
+
+            var sink = ConfigureSink(
+                replicatorOptions.Sink.ConnectionString,
+                replicatorOptions.Sink.Protocol,
+                services
+            );
 
             if (replicatorOptions.Scavenge)
                 services.AddSingleton<FilterEvent>(ctx => ctx.GetRequiredService<IEventReader>().Filter);
@@ -78,19 +88,19 @@ namespace es_replicator {
             app.UseSpa(spa => spa.Options.SourcePath = "ClientApp");
         }
 
-        static IEventReader ConfigureReader(EsdbSettings settings, IServiceCollection services) {
-            return settings.Protocol switch {
-                "tcp"  => new TcpEventReader(ConfigureEventStoreTcp(settings.ConnectionString, true, services)),
-                "grpc" => new GrpcEventReader(ConfigureEventStoreGrpc(settings.ConnectionString, true)),
-                _      => throw new ArgumentOutOfRangeException(nameof(settings.Protocol))
+        static IEventReader ConfigureReader(string connectionString, string protocol, IServiceCollection services) {
+            return protocol switch {
+                "tcp"  => new TcpEventReader(ConfigureEventStoreTcp(connectionString, true, services)),
+                "grpc" => new GrpcEventReader(ConfigureEventStoreGrpc(connectionString, true)),
+                _      => throw new ArgumentOutOfRangeException(nameof(protocol))
             };
         }
 
-        static IEventWriter ConfigureSink(EsdbSettings settings, IServiceCollection services) {
-            return settings.Protocol switch {
-                "tcp"  => new TcpEventWriter(ConfigureEventStoreTcp(settings.ConnectionString, false, services)),
-                "grpc" => new GrpcEventWriter(ConfigureEventStoreGrpc(settings.ConnectionString, false)),
-                _      => throw new ArgumentOutOfRangeException(nameof(settings.Protocol))
+        static IEventWriter ConfigureSink(string connectionString, string protocol, IServiceCollection services) {
+            return protocol switch {
+                "tcp"  => new TcpEventWriter(ConfigureEventStoreTcp(connectionString, false, services)),
+                "grpc" => new GrpcEventWriter(ConfigureEventStoreGrpc(connectionString, false)),
+                _      => throw new ArgumentOutOfRangeException(nameof(protocol))
             };
         }
 
@@ -98,6 +108,7 @@ namespace es_replicator {
             string connectionString, bool follower, IServiceCollection services
         ) {
             var builder = ConnectionSettings.Create()
+                .UseCustomLogger(new TcpClientLogger())
                 .KeepReconnecting()
                 .KeepRetrying();
 

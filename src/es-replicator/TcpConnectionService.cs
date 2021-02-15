@@ -9,9 +9,7 @@ namespace es_replicator {
         
         public TcpConnectionService(IEventStoreConnection connection) => _connection = connection;
 
-        public Task StartAsync(CancellationToken cancellationToken) {
-            return _connection.ConnectAsync();
-        }
+        public Task StartAsync(CancellationToken cancellationToken) => _connection.ConnectAsync();
 
         public Task StopAsync(CancellationToken  cancellationToken) {
             _connection.Close();

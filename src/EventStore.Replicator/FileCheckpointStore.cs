@@ -41,7 +41,7 @@ namespace EventStore.Replicator {
         }
 
         int _counter;
-        Position _lastPosition;
+        Position? _lastPosition;
 
         public async ValueTask StoreCheckpoint(Position position, CancellationToken cancellationToken) {
             _lastPosition = position;
