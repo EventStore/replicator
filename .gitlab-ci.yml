@@ -15,18 +15,18 @@ version:
   extends: .version
   stage: prebuild
   tags:
-    - kubernetes
+    - docker
 
 warmer:
   extends: .kanikocache
   stage: prebuild
   tags:
-    - kubernetes
+    - docker
 
 build:
   extends: .kanikobuild
   tags:
-    - kubernetes
+    - docker
   services: [ ]
   stage: build
   dependencies:
