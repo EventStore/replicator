@@ -12,20 +12,6 @@ namespace Deployment {
             var config   = new Config();
             var settings = new AutoDevOpsSettings(config);
 
-            var volume = new PersistentVolume(
-                "checkpoint-pv",
-                new PersistentVolumeArgs {
-                    Metadata = new ObjectMetaArgs {
-                        Namespace = settings.Deploy.Namespace,
-                        Name      = "checkpoint-pv"
-                    },
-                    Spec = new PersistentVolumeSpecArgs {
-                        Capacity    = new Dictionary<string, string> {{"storage", "1Mi"}},
-                        AccessModes = new[] {"ReadWriteOnce"}
-                    }
-                }
-            );
-
             var claim = new PersistentVolumeClaim(
                 "checkpoint-pvc",
                 new PersistentVolumeClaimArgs {
