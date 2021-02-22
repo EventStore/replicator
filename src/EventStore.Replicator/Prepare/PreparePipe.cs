@@ -27,7 +27,7 @@ namespace EventStore.Replicator.Prepare {
 
                     cfg.UseEventFilter(filter ?? Filters.EmptyFilter);
 
-                    cfg.UseEventTransform(transform ?? Transforms.Default);
+                    cfg.UseEventTransform(transform ?? Transforms.DefaultWithExtraMeta);
 
                     cfg.UseExecuteAsync(
                         async ctx => {

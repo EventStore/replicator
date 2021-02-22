@@ -1,3 +1,6 @@
+using System.IO;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
 using EventStore.Replicator.Shared.Contracts;
@@ -21,6 +24,46 @@ namespace EventStore.Replicator.Shared.Pipeline {
                     originalEvent.SequenceNumber
                 )
             );
+        }
+
+        public static ValueTask<ProposedEvent> DefaultWithExtraMeta(
+            OriginalEvent originalEvent, CancellationToken _
+        ) {
+            var proposed =
+                new ProposedEvent(
+                    originalEvent.EventDetails,
+                    originalEvent.Data,
+                    AddMeta(),
+                    originalEvent.Position,
+                    originalEvent.SequenceNumber
+                );
+            return new ValueTask<ProposedEvent>(proposed);
+
+            byte[] AddMeta() {
+                if (originalEvent.Metadata == null) {
+                    var eventMeta = new EventMetadata {
+                        OriginalEventNumber = originalEvent.Position.EventNumber,
+                        OriginalPosition    = originalEvent.Position.EventPosition,
+                        OriginalCreatedDate = originalEvent.Created
+                    };
+                    return JsonSerializer.SerializeToUtf8Bytes(eventMeta);
+                }
+
+                using var stream       = new MemoryStream();
+                using var writer       = new Utf8JsonWriter(stream);
+                using var originalMeta = JsonDocument.Parse(originalEvent.Metadata);
+
+                writer.WriteStartObject();
+
+                foreach (var jsonElement in originalMeta.RootElement.EnumerateObject()) {
+                    jsonElement.WriteTo(writer);
+                }
+                writer.WriteNumber(EventMetadata.EventNumberPropertyName, originalEvent.Position.EventNumber);
+                writer.WriteNumber(EventMetadata.PositionPropertyName, originalEvent.Position.EventPosition);
+                writer.WriteString(EventMetadata.CreatedDate, originalEvent.Created);
+                writer.WriteEndObject();
+                return stream.ToArray();
+            }
         }
     }
 }
