@@ -59,6 +59,9 @@ build_gcr:
       use_version
       mkdir -p ./cache && mv ./cache $(pwd)
       echo $GCR_ACCOUNT > /kaniko/secret.json
+      echo "{\"auths\":{" > /kaniko/.docker/config.json
+      echo "\"$CI_REGISTRY\":{\"username\":\"$CI_REGISTRY_USER\",\"password\":\"$CI_REGISTRY_PASSWORD\"}" >> /kaniko/.docker/config.json
+      echo "}}" >> /kaniko/.docker/config.json
       docker_repo=eu.gcr.io/esc-platform-advocacy/$CI_PROJECT_PATH
       echo "Building Dockerfile in $repo_root to $docker_repo"
       echo "Tag $CI_APPLICATION_TAG, application version $APPLICATION_VERSION"
