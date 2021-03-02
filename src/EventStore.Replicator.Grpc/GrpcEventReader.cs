@@ -121,7 +121,8 @@ namespace EventStore.Replicator.Grpc {
                 resolveLinkTos: false,
                 cancellationToken: cancellationToken
             ).ToArrayAsync(cancellationToken);
-            return (long) events[0].OriginalPosition?.CommitPosition;
+            var position = (long?) events[0].OriginalPosition?.CommitPosition;
+            return  position ?? 0L;
         }
 
         static IgnoredOriginalEvent MapIgnored(ResolvedEvent evt, int sequence, Activity activity)
@@ -198,7 +199,7 @@ namespace EventStore.Replicator.Grpc {
             );
 
         static Shared.Position MapPosition(ResolvedEvent evt) =>
-            new(evt.OriginalEventNumber.ToInt64(), (long) evt.OriginalPosition!.Value.CommitPosition);
+            new(evt.OriginalEventNumber.ToInt64(), evt.OriginalPosition!.Value.CommitPosition);
         
         public ValueTask<bool> Filter(BaseOriginalEvent originalEvent) => _filter.Filter(originalEvent);
     }

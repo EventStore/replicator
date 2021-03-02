@@ -13,9 +13,8 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Prometheus;
-using Serilog;
-using ILogger = EventStore.ClientAPI.ILogger;
 using NodePreference = EventStore.Client.NodePreference;
+using Replicator = es_replicator.Settings.Replicator;
 
 namespace es_replicator {
     public class Startup {
@@ -31,7 +30,7 @@ namespace es_replicator {
         public void ConfigureServices(IServiceCollection services) {
             Measurements.ConfigureMetrics(Environment.EnvironmentName);
 
-            var replicatorOptions = Configuration.GetAs<ReplicatorOptions>();
+            var replicatorOptions = Configuration.GetAs<Replicator>();
 
             var reader = ConfigureReader(
                 replicatorOptions.Reader.ConnectionString,

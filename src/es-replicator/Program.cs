@@ -7,6 +7,7 @@ using Microsoft.Extensions.Hosting;
 using Serilog;
 using Serilog.Events;
 using Serilog.Formatting.Compact;
+using es_replicator.Settings;
 
 var environment = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT");
 
@@ -34,6 +35,7 @@ try {
                 webBuilder.UseStartup<Startup>();
             }
         )
+        .ConfigureAppConfiguration(config => config.AndEnvConfig())
         .Build()
         .Run();
     return 0;

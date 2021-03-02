@@ -32,6 +32,22 @@ build:
   dependencies:
     - version
 
+build_gcr:
+  image:
+    name: gcr.io/kaniko-project/executor:debug-v0.18.0
+    entrypoint: [ "" ]
+  script:
+    - use_version
+    - gcr_build
+  stage: build
+  only:
+    - branches
+    - tags
+  cache:
+    key: kaniko-cache
+    paths:
+      - ./cache/
+
 deploy:
   allow_failure: false
   image: registry.ubiquitous.no/gitlab/auto-deploy-image:latest
@@ -49,3 +65,27 @@ deploy:
     name: production
     kubernetes:
       namespace: replicator
+
+.scripts: &scripts |
+  function gcr_build() {
+    mkdir -p ./cache && mv ./cache $(pwd)
+
+    cat $GCR_ACCOUNT > /kaniko/.docker/config.json
+
+    docker_repo=eu.gcr.io/$CI_PROJECT_PATH
+    echo "Building Dockerfile in $repo_root to $docker_repo"
+    echo "Tag $CI_APPLICATION_TAG, application version $APPLICATION_VERSION"
+
+    dockerfilePath=$CI_PROJECT_DIR
+
+    /kaniko/executor --cache=true \
+      --cache-dir=$(pwd)/cache \
+      --context $CI_PROJECT_DIR --dockerfile $dockerfilePath/Dockerfile \
+      --destination $docker_repo:$CI_APPLICATION_TAG \
+      --build-arg DOTNET_SDK_VERSION="$DOTNET_SDK_VERSION" \
+      --build-arg DOTNET_RUNTIME_VERSION="$DOTNET_RUNTIME_VERSION" \
+      --build-arg APPLICATION_VERSION="$APPLICATION_VERSION"
+  }
+
+before_script:
+  - *scripts

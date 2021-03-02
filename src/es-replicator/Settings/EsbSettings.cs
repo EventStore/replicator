@@ -10,7 +10,7 @@ namespace es_replicator.Settings {
         public string Protocol { get; init; }
     }
 
-    public record ReplicatorOptions {
+    public record Replicator {
         public EsdbSettings Reader { get; init; }
 
         public EsdbSettings Sink { get; init; }

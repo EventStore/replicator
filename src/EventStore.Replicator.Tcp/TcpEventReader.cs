@@ -43,7 +43,7 @@ namespace EventStore.Replicator.Tcp {
 
             var start =
                 fromPosition != Shared.Position.Start
-                    ? new Position(fromPosition.EventPosition, fromPosition.EventPosition)
+                    ? new Position((long) fromPosition.EventPosition, (long) fromPosition.EventPosition)
                     : new Position(0, 0);
 
             if (fromPosition != Shared.Position.Start) {
@@ -195,6 +195,6 @@ namespace EventStore.Replicator.Tcp {
             );
 
         static Shared.Position MapPosition(ResolvedEvent evt) =>
-            new(evt.OriginalEventNumber, evt.OriginalPosition!.Value.CommitPosition);
+            new(evt.OriginalEventNumber, (ulong) evt.OriginalPosition!.Value.CommitPosition);
     }
 }

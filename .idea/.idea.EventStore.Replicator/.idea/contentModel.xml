@@ -231,6 +231,7 @@
         <e p="Program.cs" t="Include" />
         <e p="ReplicatorService.cs" t="Include" />
         <e p="Settings" t="Include">
+          <e p="EnvConfigProvider.cs" t="Include" />
           <e p="EsbSettings.cs" t="Include" />
         </e>
         <e p="Startup.cs" t="Include" />

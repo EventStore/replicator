@@ -37,7 +37,7 @@ namespace EventStore.Replicator {
 
             var content = await File.ReadAllTextAsync(_fileName, cancellationToken);
             var numbers = content.Split(',').Select(x => Convert.ToInt64(x)).ToArray();
-            return new Position(numbers[0], numbers[1]);
+            return new Position(numbers[0], (ulong) numbers[1]);
         }
 
         int _counter;
