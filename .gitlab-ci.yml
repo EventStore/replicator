@@ -82,6 +82,8 @@ build_gcr:
         --build-arg DOTNET_RUNTIME_VERSION="$DOTNET_RUNTIME_VERSION" \
         --build-arg APPLICATION_VERSION="$APPLICATION_VERSION"
   stage: build
+  tags:
+    - docker
   only:
     - branches
     - tags
