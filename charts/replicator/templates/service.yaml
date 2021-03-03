@@ -2,7 +2,7 @@ apiVersion: v1
 kind: Service
 metadata:
   annotations:
-{ { - if and (.Values.prometheus.metrics) (not (.Value.prometheus.operator)) } }
+{ { - if and .Values.prometheus.metrics (not .Values.prometheus.operator) } }
     prometheus.io/scrape: "true"
     prometheus.io/port: 5000
 { { - end } }

@@ -1,4 +1,4 @@
-{ { - if and (.Values.prometheus.metrics) (.Value.prometheus.operator) } }
+{{ - if and .Values.prometheus.metrics .Values.prometheus.operator }}
 apiVersion: monitoring.coreos.com/v1
 kind: ServiceMonitor
 metadata:
