@@ -77,7 +77,7 @@ build_gcr:
       /kaniko/executor --cache=true \
         --cache-dir=$(pwd)/cache \
         --context $CI_PROJECT_DIR --dockerfile $CI_PROJECT_DIR/Dockerfile \
-        --destination eu.gcr.io/esc-platform-advocacy/$CI_PROJECT_PATH:$CI_APPLICATION_TAG \
+        --destination eu.gcr.io/esc-platform-advocacy/$CI_PROJECT_PATH:latest \
         --build-arg DOTNET_SDK_VERSION="$DOTNET_SDK_VERSION" \
         --build-arg DOTNET_RUNTIME_VERSION="$DOTNET_RUNTIME_VERSION" \
         --build-arg APPLICATION_VERSION="$APPLICATION_VERSION"
