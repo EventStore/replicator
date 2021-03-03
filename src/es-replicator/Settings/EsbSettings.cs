@@ -24,7 +24,6 @@ namespace es_replicator.Settings {
         public SinkSettings Sink         { get; init; }
         public bool         Scavenge     { get; init; }
         public Checkpoint   Checkpoint   { get; init; }
-        public SinkSettings SinkSettings { get; init; }
     }
 
     public static class ConfigExtensions {
