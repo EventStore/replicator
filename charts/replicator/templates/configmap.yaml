@@ -5,7 +5,7 @@ data:
   REPLICATOR_SINK_PROTOCOL: {{ default "grpc" .Values.replicator.sink.protocol | quote }}
   REPLICATOR_SINK_CONNECTIONSTRING: {{ .Values.replicator.sink.connectionString | quote }}
   REPLICATOR_SINK_CONCURRENCYLIMIT: {{ .Values.replicator.sink.concurrencyLimit | quote }}
-  REPLICATOR_SINK_PARTITIONSCOUNT: {{ .Values.replicator.sink.partitionsCount | quote }}
+  REPLICATOR_SINK_PARTITIONCOUNT: {{ .Values.replicator.sink.partitionCount | quote }}
   REPLICATOR_SCAVENGE: {{ default "true" .Values.replicator.scavenge | quote }}
   REPLICATOR_CHECKPOINT_PATH: "/data/checkpoint"
 kind: ConfigMap
