@@ -24,7 +24,7 @@ spec:
         - configMapRef:
             name: {{ template "replicator.fullname" . }}
         image: eu.gcr.io/esc-platform-advocacy/eventstore/replicator:latest
-        imagePullPolicy: IfNotPresent
+        imagePullPolicy: Always
         livenessProbe:
           httpGet:
             path: /health
