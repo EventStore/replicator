@@ -30,15 +30,6 @@ services:
       EVENTSTORE_RUN_PROJECTIONS: all
       EVENTSTORE_ENABLE_ATOM_PUB_OVER_HTTP: "true"
 
-  mongo:
-    container_name: fw-test-mongo
-    image: mongo
-    ports:
-      - '27017:27017'
-    environment:
-      MONGO_INITDB_ROOT_USERNAME: mongoadmin
-      MONGO_INITDB_ROOT_PASSWORD: secret
-
 networks:
   default:
     name: shell-network

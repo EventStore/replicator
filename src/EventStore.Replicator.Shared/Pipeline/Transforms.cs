@@ -40,7 +40,7 @@ namespace EventStore.Replicator.Shared.Pipeline {
             return new ValueTask<ProposedEvent>(proposed);
 
             byte[] AddMeta() {
-                if (originalEvent.Metadata == null) {
+                if (originalEvent.Metadata == null || originalEvent.Metadata.Length == 0) {
                     var eventMeta = new EventMetadata {
                         OriginalEventNumber = originalEvent.Position.EventNumber,
                         OriginalPosition    = originalEvent.Position.EventPosition,
@@ -62,6 +62,7 @@ namespace EventStore.Replicator.Shared.Pipeline {
                 writer.WriteNumber(EventMetadata.PositionPropertyName, originalEvent.Position.EventPosition);
                 writer.WriteString(EventMetadata.CreatedDate, originalEvent.Created);
                 writer.WriteEndObject();
+                writer.Flush();
                 return stream.ToArray();
             }
         }

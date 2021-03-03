@@ -5,7 +5,7 @@ replicator:
   reader:
     connectionString:
     protocol: tcp
-  writer:
+  sink:
     connectionString:
     protocol: grpc
   scavenge: true

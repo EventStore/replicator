@@ -25,12 +25,105 @@
       <e p="src/es-replicator" t="IncludeRecursive">
         <e p="appsettings.json" t="Include" />
         <e p="bin" t="ExcludeRecursive" />
+        <e p="checkpoint" t="Include" />
         <e p="ClientApp" t="Include">
           <e p=".browserslistrc" t="Include" />
           <e p=".env" t="Include" />
           <e p=".env.development" t="Include" />
           <e p=".gitignore" t="Include" />
           <e p="babel.config.js" t="Include" />
+          <e p="node_modules/@babel/parser" t="IncludeRecursive" />
+          <e p="node_modules/@babel/types" t="IncludeRecursive" />
+          <e p="node_modules/@types" t="IncludeRecursive">
+            <e p="anymatch" t="IncludeRecursive" />
+            <e p="body-parser" t="IncludeRecursive" />
+            <e p="connect" t="IncludeRecursive" />
+            <e p="connect-history-api-fallback" t="IncludeRecursive" />
+            <e p="express" t="IncludeRecursive" />
+            <e p="express-serve-static-core" t="IncludeRecursive" />
+            <e p="http-proxy" t="IncludeRecursive" />
+            <e p="http-proxy-middleware" t="IncludeRecursive" />
+            <e p="mime" t="IncludeRecursive" />
+            <e p="minimatch" t="IncludeRecursive" />
+            <e p="node" t="IncludeRecursive" />
+            <e p="qs" t="IncludeRecursive" />
+            <e p="range-parser" t="IncludeRecursive" />
+            <e p="serve-static" t="IncludeRecursive" />
+            <e p="source-list-map" t="IncludeRecursive" />
+            <e p="tapable" t="IncludeRecursive" />
+            <e p="uglify-js" t="IncludeRecursive" />
+            <e p="webpack" t="IncludeRecursive" />
+            <e p="webpack-sources" t="IncludeRecursive" />
+          </e>
+          <e p="node_modules/@vue/babel-plugin-jsx" t="IncludeRecursive" />
+          <e p="node_modules/@vue/cli-plugin-babel" t="IncludeRecursive" />
+          <e p="node_modules/@vue/cli-plugin-router" t="IncludeRecursive" />
+          <e p="node_modules/@vue/cli-plugin-typescript" t="IncludeRecursive" />
+          <e p="node_modules/@vue/cli-plugin-vuex" t="IncludeRecursive" />
+          <e p="node_modules/@vue/cli-service" t="IncludeRecursive" />
+          <e p="node_modules/@vue/compiler-core" t="IncludeRecursive" />
+          <e p="node_modules/@vue/compiler-dom" t="IncludeRecursive" />
+          <e p="node_modules/@vue/compiler-sfc" t="IncludeRecursive" />
+          <e p="node_modules/@vue/compiler-ssr" t="IncludeRecursive" />
+          <e p="node_modules/@vue/component-compiler-utils" t="IncludeRecursive" />
+          <e p="node_modules/@vue/reactivity" t="IncludeRecursive" />
+          <e p="node_modules/@vue/runtime-core" t="IncludeRecursive" />
+          <e p="node_modules/@vue/runtime-dom" t="IncludeRecursive" />
+          <e p="node_modules/@vue/shared" t="IncludeRecursive" />
+          <e p="node_modules/acorn" t="IncludeRecursive" />
+          <e p="node_modules/acorn-walk" t="IncludeRecursive" />
+          <e p="node_modules/address" t="IncludeRecursive" />
+          <e p="node_modules/ansi-styles" t="IncludeRecursive" />
+          <e p="node_modules/arch" t="IncludeRecursive" />
+          <e p="node_modules/async-validator" t="IncludeRecursive" />
+          <e p="node_modules/axios" t="IncludeRecursive" />
+          <e p="node_modules/browserslist" t="IncludeRecursive" />
+          <e p="node_modules/camelcase" t="IncludeRecursive" />
+          <e p="node_modules/chalk" t="IncludeRecursive" />
+          <e p="node_modules/cli-highlight" t="IncludeRecursive" />
+          <e p="node_modules/cli-spinners" t="IncludeRecursive" />
+          <e p="node_modules/clipboardy" t="IncludeRecursive" />
+          <e p="node_modules/colorette" t="IncludeRecursive" />
+          <e p="node_modules/commander" t="IncludeRecursive" />
+          <e p="node_modules/core-js" t="IncludeRecursive" />
+          <e p="node_modules/csstype" t="IncludeRecursive" />
+          <e p="node_modules/dayjs" t="IncludeRecursive" />
+          <e p="node_modules/del" t="IncludeRecursive" />
+          <e p="node_modules/element-plus" t="IncludeRecursive" />
+          <e p="node_modules/escalade" t="IncludeRecursive" />
+          <e p="node_modules/estree-walker" t="IncludeRecursive" />
+          <e p="node_modules/globby" t="IncludeRecursive" />
+          <e p="node_modules/highlight.js" t="IncludeRecursive" />
+          <e p="node_modules/ignore" t="IncludeRecursive" />
+          <e p="node_modules/is-path-cwd" t="IncludeRecursive" />
+          <e p="node_modules/is-path-in-cwd" t="IncludeRecursive" />
+          <e p="node_modules/is-path-inside" t="IncludeRecursive" />
+          <e p="node_modules/javascript-stringify" t="IncludeRecursive" />
+          <e p="node_modules/magic-string" t="IncludeRecursive" />
+          <e p="node_modules/make-dir" t="IncludeRecursive" />
+          <e p="node_modules/memfs" t="IncludeRecursive" />
+          <e p="node_modules/mitt" t="IncludeRecursive" />
+          <e p="node_modules/ora" t="IncludeRecursive" />
+          <e p="node_modules/p-map" t="IncludeRecursive" />
+          <e p="node_modules/portfinder" t="IncludeRecursive" />
+          <e p="node_modules/postcss" t="IncludeRecursive" />
+          <e p="node_modules/postcss-selector-parser" t="IncludeRecursive" />
+          <e p="node_modules/resize-observer-polyfill" t="IncludeRecursive" />
+          <e p="node_modules/sass" t="IncludeRecursive" />
+          <e p="node_modules/sass-loader" t="IncludeRecursive" />
+          <e p="node_modules/source-map" t="IncludeRecursive" />
+          <e p="node_modules/sourcemap-codec" t="IncludeRecursive" />
+          <e p="node_modules/strip-ansi" t="IncludeRecursive" />
+          <e p="node_modules/stylus-loader" t="IncludeRecursive" />
+          <e p="node_modules/terser" t="IncludeRecursive" />
+          <e p="node_modules/ts-loader" t="IncludeRecursive" />
+          <e p="node_modules/vue" t="IncludeRecursive" />
+          <e p="node_modules/vue-cli-plugin-element-plus" t="IncludeRecursive" />
+          <e p="node_modules/vue-loader" t="IncludeRecursive" />
+          <e p="node_modules/vue-loader-v16" t="IncludeRecursive" />
+          <e p="node_modules/vue-router" t="IncludeRecursive" />
+          <e p="node_modules/vuex" t="IncludeRecursive" />
+          <e p="node_modules/webpack-chain" t="IncludeRecursive" />
           <e p="package.json" t="Include" />
           <e p="public" t="Include">
             <e p="favicon.ico" t="Include" />
