@@ -53,7 +53,6 @@ namespace es_replicator {
             services.AddSingleton(
                 new SinkPipeOptions(
                     sink,
-                    replicatorOptions.Sink.ConcurrencyLimit,
                     replicatorOptions.Sink.PartitionCount
                 )
             );

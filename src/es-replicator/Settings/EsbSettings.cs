@@ -15,7 +15,6 @@ namespace es_replicator.Settings {
     }
 
     public record SinkSettings : EsdbSettings {
-        public int ConcurrencyLimit { get; init; } = 1;
         public int PartitionCount   { get; init; } = 1;
     }
 

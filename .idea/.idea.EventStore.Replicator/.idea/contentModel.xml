@@ -25,7 +25,6 @@
       <e p="src/es-replicator" t="IncludeRecursive">
         <e p="appsettings.json" t="Include" />
         <e p="bin" t="ExcludeRecursive" />
-        <e p="checkpoint" t="Include" />
         <e p="ClientApp" t="Include">
           <e p=".browserslistrc" t="Include" />
           <e p=".env" t="Include" />
@@ -196,6 +195,10 @@
         </e>
         <e p="Observers" t="Include">
           <e p="LoggingRetryObserver.cs" t="Include" />
+        </e>
+        <e p="Partitioning" t="Include">
+          <e p="PartitionChannel.cs" t="Include" />
+          <e p="Partitioner.cs" t="Include" />
         </e>
         <e p="Prepare" t="Include">
           <e p="EventFilterFilter.cs" t="Include" />

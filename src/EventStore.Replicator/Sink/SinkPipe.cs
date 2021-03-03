@@ -4,6 +4,8 @@ using EventStore.Replicator.Observers;
 using EventStore.Replicator.Shared;
 using EventStore.Replicator.Shared.Observe;
 using GreenPipes;
+using GreenPipes.Partitioning;
+using Partitioner = EventStore.Replicator.Partitioning.Partitioner;
 
 namespace EventStore.Replicator.Sink {
     public class SinkPipe {
@@ -18,9 +20,12 @@ namespace EventStore.Replicator.Sink {
                             r.ConnectRetryObserver(new LoggingRetryObserver());
                         }
                     );
-                    cfg.UseConcurrencyLimit(options.ConcurrencyLevel);
+
                     if (options.PartitionCount > 1)
-                        cfg.UsePartitioner(options.PartitionCount, x => x.ProposedEvent.EventDetails.Stream);
+                        cfg.UsePartitioner(
+                            new Partitioner(options.PartitionCount, new Murmur3UnsafeHashGenerator()),
+                            x => x.ProposedEvent.EventDetails.Stream
+                        );
 
                     cfg.UseLog();
 
@@ -41,6 +46,7 @@ namespace EventStore.Replicator.Sink {
             => cfg.UseExecuteAsync(
                 async ctx => {
                     var position = await writer.WriteEvent(ctx.ProposedEvent, ctx.CancellationToken);
+
                     if (position != -1)
                         ReplicationMetrics.WriterPosition.Set(position);
                 }
