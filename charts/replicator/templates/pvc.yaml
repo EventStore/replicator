@@ -1,7 +1,12 @@
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
-  name: checkpoint-pvc
+  name: {{ template "replicator.fullname" . }}
+  labels:
+    app: {{ template "replicator.name" . }}
+    chart: {{ template "replicator.chart" . }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
 spec:
   accessModes:
   - ReadWriteOnce

@@ -8,4 +8,9 @@ data:
   REPLICATOR_CHECKPOINT_PATH: /data/checkpoint
 kind: ConfigMap
 metadata:
-  name: configuration
+  name: {{ template "replicator.fullname" . }}
+  labels:
+    app: {{ template "replicator.name" . }}
+    chart: {{ template "replicator.chart" . }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}

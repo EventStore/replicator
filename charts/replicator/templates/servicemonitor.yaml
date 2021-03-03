@@ -2,7 +2,12 @@
 apiVersion: monitoring.coreos.com/v1
 kind: ServiceMonitor
 metadata:
-  name: es-replicator
+  name: {{ template "replicator.fullname" . }}
+  labels:
+    app: {{ template "replicator.name" . }}
+    chart: {{ template "replicator.chart" . }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
 spec:
   endpoints:
   - interval: 15s
@@ -10,8 +15,8 @@ spec:
     port: web
   namespaceSelector:
     matchNames:
-    - replicator
+    - {{ .Release.Namespace }}
   selector:
     matchLabels:
-      app: es-replicator
-      release: production
+      app: {{ template "replicator.name" . }}
+      release: {{ .Release.Name }}

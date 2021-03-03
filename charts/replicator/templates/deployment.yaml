@@ -1,30 +1,28 @@
-apiVersion: {{ default "extensions/v1beta1" .Values.deploymentApiVersion }}
+apiVersion: {{ template "deployment.apiVersion" . }}
 kind: Deployment
 metadata:
+  name: {{ template "replicator.fullname" . }}
   labels:
-    app: es-replicator
-    release: production
-    track: stable
-  name: es-replicator
+    app: {{ template "replicator.name" . }}
+    chart: {{ template "replicator.chart" . }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: es-replicator
-      release: production
-      track: stable
+      app: {{ template "replicator.name" . }}
+      release: {{ .Release.Name }}
   template:
     metadata:
       labels:
-        app: es-replicator
-        release: production
-        track: stable
-      namespace: replicator
+        app: {{ template "replicator.name" . }}
+        release: {{ .Release.Name }}
     spec:
       containers:
       - envFrom:
         - configMapRef:
-            name: configuration
+            name: {{ template "replicator.fullname" . }}
         image: eu.gcr.io/esc-platform-advocacy/eventstore/replicator:latest
         imagePullPolicy: IfNotPresent
         livenessProbe:
@@ -32,7 +30,7 @@ spec:
             path: /health
             port: 5000
             scheme: HTTP
-        name: es-replicator
+        name: {{ .Chart.Name }}
         ports:
         - containerPort: 5000
           name: web
@@ -43,10 +41,10 @@ spec:
             scheme: HTTP
         volumeMounts:
         - mountPath: /data
-          name: checkpoint-storage
+          name: {{ template "replicator.name" . }}
       imagePullSecrets: []
       terminationGracePeriodSeconds: 60
       volumes:
-      - name: checkpoint-storage
+      - name: {{ template "replicator.name" . }}
         persistentVolumeClaim:
-          claimName: checkpoint-pvc
+          claimName: {{ template "replicator.name" . }}

@@ -6,10 +6,12 @@ metadata:
     prometheus.io/scrape: "true"
     prometheus.io/port: 5000
 { { - end } }
+  name: {{ template "replicator.fullname" . }}
   labels:
-    app: es-replicator
-    release: production
-  name: es-replicator
+    app: {{ template "replicator.name" . }}
+    chart: {{ template "replicator.chart" . }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
 spec:
   ports:
   - name: web
@@ -17,9 +19,6 @@ spec:
     protocol: TCP
     targetPort: 5000
   selector:
-    app: es-replicator
-    release: production
-    tier: web
-    track: stable
-    version: ""
+    app: {{ template "replicator.name" . }}
+    release: {{ .Release.Name }}
   type: ClusterIP
