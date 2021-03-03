@@ -8,5 +8,7 @@ replicator:
   sink:
     connectionString:
     protocol: grpc
+    concurrencyLimit: 1
+    partitionsCount: 1
   scavenge: true
     

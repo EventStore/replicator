@@ -9,7 +9,7 @@ namespace EventStore.Replicator.Sink {
     public class SinkPipe {
         readonly IPipe<SinkContext> _pipe;
 
-        public SinkPipe(IEventWriter writer, ICheckpointStore checkpointStore)
+        public SinkPipe(SinkPipeOptions options, ICheckpointStore checkpointStore)
             => _pipe = Pipe.New<SinkContext>(
                 cfg => {
                     cfg.UseRetry(
@@ -18,12 +18,13 @@ namespace EventStore.Replicator.Sink {
                             r.ConnectRetryObserver(new LoggingRetryObserver());
                         }
                     );
-                    cfg.UseConcurrencyLimit(1);
-                    // cfg.UsePartitioner(2, x => x.ProposedEvent.EventDetails.Stream);
+                    cfg.UseConcurrencyLimit(options.ConcurrencyLevel);
+                    if (options.PartitionCount > 1)
+                        cfg.UsePartitioner(options.PartitionCount, x => x.ProposedEvent.EventDetails.Stream);
 
                     cfg.UseLog();
 
-                    cfg.UseEventWriter(writer);
+                    cfg.UseEventWriter(options.Writer);
                     cfg.UseCheckpointStore(checkpointStore);
 
                     cfg.UseExecute(

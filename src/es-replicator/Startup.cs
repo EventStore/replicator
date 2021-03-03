@@ -6,6 +6,7 @@ using EventStore.Replicator;
 using EventStore.Replicator.Grpc;
 using EventStore.Replicator.Shared;
 using EventStore.Replicator.Shared.Pipeline;
+using EventStore.Replicator.Sink;
 using EventStore.Replicator.Tcp;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -48,7 +49,14 @@ namespace es_replicator {
             if (replicatorOptions.Scavenge)
                 services.AddSingleton<FilterEvent>(ctx => ctx.GetRequiredService<IEventReader>().Filter);
             services.AddSingleton(reader);
-            services.AddSingleton(sink);
+
+            services.AddSingleton(
+                new SinkPipeOptions(
+                    sink,
+                    replicatorOptions.SinkSettings.ConcurrencyLimit,
+                    replicatorOptions.SinkSettings.PartitionCount
+                )
+            );
 
             services.AddSingleton<ICheckpointStore>(
                 new FileCheckpointStore(replicatorOptions.Checkpoint.Path, 1000)

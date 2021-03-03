@@ -14,11 +14,17 @@ namespace es_replicator.Settings {
         public string Path { get; init; }
     }
 
+    public record SinkSettings : EsdbSettings {
+        public int ConcurrencyLimit { get; init; } = 1;
+        public int PartitionCount   { get; init; } = 1;
+    }
+
     public record Replicator {
-        public EsdbSettings Reader     { get; init; }
-        public EsdbSettings Sink       { get; init; }
-        public bool         Scavenge   { get; init; }
-        public Checkpoint   Checkpoint { get; init; }
+        public EsdbSettings Reader       { get; init; }
+        public SinkSettings Sink         { get; init; }
+        public bool         Scavenge     { get; init; }
+        public Checkpoint   Checkpoint   { get; init; }
+        public SinkSettings SinkSettings { get; init; }
     }
 
     public static class ConfigExtensions {

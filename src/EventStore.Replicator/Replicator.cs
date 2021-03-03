@@ -19,7 +19,7 @@ namespace EventStore.Replicator {
 
         public static async Task Replicate(
             IEventReader      reader,
-            IEventWriter      writer,
+            SinkPipeOptions   sinkPipeOptions,
             ICheckpointStore  checkpointStore,
             CancellationToken stoppingToken,
             bool              restartWhenComplete = false,
@@ -27,7 +27,7 @@ namespace EventStore.Replicator {
             TransformEvent?   transform           = null
         ) {
             ReplicationMetrics.SetCapacity(Capacity, Capacity);
-            
+
             var cts = new CancellationTokenSource();
 
             var linkedCts =
@@ -41,12 +41,13 @@ namespace EventStore.Replicator {
                 checkpointStore,
                 ctx => prepareChannel.Writer.WriteAsync(ctx, ctx.CancellationToken)
             );
+
             var preparePipe = new PreparePipe(
                 filter,
                 transform,
                 ctx => sinkChannel.Writer.WriteAsync(ctx, ctx.CancellationToken)
             );
-            var sinkPipe = new SinkPipe(writer, checkpointStore);
+            var sinkPipe = new SinkPipe(sinkPipeOptions, checkpointStore);
 
             var prepareTask = CreateChannelShovel(
                 "Prepare",
@@ -65,11 +66,11 @@ namespace EventStore.Replicator {
 
             while (true) {
                 ReplicationStatus.Start();
-                
+
                 await readerPipe.Start(linkedCts.Token);
 
                 ReplicationStatus.Stop();
-                
+
                 while (prepareChannel.Reader.Count > 0 || sinkChannel.Reader.Count > 0) {
                     Log.Info("Waiting for the sink pipe to exhaust...");
                     await Task.Delay(1000, stoppingToken);
