@@ -20,7 +20,13 @@ namespace es_replicator.Settings {
         }
 
         record EnvVar(string Key, string? Value) {
-            public string ConfigKey => Key.Replace("_", ":");
+            public string ConfigKey {
+                get {
+                    var newKey = Key.Replace("_", ":");
+                    Console.WriteLine($"{newKey} = {Value}");
+                    return newKey;
+                }
+            }
         }
     }
 

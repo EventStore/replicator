@@ -31,6 +31,7 @@ namespace es_replicator {
             Measurements.ConfigureMetrics(Environment.EnvironmentName);
 
             var replicatorOptions = Configuration.GetAs<Replicator>();
+            Console.WriteLine(replicatorOptions);
 
             var reader = ConfigureReader(
                 replicatorOptions.Reader.ConnectionString,
