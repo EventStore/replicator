@@ -1,0 +1,13 @@
+deploymentApiVersion: apps/v1
+prometheus:
+  metrics: false
+  operator: false
+replicator:
+  reader:
+    connectionString:
+    protocol: tcp
+  writer:
+    connectionString:
+    protocol: grpc
+  scavenge: true
+    

@@ -1,0 +1,25 @@
+apiVersion: v1
+kind: Service
+metadata:
+  annotations:
+{ { - if and (.Values.prometheus.metrics) (not (.Value.prometheus.operator)) } }
+    prometheus.io/scrape: "true"
+    prometheus.io/port: 5000
+{ { - end } }
+  labels:
+    app: es-replicator
+    release: production
+  name: es-replicator
+spec:
+  ports:
+  - name: web
+    port: 5000
+    protocol: TCP
+    targetPort: 5000
+  selector:
+    app: es-replicator
+    release: production
+    tier: web
+    track: stable
+    version: ""
+  type: ClusterIP

@@ -1,0 +1,17 @@
+{ { - if and (.Values.prometheus.metrics) (.Value.prometheus.operator) } }
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: es-replicator
+spec:
+  endpoints:
+  - interval: 15s
+    path: /metrics
+    port: web
+  namespaceSelector:
+    matchNames:
+    - replicator
+  selector:
+    matchLabels:
+      app: es-replicator
+      release: production

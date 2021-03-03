@@ -1,16 +1,30 @@
 using System.Collections.Generic;
 using AutoDevOps;
-using AutoDevOps.Addons;
 using Pulumi;
-using Pulumi.Kubernetes.Core.V1;
 using Pulumi.Kubernetes.Types.Inputs.Core.V1;
 using Pulumi.Kubernetes.Types.Inputs.Meta.V1;
+using Config = Pulumi.Config;
+using ConfigMap = Pulumi.Kubernetes.Core.V1.ConfigMap;
+using PersistentVolumeClaim = Pulumi.Kubernetes.Core.V1.PersistentVolumeClaim;
 
 namespace Deployment {
     public class AppStack : Stack {
         public AppStack() {
             var config   = new Config();
             var settings = new AutoDevOpsSettings(config);
+
+            var configMap = new ConfigMap(
+                "configmap",
+                new ConfigMapArgs {
+                    Metadata = new ObjectMetaArgs {
+                        Namespace = settings.Deploy.Namespace,
+                        Name      = "configuration"
+                    },
+                    Data = new Dictionary<string, string> {
+                        {"REPLICATOR_READER_PROTOCOL", "tcp"}
+                    }
+                }
+            );
 
             var claim = new PersistentVolumeClaim(
                 "checkpoint-pvc",
@@ -40,6 +54,14 @@ namespace Deployment {
                             MountPath = "/data"
                         }
                     };
+
+                    container.EnvFrom = new[] {
+                        new EnvFromSourceArgs {
+                            ConfigMapRef = new ConfigMapEnvSourceArgs {
+                                Name = configMap.Metadata.Apply(x => x.Name)
+                            }
+                        }
+                    };
                 },
                 configurePod: pod => pod.Volumes = new[] {
                     new VolumeArgs {
@@ -49,20 +71,7 @@ namespace Deployment {
                         }
                     }
                 }
-                // configureDeployment: deployment => {
-                //     deployment.Metadata = deployment.Metadata.Apply(
-                //         x => {
-                //             x.Annotations.Add("sidecar.jaegertracing.io/inject", "true");
-                //             return x;
-                //         }
-                //     );
-                // },
-                // namespaceAnnotations: new Dictionary<string, string> {
-                //     {"sidecar.jaegertracing.io/inject", "true"}
-                // }
             );
-
-            // var unused  = Jaeger.AddJaeger(autoDevOps.DeploymentResult.Namespace!);
 
             ProbeArgs HttpProbe(string path) => CreateArgs.HttpProbe(path, settings.Application.Port);
         }

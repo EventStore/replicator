@@ -49,7 +49,8 @@ dotnet_style_require_accessibility_modifiers = never:suggestion
 # ReSharper properties
 resharper_align_multiline_binary_expressions_chain = false
 resharper_autodetect_indent_settings = true
-resharper_blank_lines_around_single_line_auto_property = 1
+resharper_blank_lines_around_auto_property = 0
+resharper_blank_lines_around_single_line_auto_property = 0
 resharper_blank_lines_around_single_line_field = 0
 resharper_blank_lines_around_single_line_property = 0
 resharper_blank_lines_before_multiline_statements = 1

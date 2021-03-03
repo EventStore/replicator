@@ -1,0 +1,52 @@
+apiVersion: {{ default "extensions/v1beta1" .Values.deploymentApiVersion }}
+kind: Deployment
+metadata:
+  labels:
+    app: es-replicator
+    release: production
+    track: stable
+  name: es-replicator
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: es-replicator
+      release: production
+      track: stable
+  template:
+    metadata:
+      labels:
+        app: es-replicator
+        release: production
+        track: stable
+      namespace: replicator
+    spec:
+      containers:
+      - envFrom:
+        - configMapRef:
+            name: configuration
+        image: eu.gcr.io/esc-platform-advocacy/eventstore/replicator:latest
+        imagePullPolicy: IfNotPresent
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 5000
+            scheme: HTTP
+        name: es-replicator
+        ports:
+        - containerPort: 5000
+          name: web
+        readinessProbe:
+          httpGet:
+            path: /ping
+            port: 5000
+            scheme: HTTP
+        volumeMounts:
+        - mountPath: /data
+          name: checkpoint-storage
+      imagePullSecrets: []
+      terminationGracePeriodSeconds: 60
+      volumes:
+      - name: checkpoint-storage
+        persistentVolumeClaim:
+          claimName: checkpoint-pvc

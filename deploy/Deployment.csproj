@@ -6,7 +6,7 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="AutoDevOps" Version="0.1.2-alpha.0.10" />
+        <PackageReference Include="AutoDevOps" Version="0.1.2-alpha.0.12" />
     </ItemGroup>
 
 </Project>
