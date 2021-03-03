@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using EventStore.Replicator.Shared.Logging;
 using GreenPipes;
-using GreenPipes.Configurators;
 
 namespace EventStore.Replicator {
     public class LoggingFilter<T> : IFilter<T> where T : class, PipeContext {

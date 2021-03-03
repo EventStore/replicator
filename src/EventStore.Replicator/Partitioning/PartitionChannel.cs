@@ -12,7 +12,7 @@ namespace EventStore.Replicator.Partitioning {
 
         public PartitionChannel(int index) {
             _index   = index;
-            var channel = Channel.CreateBounded<Task>(5000);
+            var channel = Channel.CreateBounded<Task>(1);
             _reader = Task.Run(() => Reader(channel.Reader));
             _writer = channel.Writer;
         }
