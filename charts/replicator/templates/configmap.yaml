@@ -1,10 +1,10 @@
 apiVersion: v1
 data:
-  REPLICATOR_READER_PROTOCOL: {{ default "tcp" Values.replicator.reader.protocol }}
-  REPLICATOR_READER_CONNECTIONSTRING: {{ Values.replicator.reader.connectionString }}
-  REPLICATOR_WRITER_PROTOCOL: {{ default "grpc" Values.replicator.writer.protocol }}
-  REPLICATOR_WRITER_CONNECTIONSTRING: {{ Values.replicator.writer.connectionString }}
-  REPLICATOR_SCAVENGE: {{ default "true" Values.replicator.scavenge }}
+  REPLICATOR_READER_PROTOCOL: {{ default "tcp" .Values.replicator.reader.protocol }}
+  REPLICATOR_READER_CONNECTIONSTRING: {{ .Values.replicator.reader.connectionString }}
+  REPLICATOR_WRITER_PROTOCOL: {{ default "grpc" .Values.replicator.writer.protocol }}
+  REPLICATOR_WRITER_CONNECTIONSTRING: {{ .Values.replicator.writer.connectionString }}
+  REPLICATOR_SCAVENGE: {{ default "true" .Values.replicator.scavenge }}
   REPLICATOR_CHECKPOINT_PATH: /data/checkpoint
 kind: ConfigMap
 metadata:
