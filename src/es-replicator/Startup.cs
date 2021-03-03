@@ -47,7 +47,7 @@ namespace es_replicator {
             );
 
             if (replicatorOptions.Scavenge)
-                services.AddSingleton<FilterEvent>(ctx => ctx.GetRequiredService<IEventReader>().Filter);
+                services.AddSingleton<FilterEvent>(reader.Filter);
             services.AddSingleton(reader);
 
             services.AddSingleton(
