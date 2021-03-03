@@ -1,4 +1,4 @@
-{{ - if and .Values.prometheus.metrics .Values.prometheus.operator }}
+{{- if and .Values.prometheus.metrics .Values.prometheus.operator }}
 apiVersion: monitoring.coreos.com/v1
 kind: ServiceMonitor
 metadata:
@@ -20,3 +20,4 @@ spec:
     matchLabels:
       app: {{ template "replicator.name" . }}
       release: {{ .Release.Name }}
+{{- end }}
