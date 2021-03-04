@@ -7,17 +7,20 @@ metadata:
     chart: {{ template "replicator.chart" . }}
     release: {{ .Release.Name }}
     heritage: {{ .Release.Service }}
+    tier: web
 spec:
   replicas: 1
   selector:
     matchLabels:
       app: {{ template "replicator.name" . }}
       release: {{ .Release.Name }}
+      tier: web
   template:
     metadata:
       labels:
         app: {{ template "replicator.name" . }}
         release: {{ .Release.Name }}
+        tier: web
     spec:
       containers:
       - envFrom:

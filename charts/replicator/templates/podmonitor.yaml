@@ -8,6 +8,7 @@ metadata:
     chart: {{ template "replicator.chart" . }}
     release: {{ .Release.Name }}
     heritage: {{ .Release.Service }}
+    tier: web
 spec:
   podMetricsEndpoints:
     - interval: 15s

@@ -12,6 +12,7 @@ metadata:
     chart: {{ template "replicator.chart" . }}
     release: {{ .Release.Name }}
     heritage: {{ .Release.Service }}
+    tier: web
 spec:
   ports:
   - name: web
@@ -21,4 +22,5 @@ spec:
   selector:
     app: {{ template "replicator.name" . }}
     release: {{ .Release.Name }}
+    tier: web
   type: ClusterIP
