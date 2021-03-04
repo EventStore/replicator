@@ -4,6 +4,6 @@ Open the Replicator UI using port forwarding.
 
 1. Establish the proxy connection to the service:
 
-kubectl port-forward --namespace {{ .Release.namespace }} svc/{{ template "replicator.fullname" . }} 5000
+kubectl port-forward --namespace {{ .Release.Namespace }} svc/{{ template "replicator.fullname" . }} 5000
 
 2. Open http://localhost:5000
