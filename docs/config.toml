@@ -1,4 +1,4 @@
-baseURL = "http://example.org/"
+baseURL = "https://nifty-hodgkin-3ba917.netlify.app/"
 languageCode = "en-us"
 title = "Event Store Replicator"
 theme = "paper"
