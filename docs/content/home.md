@@ -11,7 +11,7 @@ After the Replicator starts, it will sequentially read events from the source cl
 
 The tool stores the last known source stream position in a configured checkpoint store. By default, it uses the file system (Persistent Volume in Kubernetes). It allows the tool to be restarted without losing the position, so it can pick up the replication from the position where it stopped.
 
-Replication can run continuously, for unlimited time. This allows you to check the tagret cluster data and ensure that yu got all the data you need. When you are ready to switch your workloads, stop all the application, which write to the source cluster and configure them to connect to the new cluster instead. You don't need to stop the replication at that time, until you ensure that all the application are switched.
+Replication can run continuously, for unlimited time. This allows you to check the target cluster data and ensure that yu got all the data you need. When you are ready to switch your workloads, stop all the application, which write to the source cluster and configure them to connect to the new cluster instead. You don't need to stop the replication at that time, until you ensure that all the application are switched.
 
 Pay attention to all the checkpoints you store for your catch-up subscriptions. You'd need to figure out the new checkpoint for each one of those, as it might change. For the `$all` stream, the tool will give you the corresponding commit position in the target cluster.
 
