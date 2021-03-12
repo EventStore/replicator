@@ -84,4 +84,6 @@ The best way to monitor the replication progress is using Prometheus and Grafana
 
 Watch out for the replication gap and ensure that it decreases.
 
+![Grafana dashboard](/grafana.png)
+
 **Note:** the checkpoint is stored on a persistent volume, which is provisioned as part of the Helm release. If you delete the release, the volume will be deleted by the cloud provider, and the checkpoint will be gone. If you deploy the tool again, it will start from the beginning of the `$all` stream and will produce duplicate events.
