@@ -32,7 +32,7 @@ Configure the Replicator options using a new `values.yml` file:
 ```yaml
 replicator:
   reader:
-    connectionString: "GossipSeeds=node1.esdb.local:2113,node2.esdb.local:2113,node3.esdb.local:2113; HeartBeatTimeout=500; UseSsl=False;  DefaultUserCredentials=admin:changeit;"
+    connectionString: "GossipSeeds=node1.esdb.local:2113,node2.esdb.local:2113,node3.esdb.local:2113; HeartBeatTimeout=500; UseSslConnection=False;  DefaultUserCredentials=admin:changeit;"
   sink:
     connectionString: "esdb://admin:changeit@[cloudclusterid].mesdb.eventstore.cloud:2113"
     partitionCount: 6
