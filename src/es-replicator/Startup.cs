@@ -15,6 +15,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Prometheus;
+using Filter = es_replicator.Settings.Filter;
 using NodePreference = EventStore.Client.NodePreference;
 using Replicator = es_replicator.Settings.Replicator;
 
@@ -47,8 +48,8 @@ namespace es_replicator {
                 services
             );
 
-            if (replicatorOptions.Scavenge)
-                services.AddSingleton<FilterEvent>(reader.Filter);
+            var filter = EventFilters.GetFilter(replicatorOptions, reader);
+            if (filter != null) services.AddSingleton(filter);
 
             services.AddSingleton(Transformers.GetTransformer(replicatorOptions));
             services.AddSingleton(reader);

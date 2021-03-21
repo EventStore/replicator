@@ -15,12 +15,18 @@ namespace es_replicator.Settings {
     }
 
     public record SinkSettings : EsdbSettings {
-        public int PartitionCount   { get; init; } = 1;
+        public int PartitionCount { get; init; } = 1;
     }
 
     public record TransformSettings {
         public string Type   { get; init; } = "default";
         public string Config { get; init; }
+    }
+
+    public record Filter {
+        public string Type    { get; init; }
+        public string Include { get; init; }
+        public string Exclude { get; init; }
     }
 
     public record Replicator {
@@ -29,6 +35,7 @@ namespace es_replicator.Settings {
         public bool              Scavenge   { get; init; }
         public Checkpoint        Checkpoint { get; init; }
         public TransformSettings Transform  { get; init; }
+        public Filter[]          Filters    { get; init; }
     }
 
     public static class ConfigExtensions {
