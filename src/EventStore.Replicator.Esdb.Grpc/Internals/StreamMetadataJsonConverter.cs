@@ -4,7 +4,7 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using EventStore.Client;
 
-namespace EventStore.Replicator.Grpc.Internals {
+namespace EventStore.Replicator.Esdb.Grpc.Internals {
     class StreamMetadataJsonConverter : JsonConverter<StreamMetadata> {
 		public static readonly StreamMetadataJsonConverter Instance = new();
 

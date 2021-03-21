@@ -3,7 +3,7 @@ using EventStore.ClientAPI;
 using EventStore.Replicator.Shared.Observe;
 using Ubiquitous.Metrics;
 
-namespace EventStore.Replicator.Tcp {
+namespace EventStore.Replicator.Esdb.Tcp {
     static class ConnectionExtensions {
         public static async Task<StreamSize> GetStreamSize(
             this IEventStoreConnection connection, string stream

@@ -3,11 +3,12 @@ using es_replicator.Settings;
 using EventStore.Client;
 using EventStore.ClientAPI;
 using EventStore.Replicator;
-using EventStore.Replicator.Grpc;
+using EventStore.Replicator.Esdb.Grpc;
 using EventStore.Replicator.Shared;
 using EventStore.Replicator.Shared.Pipeline;
 using EventStore.Replicator.Sink;
-using EventStore.Replicator.Tcp;
+using EventStore.Replicator.Esdb.Tcp;
+using EventStore.Replicator.Http;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
@@ -48,6 +49,8 @@ namespace es_replicator {
 
             if (replicatorOptions.Scavenge)
                 services.AddSingleton<FilterEvent>(reader.Filter);
+
+            services.AddSingleton(Transformers.GetTransformer(replicatorOptions));
             services.AddSingleton(reader);
 
             services.AddSingleton(

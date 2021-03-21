@@ -3,7 +3,7 @@ using System.Threading.Tasks;
 using EventStore.ClientAPI;
 using EventStore.Replicator.Shared.Logging;
 
-namespace EventStore.Replicator.Tcp {
+namespace EventStore.Replicator.Esdb.Tcp {
     class Realtime {
         static readonly ILog Log = LogProvider.GetCurrentClassLogger();
         

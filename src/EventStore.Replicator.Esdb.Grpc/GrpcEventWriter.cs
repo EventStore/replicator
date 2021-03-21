@@ -10,7 +10,7 @@ using Ubiquitous.Metrics;
 using StreamAcl = EventStore.Client.StreamAcl;
 using StreamMetadata = EventStore.Client.StreamMetadata;
 
-namespace EventStore.Replicator.Grpc {
+namespace EventStore.Replicator.Esdb.Grpc {
     public class GrpcEventWriter : IEventWriter {
         static readonly ILog Log = LogProvider.GetCurrentClassLogger();
 

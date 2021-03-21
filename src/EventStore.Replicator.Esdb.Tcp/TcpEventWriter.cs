@@ -10,7 +10,7 @@ using Ubiquitous.Metrics;
 using StreamAcl = EventStore.ClientAPI.StreamAcl;
 using StreamMetadata = EventStore.ClientAPI.StreamMetadata;
 
-namespace EventStore.Replicator.Tcp {
+namespace EventStore.Replicator.Esdb.Tcp {
     public class TcpEventWriter : IEventWriter {
         static readonly ILog Log = LogProvider.GetCurrentClassLogger();
 

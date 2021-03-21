@@ -13,7 +13,7 @@ using Position = EventStore.ClientAPI.Position;
 using StreamAcl = EventStore.Replicator.Shared.Contracts.StreamAcl;
 using StreamMetadata = EventStore.ClientAPI.StreamMetadata;
 
-namespace EventStore.Replicator.Tcp {
+namespace EventStore.Replicator.Esdb.Tcp {
     public class TcpEventReader : IEventReader {
         static readonly ILog Log = LogProvider.GetCurrentClassLogger();
 

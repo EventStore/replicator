@@ -2,7 +2,6 @@ using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using EventStore.Replicator.Shared.Contracts;
 using EventStore.Replicator.Shared.Extensions;
-using EventStore.Replicator.Shared.Logging;
 
 namespace EventStore.Replicator.Shared.Pipeline {
     public delegate ValueTask<bool> FilterEvent(BaseOriginalEvent originalEvent);

@@ -8,7 +8,7 @@ using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using EventStore.Client;
-using EventStore.Replicator.Grpc.Internals;
+using EventStore.Replicator.Esdb.Grpc.Internals;
 using EventStore.Replicator.Shared;
 using EventStore.Replicator.Shared.Contracts;
 using EventStore.Replicator.Shared.Logging;
@@ -18,7 +18,7 @@ using Position = EventStore.Client.Position;
 using StreamAcl = EventStore.Replicator.Shared.Contracts.StreamAcl;
 using StreamMetadata = EventStore.Client.StreamMetadata;
 
-namespace EventStore.Replicator.Grpc {
+namespace EventStore.Replicator.Esdb.Grpc {
     public class GrpcEventReader : IEventReader {
         static readonly ILog Log = LogProvider.GetCurrentClassLogger();
 

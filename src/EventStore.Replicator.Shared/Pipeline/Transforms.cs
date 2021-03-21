@@ -7,7 +7,7 @@ using EventStore.Replicator.Shared.Contracts;
 using EventStore.Replicator.Shared.Logging;
 
 namespace EventStore.Replicator.Shared.Pipeline {
-    public delegate ValueTask<ProposedEvent> TransformEvent(
+    public delegate ValueTask<BaseProposedEvent> TransformEvent(
         OriginalEvent originalEvent, CancellationToken cancellationToken
     );
 
@@ -26,7 +26,7 @@ namespace EventStore.Replicator.Shared.Pipeline {
             );
         }
 
-        public static ValueTask<ProposedEvent> DefaultWithExtraMeta(
+        public static ValueTask<BaseProposedEvent> DefaultWithExtraMeta(
             OriginalEvent originalEvent, CancellationToken _
         ) {
             var proposed =
@@ -37,7 +37,7 @@ namespace EventStore.Replicator.Shared.Pipeline {
                     originalEvent.Position,
                     originalEvent.SequenceNumber
                 );
-            return new ValueTask<ProposedEvent>(proposed);
+            return new ValueTask<BaseProposedEvent>(proposed);
 
             byte[] AddMeta() {
                 if (originalEvent.Metadata == null || originalEvent.Metadata.Length == 0) {

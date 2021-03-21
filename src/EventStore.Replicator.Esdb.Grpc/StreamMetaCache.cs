@@ -1,10 +1,10 @@
 using System;
 using System.Collections.Concurrent;
 using System.Threading.Tasks;
-using EventStore.ClientAPI;
+using EventStore.Client;
 using EventStore.Replicator.Shared.Extensions;
 
-namespace EventStore.Replicator.Tcp {
+namespace EventStore.Replicator.Esdb.Grpc {
     class StreamMetaCache {
         readonly ConcurrentDictionary<string, StreamSize> _streamsSize = new();
 

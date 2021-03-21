@@ -23,7 +23,7 @@ namespace EventStore.Replicator.Prepare {
 
             await next.Send(context);
 
-            async Task<ProposedEvent> Transform(OriginalEvent originalEvent) {
+            async Task<BaseProposedEvent> Transform(OriginalEvent originalEvent) {
                 using var activity = new Activity("transform");
 
                 activity.SetParentId(

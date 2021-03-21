@@ -2,7 +2,7 @@ using System;
 using EventStore.ClientAPI;
 using EventStore.Replicator.Shared.Logging;
 
-namespace EventStore.Replicator.Tcp {
+namespace EventStore.Replicator.Esdb.Tcp {
     public class TcpClientLogger : ILogger {
         static readonly ILog Log = LogProvider.GetCurrentClassLogger();
 

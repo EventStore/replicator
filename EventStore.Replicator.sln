@@ -4,17 +4,19 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EventStore.Replicator", "sr
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EventStore.Replicator.Shared", "src\EventStore.Replicator.Shared\EventStore.Replicator.Shared.csproj", "{989BF42F-4CD2-46C1-AF16-B709450706FD}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EventStore.Replicator.Tcp", "src\EventStore.Replicator.Tcp\EventStore.Replicator.Tcp.csproj", "{AD365FF1-5B5C-4820-9697-C8E130949B3C}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EventStore.Replicator.Transforms.NodeJS", "src\EventStore.Replicator.Transforms.NodeJS\EventStore.Replicator.Transforms.NodeJS.csproj", "{85165E9E-A44D-4922-8D93-3D02D8B58362}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EventStore.Replicator.Esdb.Tcp", "src\EventStore.Replicator.Esdb.Tcp\EventStore.Replicator.Esdb.Tcp.csproj", "{AD365FF1-5B5C-4820-9697-C8E130949B3C}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "es-replicator", "src\es-replicator\es-replicator.csproj", "{C8FCDAA2-71F1-4926-BFDE-CEF674497484}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EventStore.Replicator.Grpc", "src\EventStore.Replicator.Grpc\EventStore.Replicator.Grpc.csproj", "{BB3E9A7A-4116-4F86-B2EA-9CEE207C7977}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EventStore.Replicator.Esdb.Grpc", "src\EventStore.Replicator.Esdb.Grpc\EventStore.Replicator.Esdb.Grpc.csproj", "{BB3E9A7A-4116-4F86-B2EA-9CEE207C7977}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Deployment", "Deployment", "{734896E5-1A02-4C11-9E50-10D2F9D4E818}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Deployment", "deploy\Deployment.csproj", "{C3EC6408-735E-431D-8474-17E06812CBC6}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EventStore.Replicator.Kafka", "src\EventStore.Replicator.Kafka\EventStore.Replicator.Kafka.csproj", "{7A28F19B-1CD2-400F-9BEB-6C210C5CC79B}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EventStore.Replicator.Http", "src\EventStore.Replicator.Http\EventStore.Replicator.Http.csproj", "{7AB2A602-0566-43E2-B855-296657F894E9}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -34,10 +36,6 @@ Global
 		{AD365FF1-5B5C-4820-9697-C8E130949B3C}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{AD365FF1-5B5C-4820-9697-C8E130949B3C}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{AD365FF1-5B5C-4820-9697-C8E130949B3C}.Release|Any CPU.Build.0 = Release|Any CPU
-		{85165E9E-A44D-4922-8D93-3D02D8B58362}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{85165E9E-A44D-4922-8D93-3D02D8B58362}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{85165E9E-A44D-4922-8D93-3D02D8B58362}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{85165E9E-A44D-4922-8D93-3D02D8B58362}.Release|Any CPU.Build.0 = Release|Any CPU
 		{C8FCDAA2-71F1-4926-BFDE-CEF674497484}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{C8FCDAA2-71F1-4926-BFDE-CEF674497484}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{C8FCDAA2-71F1-4926-BFDE-CEF674497484}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -50,6 +48,14 @@ Global
 		{C3EC6408-735E-431D-8474-17E06812CBC6}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{C3EC6408-735E-431D-8474-17E06812CBC6}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{C3EC6408-735E-431D-8474-17E06812CBC6}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7A28F19B-1CD2-400F-9BEB-6C210C5CC79B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7A28F19B-1CD2-400F-9BEB-6C210C5CC79B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7A28F19B-1CD2-400F-9BEB-6C210C5CC79B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7A28F19B-1CD2-400F-9BEB-6C210C5CC79B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7AB2A602-0566-43E2-B855-296657F894E9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7AB2A602-0566-43E2-B855-296657F894E9}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7AB2A602-0566-43E2-B855-296657F894E9}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7AB2A602-0566-43E2-B855-296657F894E9}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{C3EC6408-735E-431D-8474-17E06812CBC6} = {734896E5-1A02-4C11-9E50-10D2F9D4E818}

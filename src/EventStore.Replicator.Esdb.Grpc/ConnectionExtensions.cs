@@ -2,7 +2,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using EventStore.Client;
 
-namespace EventStore.Replicator.Grpc {
+namespace EventStore.Replicator.Esdb.Grpc {
     static class ConnectionExtensions {
         public static async Task<StreamSize> GetStreamSize(
             this EventStoreClient client, string stream

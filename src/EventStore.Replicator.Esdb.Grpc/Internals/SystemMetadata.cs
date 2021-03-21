@@ -1,4 +1,4 @@
-namespace EventStore.Replicator.Grpc.Internals {
+namespace EventStore.Replicator.Esdb.Grpc.Internals {
 	///<summary>
 	///Constants for information in stream metadata
 	///</summary>

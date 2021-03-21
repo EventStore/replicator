@@ -3,7 +3,7 @@ version: '3.7'
 services:
 
   eventstore:
-    container_name: fw-test-eventstore
+    container_name: repl-eventstore
     image: eventstore/eventstore:release-5.0.8
     ports:
       - '2113:2113'
@@ -16,7 +16,7 @@ services:
       EVENTSTORE_START_STANDARD_PROJECTIONS: "true"
 
   esdb:
-    container_name: fw-test-esdb
+    container_name: repl-esdb
     image: eventstore/eventstore:latest
     ports:
       - '2114:2114'
@@ -30,7 +30,38 @@ services:
       EVENTSTORE_RUN_PROJECTIONS: all
       EVENTSTORE_ENABLE_ATOM_PUB_OVER_HTTP: "true"
 
+  zookeeper:
+    image: confluentinc/cp-zookeeper:6.1.0
+    hostname: zookeeper
+    container_name: repl-zookeeper
+    ports:
+      - '2181:2181'
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+
+  kafka:
+    image: confluentinc/cp-kafka:6.1.0
+    hostname: kafka
+    container_name: repl-kafka
+    depends_on:
+      - zookeeper
+    ports:
+      - '29092:29092'
+      - '9092:9092'
+      - '9101:9101'
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: 'zookeeper:2181'
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+      KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
+      KAFKA_JMX_PORT: 9101
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:29092,PLAINTEXT_HOST://localhost:9092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
+
 networks:
   default:
-    name: shell-network
+    name: repl-network
 

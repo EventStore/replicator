@@ -18,11 +18,17 @@ namespace es_replicator.Settings {
         public int PartitionCount   { get; init; } = 1;
     }
 
+    public record TransformSettings {
+        public string Type   { get; init; } = "default";
+        public string Config { get; init; }
+    }
+
     public record Replicator {
-        public EsdbSettings Reader       { get; init; }
-        public SinkSettings Sink         { get; init; }
-        public bool         Scavenge     { get; init; }
-        public Checkpoint   Checkpoint   { get; init; }
+        public EsdbSettings      Reader     { get; init; }
+        public SinkSettings      Sink       { get; init; }
+        public bool              Scavenge   { get; init; }
+        public Checkpoint        Checkpoint { get; init; }
+        public TransformSettings Transform  { get; init; }
     }
 
     public static class ConfigExtensions {

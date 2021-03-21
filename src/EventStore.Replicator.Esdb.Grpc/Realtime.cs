@@ -2,9 +2,9 @@ using System;
 using System.Text.Json;
 using System.Threading.Tasks;
 using EventStore.Client;
-using EventStore.Replicator.Grpc.Internals;
+using EventStore.Replicator.Esdb.Grpc.Internals;
 
-namespace EventStore.Replicator.Grpc {
+namespace EventStore.Replicator.Esdb.Grpc {
     class Realtime {
         readonly EventStoreClient _client;
 
