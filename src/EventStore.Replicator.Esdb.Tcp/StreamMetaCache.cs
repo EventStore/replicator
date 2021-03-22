@@ -20,6 +20,7 @@ namespace EventStore.Replicator.Esdb.Tcp {
                 _streamsMeta[stream] =
                     new StreamMeta(
                         isDeleted,
+                        isDeleted ? version : 0,
                         streamMetadata.MaxAge,
                         streamMetadata.MaxCount,
                         version
@@ -55,5 +56,5 @@ namespace EventStore.Replicator.Esdb.Tcp {
 
     record StreamSize(long LastEventNumber);
 
-    record StreamMeta(bool IsDeleted, TimeSpan? MaxAge, long? MaxCount, long Version);
+    record StreamMeta(bool IsDeleted, long DeletedAt, TimeSpan? MaxAge, long? MaxCount, long Version);
 }

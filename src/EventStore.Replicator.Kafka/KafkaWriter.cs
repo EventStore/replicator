@@ -47,7 +47,7 @@ namespace EventStore.Replicator.Kafka {
                 return result.Offset.Value;
             }
 
-            Task<long> NoOp() => Task.FromResult(-1L);
+            static Task<long> NoOp() => Task.FromResult(-1L);
         }
     }
 }

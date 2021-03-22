@@ -19,13 +19,14 @@ namespace EventStore.Replicator.Esdb.Tcp {
         public async ValueTask<bool> Filter(
             BaseOriginalEvent originalEvent
         ) {
-            if (!(originalEvent is OriginalEvent)) return true;
+            if (originalEvent is not OriginalEvent) return true;
             
             var meta = await _cache.GetOrAddStreamMeta(
                 originalEvent.EventDetails.Stream,
                 _connection.GetStreamMeta
             );
-            return !meta.IsDeleted && !TtlExpired() && !await OverMaxCount();
+            var isDeleted = meta.IsDeleted && meta.DeletedAt > originalEvent.Position.EventNumber;
+            return !isDeleted && !TtlExpired() && !await OverMaxCount();
             
             bool TtlExpired()
                 => meta.MaxAge.HasValue && originalEvent.Created < DateTime.Now - meta.MaxAge;
