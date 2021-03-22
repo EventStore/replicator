@@ -13,16 +13,17 @@ namespace EventStore.Replicator.Esdb.Tcp {
         public Task<StreamMeta> GetOrAddStreamMeta(string stream, Func<string, Task<StreamMeta>> getMeta)
             => _streamsMeta.GetOrAddAsync(stream, () => getMeta(stream));
 
-        public void UpdateStreamMeta(string stream, StreamMetadata streamMetadata, long version) {
+        public void UpdateStreamMeta(string stream, StreamMetadata streamMetadata, long version, DateTime created) {
             var isDeleted = IsStreamDeleted(streamMetadata);
 
             if (!_streamsMeta.TryGetValue(stream, out var meta)) {
                 _streamsMeta[stream] =
                     new StreamMeta(
                         isDeleted,
-                        isDeleted ? version : 0,
+                        isDeleted ? created : DateTime.MaxValue,
                         streamMetadata.MaxAge,
                         streamMetadata.MaxCount,
+                        streamMetadata.TruncateBefore,
                         version
                     );
                 return;
@@ -36,8 +37,11 @@ namespace EventStore.Replicator.Esdb.Tcp {
             if (streamMetadata.MaxCount.HasValue)
                 meta = meta with {MaxCount = streamMetadata.MaxCount};
 
+            if (streamMetadata.TruncateBefore.HasValue)
+                meta = meta with {TruncateBefore = streamMetadata.TruncateBefore};
+
             if (isDeleted)
-                meta = meta with {IsDeleted = true};
+                meta = meta with {IsDeleted = true, DeletedAt = created};
 
             _streamsMeta[stream] = meta;
         }
@@ -56,5 +60,5 @@ namespace EventStore.Replicator.Esdb.Tcp {
 
     record StreamSize(long LastEventNumber);
 
-    record StreamMeta(bool IsDeleted, long DeletedAt, TimeSpan? MaxAge, long? MaxCount, long Version);
+    record StreamMeta(bool IsDeleted, DateTime DeletedAt, TimeSpan? MaxAge, long? MaxCount, long? TruncateBefore, long Version);
 }

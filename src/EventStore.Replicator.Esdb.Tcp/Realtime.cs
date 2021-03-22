@@ -49,7 +49,7 @@ namespace EventStore.Replicator.Esdb.Tcp {
                 if (Log.IsDebugEnabled())
                     Log.Debug("Real-time meta update {Stream}: {Meta}", stream, meta);
                 
-                _metaCache.UpdateStreamMeta(stream, meta, re.OriginalEventNumber);
+                _metaCache.UpdateStreamMeta(stream, meta, re.OriginalEventNumber, re.OriginalEvent.Created);
             }
             else {
                 _metaCache.UpdateStreamLastEventNumber(re.OriginalStreamId, re.OriginalEventNumber);

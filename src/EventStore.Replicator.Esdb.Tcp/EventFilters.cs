@@ -21,15 +21,18 @@ namespace EventStore.Replicator.Esdb.Tcp {
         ) {
             if (originalEvent is not OriginalEvent) return true;
             
-            var meta = await _cache.GetOrAddStreamMeta(
+            StreamMeta meta = await _cache.GetOrAddStreamMeta(
                 originalEvent.EventDetails.Stream,
                 _connection.GetStreamMeta
             );
-            var isDeleted = meta.IsDeleted && meta.DeletedAt > originalEvent.Position.EventNumber;
-            return !isDeleted && !TtlExpired() && !await OverMaxCount();
+            var isDeleted = meta.IsDeleted && meta.DeletedAt > originalEvent.Created;
+            return !isDeleted && !Truncated() && !TtlExpired() && !await OverMaxCount();
             
             bool TtlExpired()
                 => meta.MaxAge.HasValue && originalEvent.Created < DateTime.Now - meta.MaxAge;
+
+            bool Truncated()
+                => meta.TruncateBefore.HasValue && originalEvent.Position.EventNumber < meta.TruncateBefore;
 
             // add the check timestamp, so we can check again if we get newer events (edge case)
             async Task<bool> OverMaxCount() {
