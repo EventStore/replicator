@@ -1,6 +1,7 @@
 ---
 title: "Deployment to Kubernetes"
 date: 2021-03-09T20:24:47+01:00
+weight: 30
 ---
 
 You can run Replicator in a Kubernetes cluster in the same cloud as your managed EventStoreDB cloud cluster. The Kubernetes cluster workloads must be able to reach the managed EventStoreDB cluster. Usually, with a proper VPC (or VN) peering between your VPC and Event Store Cloud network, it works without issues.

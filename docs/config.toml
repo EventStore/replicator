@@ -1,4 +1,0 @@
-baseURL = "https://replicator.eventstore.org"
-languageCode = "en-us"
-title = "Event Store Replicator"
-theme = "paper"
