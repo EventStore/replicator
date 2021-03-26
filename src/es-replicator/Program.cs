@@ -45,7 +45,7 @@ catch (Exception ex) {
     Log.Fatal(ex, "Host terminated unexpectedly");
     Console.WriteLine("Waiting...");
     Console.ReadLine();
-    // return 1;
+    return 1;
 }
 finally {
     Log.CloseAndFlush();
