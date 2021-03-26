@@ -36,6 +36,13 @@ replicator:
   sink:
     connectionString: "esdb://admin:changeit@[cloudclusterid].mesdb.eventstore.cloud:2113"
     partitionCount: 6
+  filters:
+    - type: eventType
+      include: "."
+      exclude: "((Bad|Wrong)\w+Event)"
+  transform:
+    - type: http
+      config: "http://transform.somenamespace.svc:5000"
 prometheus:
   metrics: true
   operator: true
