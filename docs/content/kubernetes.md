@@ -51,6 +51,8 @@ Available options are:
 | `replicator.sink.protocol` | Writer protocol | `grpc` |
 | `replicator.sink.partitionCount` | Number of partitioned concurrent writers | `1` |
 | `replicator.scavenge` | Enable real-time scavenge | `true` |
+| `replicator.filters` | Add one or more of provided [filters](features.md#event-filters) | `[]` |
+| `replicator.transform` | Configure the [event transformation](features.md#transformations) |
 | `prometheus.metrics` | Enable annotations for Prometheus | `false` |
 | `prometheus.operator` | Create `PodMonitor` custom resource for Prometheus Operator | `false` |
 
@@ -60,7 +62,7 @@ Available options are:
 
 You should at least provide both connection strings and ensure that workloads in your Kubernetes cluster can reach both the source and the target EventStoreDB clusters or instances.
 
-If you have Prometheus in your Kubernetes cluster, we recommend enabling `prometheus.metrics` option. If the `prometheus.operator` option is set to false, the deployment will be annotated with `prometheus.io/scrape`.
+If you have Prometheus in your Kubernetes cluster, we recommend enabling `prometheus.metrics` option. If the `prometheus.operator` option is set to `false`, the deployment will be annotated with `prometheus.io/scrape`.
 
 If you have Prometheus managed by Prometheus Operator, the scrape annotation won't work. You can set both `prometheus.metrics` and `prometheus.operator` options to `true`, so the Helm release will include the `PodMonitor` custom resource. Make sure that your `Prometheus` custom resource is properly configured with regard to `podMonitorNamespaceSelector` and `podMonitorSelector`, so it will not ignore the Replicator pod monitor.
 
