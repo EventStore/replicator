@@ -37,7 +37,7 @@ try {
             }
         )
         .ConfigureAppConfiguration(config => config
-            .AddYamlFile("appsettings.yaml", false, true).AndEnvConfig())
+            .AddYamlFile("./config/appsettings.yaml", false, true).AndEnvConfig())
         .Build()
         .Run();
     return 0;
