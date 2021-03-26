@@ -55,4 +55,4 @@ spec:
           name: {{ template "replicator.fullname" . }}
       - name: {{ template "replicator.name" . }}
         persistentVolumeClaim:
-          claimName: {{ template "replicator.name" . }}
+          claimName: {{ template "replicator.fullname" . }}
