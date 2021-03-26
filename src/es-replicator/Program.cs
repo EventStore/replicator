@@ -1,6 +1,7 @@
 using System;
 using System.Diagnostics;
 using System.Reflection;
+using System.Threading.Tasks;
 using es_replicator;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Hosting;
@@ -43,8 +44,10 @@ try {
 }
 catch (Exception ex) {
     Log.Fatal(ex, "Host terminated unexpectedly");
-    Console.WriteLine("Waiting...");
-    Console.ReadLine();
+
+    while (true) {
+        await Task.Delay(5000);
+    }
     return 1;
 }
 finally {
