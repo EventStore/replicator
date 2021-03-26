@@ -1,6 +1,6 @@
 ---
 title: "HTTP Transform"
-date: 2021-03-26T16:58:58+01:00
+date: 2021-03-09T18:24:47+01:00
 ---
 
 During the replication, you might want to change the event schema. For example, some fields need to be removed, the JSON schema should change, or some data need to be merged, split, or even enriched with external data.
