@@ -1,6 +1,6 @@
 ---
 title: "Introduction"
-date: 2021-03-09T20:27:58+01:00
+date: 2021-03-26T17:05:58+01:00
 ---
 
 The Replicator tool is designed to copy (replicate) data from one EventStoreDB cluster to another without downtime. When the replication is in progress, the source cluster can be used as normal.
