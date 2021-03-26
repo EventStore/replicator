@@ -29,8 +29,10 @@ namespace EventStore.Replicator.Esdb.Tcp {
 
             return new StreamMeta(
                 streamMeta.IsStreamDeleted,
+                default,
                 streamMeta.StreamMetadata.MaxAge,
                 streamMeta.StreamMetadata.MaxCount,
+                streamMeta.StreamMetadata.TruncateBefore,
                 streamMeta.MetastreamVersion
             );
         }

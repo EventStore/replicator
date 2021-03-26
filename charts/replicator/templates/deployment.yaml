@@ -45,9 +45,14 @@ spec:
         volumeMounts:
         - mountPath: /data
           name: {{ template "replicator.name" . }}
+        - name: config-volume
+          mountPath: /app/appconfig.yaml
       imagePullSecrets: []
       terminationGracePeriodSeconds: 60
       volumes:
+      - name: config-volume
+        configMap:
+          name: {{ template "replicator.fullname" . }}
       - name: {{ template "replicator.name" . }}
         persistentVolumeClaim:
           claimName: {{ template "replicator.name" . }}

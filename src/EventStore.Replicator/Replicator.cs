@@ -53,14 +53,16 @@ namespace EventStore.Replicator {
                 "Prepare",
                 prepareChannel,
                 preparePipe.Send,
-                ReplicationMetrics.PrepareChannelSize
+                ReplicationMetrics.PrepareChannelSize,
+                linkedCts.Token
             );
 
             var writerTask = CreateChannelShovel(
                 "Writer",
                 sinkChannel,
                 sinkPipe.Send,
-                ReplicationMetrics.SinkChannelSize
+                ReplicationMetrics.SinkChannelSize,
+                CancellationToken.None
             );
             var reporter = Task.Run(Report, stoppingToken);
 
@@ -69,16 +71,28 @@ namespace EventStore.Replicator {
 
                 await readerPipe.Start(linkedCts.Token);
 
-                ReplicationStatus.Stop();
-
-                while (prepareChannel.Reader.Count > 0 || sinkChannel.Reader.Count > 0) {
-                    Log.Info("Waiting for the sink pipe to exhaust...");
-                    await Task.Delay(1000, stoppingToken);
+                if (!restartWhenComplete) {
+                    do {
+                        Log.Info("Closing the prepare channel...");
+                        await Task.Delay(1000, CancellationToken.None);
+                    } while (!prepareChannel.Writer.TryComplete());
                 }
 
+                ReplicationStatus.Stop();
+
+                while (sinkChannel.Reader.Count > 0) {
+                    await checkpointStore.Flush(CancellationToken.None);
+                    Log.Info("Waiting for the sink pipe to exhaust ({Left} left)...", sinkChannel.Reader.Count);
+                    await Task.Delay(1000, CancellationToken.None);
+                }
+
+                Log.Info("Storing the last known checkpoint");
                 await checkpointStore.Flush(CancellationToken.None);
 
-                if (linkedCts.IsCancellationRequested || !restartWhenComplete) break;
+                if (linkedCts.IsCancellationRequested || !restartWhenComplete) {
+                    sinkChannel.Writer.Complete();
+                    break;
+                }
 
                 Log.Info("Will restart in 5 sec");
                 await Task.Delay(5000, stoppingToken);
@@ -91,16 +105,16 @@ namespace EventStore.Replicator {
             }
             catch (OperationCanceledException) { }
 
-            Task CreateChannelShovel<T>(string name, Channel<T> channel, Func<T, Task> send, IGaugeMetric size)
+            static Task CreateChannelShovel<T>(string name, Channel<T> channel, Func<T, Task> send, IGaugeMetric size, CancellationToken token)
                 => Task.Run(
                     () => channel.Shovel(
                         send,
                         () => Log.Info($"{name} started"),
                         () => Log.Info($"{name} stopped"),
                         size,
-                        linkedCts.Token
+                        token
                     ),
-                    linkedCts.Token
+                    token
                 );
 
             async Task Report() {
@@ -125,7 +139,7 @@ namespace EventStore.Replicator {
             beforeStart();
 
             try {
-                while (!token.IsCancellationRequested &&
+                while (!token.IsCancellationRequested && !channel.Reader.Completion.IsCompleted &&
                     await channel.Reader.WaitToReadAsync(token)) {
                     await foreach (var ctx in channel.Reader.ReadAllAsync(token)) {
                         await send(ctx);
@@ -133,7 +147,7 @@ namespace EventStore.Replicator {
                     }
                 }
             }
-            catch (TaskCanceledException) {
+            catch (OperationCanceledException) {
                 // it's ok
             }
 

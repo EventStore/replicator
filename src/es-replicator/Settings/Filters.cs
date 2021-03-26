@@ -12,7 +12,7 @@ namespace es_replicator.Settings {
 
             return filters.Count > 1
                 ? x => Filters.CombinedFilter(x, filters.ToArray())
-                : filters[0];
+                : filters.Count == 0 ? null : filters[0];
 
             static FilterEvent Configure(Filter cfg) => cfg.Type switch {
                 "eventType"  => new Filters.EventTypeFilter(cfg.Include, cfg.Exclude).Filter,

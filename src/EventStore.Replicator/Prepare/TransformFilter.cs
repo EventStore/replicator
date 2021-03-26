@@ -19,6 +19,8 @@ namespace EventStore.Replicator.Prepare {
                 ? await Metrics.Measure(() => Transform(oe), ReplicationMetrics.PrepareHistogram)
                 : TransformMeta(context.OriginalEvent);
 
+            if (transformed is NoEvent) return;
+
             context.AddOrUpdatePayload(() => transformed, _ => transformed);
 
             await next.Send(context);

@@ -15,6 +15,8 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Prometheus;
+using Ubiquitous.Metrics.Internals;
+using Ensure = EventStore.Replicator.Shared.Ensure;
 using Filter = es_replicator.Settings.Filter;
 using NodePreference = EventStore.Client.NodePreference;
 using Replicator = es_replicator.Settings.Replicator;
@@ -37,13 +39,13 @@ namespace es_replicator {
             Console.WriteLine(replicatorOptions);
 
             var reader = ConfigureReader(
-                replicatorOptions.Reader.ConnectionString,
+                Ensure.NotEmpty(replicatorOptions.Reader.ConnectionString, "Reader connection string"),
                 replicatorOptions.Reader.Protocol,
                 services
             );
 
             var sink = ConfigureSink(
-                replicatorOptions.Sink.ConnectionString,
+                Ensure.NotEmpty(replicatorOptions.Sink.ConnectionString, "Sink connection string"),
                 replicatorOptions.Sink.Protocol,
                 services
             );
@@ -65,6 +67,7 @@ namespace es_replicator {
                 new FileCheckpointStore(replicatorOptions.Checkpoint.Path, 1000)
             );
             services.AddHostedService<ReplicatorService>();
+            services.Configure<HostOptions>(opts => opts.ShutdownTimeout = TimeSpan.FromMinutes(5));
 
             services.AddSpaStaticFiles(configuration => configuration.RootPath = "ClientApp/dist");
             services.AddControllers();

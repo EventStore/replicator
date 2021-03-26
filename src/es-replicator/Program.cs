@@ -8,6 +8,7 @@ using Serilog;
 using Serilog.Events;
 using Serilog.Formatting.Compact;
 using es_replicator.Settings;
+using Microsoft.Extensions.Configuration;
 
 var environment = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT");
 
@@ -17,7 +18,6 @@ var logConfig = new LoggerConfiguration()
     .MinimumLevel.Override("Microsoft.AspNetCore", LogEventLevel.Warning)
     .MinimumLevel.Override("Grpc", LogEventLevel.Error)
     .Enrich.FromLogContext();
-    // .WriteTo.File("log.log");
 
 logConfig = environment?.ToLower() == "development"
     ? logConfig.WriteTo.Console(outputTemplate: "[{Timestamp:HH:mm:ss} {Level:u3}] {Message:lj} <s:{SourceContext}>;{NewLine}{Exception}")
@@ -35,7 +35,8 @@ try {
                 webBuilder.UseStartup<Startup>();
             }
         )
-        .ConfigureAppConfiguration(config => config.AndEnvConfig())
+        .ConfigureAppConfiguration(config => config
+            .AddYamlFile("appsettings.yaml", false, true).AndEnvConfig())
         .Build()
         .Run();
     return 0;

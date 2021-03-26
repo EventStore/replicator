@@ -23,4 +23,7 @@ namespace EventStore.Replicator.Shared.Contracts {
 
     public record IgnoredEvent(EventDetails EventDetails, Position SourcePosition, long SequenceNumber)
         : BaseProposedEvent(EventDetails, SourcePosition, SequenceNumber);
+    
+    public record NoEvent(EventDetails EventDetails, Position SourcePosition, long SequenceNumber)
+        : BaseProposedEvent(EventDetails, SourcePosition, SequenceNumber);
 }

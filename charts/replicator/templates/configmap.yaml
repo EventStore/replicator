@@ -1,13 +1,9 @@
 apiVersion: v1
 data:
-  REPLICATOR_READER_PROTOCOL: {{ default "tcp" .Values.replicator.reader.protocol | quote }}
-  REPLICATOR_READER_CONNECTIONSTRING: {{ .Values.replicator.reader.connectionString | quote }}
-  REPLICATOR_SINK_PROTOCOL: {{ default "grpc" .Values.replicator.sink.protocol | quote }}
-  REPLICATOR_SINK_CONNECTIONSTRING: {{ .Values.replicator.sink.connectionString | quote }}
-  REPLICATOR_SINK_CONCURRENCYLIMIT: {{ .Values.replicator.sink.concurrencyLimit | quote }}
-  REPLICATOR_SINK_PARTITIONCOUNT: {{ .Values.replicator.sink.partitionCount | quote }}
-  REPLICATOR_SCAVENGE: {{ default "true" .Values.replicator.scavenge | quote }}
-  REPLICATOR_CHECKPOINT_PATH: "/data/checkpoint"
+  replicator: |
+{{ toYaml .Values.replicator | indent 4 }}
+    checkpoint:
+      path: "./checkpoint"
 kind: ConfigMap
 metadata:
   name: {{ template "replicator.fullname" . }}

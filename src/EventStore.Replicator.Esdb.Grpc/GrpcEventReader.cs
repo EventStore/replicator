@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using System.Runtime.CompilerServices;
 using System.Text;
 using System.Text.Json;
 using System.Threading;
@@ -20,15 +19,19 @@ using StreamMetadata = EventStore.Client.StreamMetadata;
 
 namespace EventStore.Replicator.Esdb.Grpc {
     public class GrpcEventReader : IEventReader {
-        static readonly ILog Log = LogProvider.GetCurrentClassLogger();
+        readonly ILog  _log;
+        readonly ILog? _debugLog;
 
         const string StreamDeletedBody = "{\"$tb\":9223372036854775807}";
 
-        readonly EventStoreClient _client;
+        readonly EventStoreClient      _client;
         readonly ScavengedEventsFilter _filter;
-        readonly Realtime _realtime;
+        readonly Realtime              _realtime;
 
         public GrpcEventReader(EventStoreClient client) {
+            _log      = LogProvider.GetCurrentClassLogger();
+            _debugLog = _log.IsDebugEnabled() ? _log : null;
+
             _client = client;
             var metaCache = new StreamMetaCache();
             _filter   = new ScavengedEventsFilter(client, metaCache);
@@ -41,15 +44,15 @@ namespace EventStore.Replicator.Esdb.Grpc {
             var sequence     = 0;
             var lastPosition = 0L;
 
-            Log.Info("Starting gRPC reader");
+            _log.Info("Starting gRPC reader");
 
             await _realtime.Start();
-            
+
             var read = _client.ReadAllAsync(
                 Direction.Forwards,
                 new Position(
-                    (ulong) fromPosition.EventPosition,
-                    (ulong) fromPosition.EventPosition
+                    fromPosition.EventPosition,
+                    fromPosition.EventPosition
                 ),
                 cancellationToken: cancellationToken
             );
@@ -71,14 +74,13 @@ namespace EventStore.Replicator.Esdb.Grpc {
                 var evt = enumerator.Current;
                 lastPosition = (long) (evt.OriginalPosition?.CommitPosition ?? 0);
 
-                if (Log.IsDebugEnabled())
-                    Log.Debug(
-                        "gRPC: Read event with id {Id} of type {Type} from {Stream} at {Position}",
-                        evt.Event.EventId,
-                        evt.Event.EventType,
-                        evt.OriginalStreamId,
-                        evt.OriginalPosition
-                    );
+                _debugLog?.Debug(
+                    "gRPC: Read event with id {Id} of type {Type} from {Stream} at {Position}",
+                    evt.Event.EventId,
+                    evt.Event.EventType,
+                    evt.OriginalStreamId,
+                    evt.OriginalPosition
+                );
 
                 BaseOriginalEvent originalEvent;
 
@@ -110,7 +112,7 @@ namespace EventStore.Replicator.Esdb.Grpc {
                 }
             } while (true);
 
-            Log.Info("Reached the end of the stream at {Position}", lastPosition);
+            _log.Info("Reached the end of the stream at {Position}", lastPosition);
         }
 
         public async Task<long> GetLastPosition(CancellationToken cancellationToken) {
@@ -122,7 +124,7 @@ namespace EventStore.Replicator.Esdb.Grpc {
                 cancellationToken: cancellationToken
             ).ToArrayAsync(cancellationToken);
             var position = (long?) events[0].OriginalPosition?.CommitPosition;
-            return  position ?? 0L;
+            return position ?? 0L;
         }
 
         static IgnoredOriginalEvent MapIgnored(ResolvedEvent evt, int sequence, Activity activity)
@@ -200,7 +202,7 @@ namespace EventStore.Replicator.Esdb.Grpc {
 
         static Shared.Position MapPosition(ResolvedEvent evt) =>
             new(evt.OriginalEventNumber.ToInt64(), evt.OriginalPosition!.Value.CommitPosition);
-        
+
         public ValueTask<bool> Filter(BaseOriginalEvent originalEvent) => _filter.Filter(originalEvent);
     }
 }

@@ -31,12 +31,21 @@ namespace EventStore.Replicator {
         }
 
         public async ValueTask<Position> LoadCheckpoint(CancellationToken cancellationToken) {
-            if (_lastPosition != null) return _lastPosition;
-            
-            if (!File.Exists(_fileName)) return Position.Start;
+            if (_lastPosition != null) {
+                Log.Info("Starting from a previously known checkpoint {LastKnown}", _lastPosition);
+                return _lastPosition;
+            }
+
+            if (!File.Exists(_fileName)) {
+                Log.Info("No checkpoint file found, starting from the beginning");
+                return Position.Start;
+            }
 
             var content = await File.ReadAllTextAsync(_fileName, cancellationToken);
             var numbers = content.Split(',').Select(x => Convert.ToInt64(x)).ToArray();
+            
+            Log.Info("Loaded the checkpoint from file: {Checkpoint}", numbers[1]);
+            
             return new Position(numbers[0], (ulong) numbers[1]);
         }
 

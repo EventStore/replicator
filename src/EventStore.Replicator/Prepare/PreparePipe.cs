@@ -1,4 +1,5 @@
 using System;
+using System.Threading;
 using System.Threading.Tasks;
 using EventStore.Replicator.Observers;
 using EventStore.Replicator.Shared.Contracts;
@@ -37,7 +38,7 @@ namespace EventStore.Replicator.Prepare {
                                 await send(
                                     new SinkContext(
                                         proposedEvent,
-                                        ctx.CancellationToken
+                                        CancellationToken.None
                                     )
                                 );
                             }
