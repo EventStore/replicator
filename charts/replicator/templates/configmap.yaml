@@ -1,9 +1,10 @@
 apiVersion: v1
 data:
-  replicator: |
-{{ toYaml .Values.replicator | indent 4 }}
-    checkpoint:
-      path: "./checkpoint"
+  "appsettings.yaml": |
+    replicator:
+{{ toYaml .Values.replicator | indent 6 }}
+      checkpoint:
+        path: "./checkpoint"
 kind: ConfigMap
 metadata:
   name: {{ template "replicator.fullname" . }}

@@ -43,7 +43,7 @@ spec:
         - mountPath: /data
           name: {{ template "replicator.name" . }}
         - name: config-volume
-          mountPath: /app/appsettings.yaml
+          mountPath: /app
       imagePullSecrets: []
       terminationGracePeriodSeconds: 60
       volumes:
