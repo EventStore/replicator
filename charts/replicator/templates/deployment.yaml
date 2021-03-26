@@ -23,9 +23,6 @@ spec:
         tier: web
     spec:
       containers:
-      - envFrom:
-        - configMapRef:
-            name: {{ template "replicator.fullname" . }}
         image: eu.gcr.io/esc-platform-advocacy/eventstore/replicator:latest
         imagePullPolicy: Always
         livenessProbe:
