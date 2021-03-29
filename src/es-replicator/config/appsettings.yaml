@@ -1,12 +1,13 @@
 replicator:
   reader:
-    connectionString: ConnectTo=tcp://admin:changeit@localhost:1113; HeartBeatTimeout=500;
-      UseSslConnection=false;
+    connectionString: ConnectTo=tcp://admin:changeit@localhost:1113; HeartBeatTimeout=500; UseSslConnection=false;
     protocol: tcp
   sink:
     connectionString: esdb://admin:changeit@localhost:2114?tls=false
     protocol: grpc
     partitionCount: 1
   scavenge: false
+  transform: null
+  filters: []
   checkpoint:
     path: "./checkpoint"

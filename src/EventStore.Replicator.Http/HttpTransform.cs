@@ -11,7 +11,10 @@ namespace EventStore.Replicator.Http {
     public class HttpTransform {
         readonly HttpClient _client;
 
-        public HttpTransform(string url) {
+        public HttpTransform(string? url) {
+            if (string.IsNullOrWhiteSpace(url))
+                throw new ArgumentNullException(nameof(url), "HTTP Transform must have a valid URL");
+            
             _client = new HttpClient {BaseAddress = new Uri(url)};
         }
 

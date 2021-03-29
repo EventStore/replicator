@@ -11,4 +11,6 @@ replicator:
     concurrencyLimit: 1
     partitionCount: 1
   scavenge: true
+  filters: []
+  transform: null
     
