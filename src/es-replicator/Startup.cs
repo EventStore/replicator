@@ -9,6 +9,7 @@ using EventStore.Replicator.Shared.Pipeline;
 using EventStore.Replicator.Sink;
 using EventStore.Replicator.Esdb.Tcp;
 using EventStore.Replicator.Http;
+using EventStore.Replicator.JavaScript;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;

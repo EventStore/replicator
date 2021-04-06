@@ -55,7 +55,7 @@ namespace EventStore.Replicator.Shared.Observe {
             IHistogramMetric metric,
             Func<T, int>     getCount,
             ICountMetric?    errorCount = null,
-            LabelValue[]?    labels     = null
+            string[]?        labels     = null
         ) where T : class {
             var stopwatch = Stopwatch.StartNew();
 

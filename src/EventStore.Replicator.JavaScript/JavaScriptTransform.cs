@@ -1,5 +1,4 @@
-﻿using System;
-using System.Text;
+﻿using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using EventStore.Replicator.Shared.Contracts;
@@ -14,7 +13,7 @@ namespace EventStore.Replicator.JavaScript {
             _engine.Execute(jsFunc);
         }
 
-        public async ValueTask<BaseProposedEvent> Transform(
+        public ValueTask<BaseProposedEvent> Transform(
             OriginalEvent originalEvent, CancellationToken cancellationToken
         ) {
             var result = _engine.Script.transform(
@@ -24,13 +23,13 @@ namespace EventStore.Replicator.JavaScript {
                 originalEvent.Metadata != null ? Encoding.UTF8.GetString(originalEvent.Metadata) : null
             );
 
-            return new ProposedEvent(
+            return new ValueTask<BaseProposedEvent>(new ProposedEvent(
                 originalEvent.EventDetails with {Stream = result.stream, EventType = result.eventType},
-                Encoding.UTF8.GetBytes(result.Data),
-                Encoding.UTF8.GetBytes(result.Metadata),
+                Encoding.UTF8.GetBytes(result.data),
+                Encoding.UTF8.GetBytes(result.metadata),
                 originalEvent.Position,
                 originalEvent.SequenceNumber
-            );
+            ));
         }
     }
 }

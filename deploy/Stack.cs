@@ -1,8 +1,8 @@
 using System.Collections.Generic;
-using AutoDevOps;
 using Pulumi;
 using Pulumi.Kubernetes.Types.Inputs.Core.V1;
 using Pulumi.Kubernetes.Types.Inputs.Meta.V1;
+using Ubiquitous.AutoDevOps.Stack;
 using Config = Pulumi.Config;
 using ConfigMap = Pulumi.Kubernetes.Core.V1.ConfigMap;
 using PersistentVolumeClaim = Pulumi.Kubernetes.Core.V1.PersistentVolumeClaim;
@@ -42,7 +42,7 @@ namespace Deployment {
                 }
             );
 
-            var autoDevOps = new AutoDevOps.AutoDevOps(
+            var autoDevOps = new AutoDevOps(
                 settings,
                 configureContainer: container => {
                     container.LivenessProbe  = HttpProbe("/health");

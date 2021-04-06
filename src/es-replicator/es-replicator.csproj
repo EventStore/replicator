@@ -9,23 +9,26 @@
     </PropertyGroup>
 
     <ItemGroup>
+        <PackageReference Include="Microsoft.ClearScript.V8.Native.linux-x64" Version="7.1.1" />
+        <PackageReference Include="Microsoft.ClearScript.V8.Native.osx-x64" Version="7.1.1" />
         <PackageReference Include="Serilog" Version="2.10.0" />
         <PackageReference Include="Serilog.AspNetCore" Version="3.4.0" />
         <PackageReference Include="prometheus-net.AspNetCore" Version="4.1.1" />
         <PackageReference Include="NetEscapades.Configuration.Yaml" Version="2.1.0" />
         <PackageReference Include="Serilog.Sinks.File" Version="4.1.0" />
-        <PackageReference Include="Ubiquitous.Metrics.Prometheus" Version="0.0.0-alpha.0.20" />
         <PackageReference Include="Microsoft.AspNetCore.SpaServices.Extensions" Version="5.0.3" />
         <PackageReference Include="MinVer" Version="2.4.0">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
+        <PackageReference Include="Ubiquitous.Metrics.Prometheus" Version="0.1.2" />
     </ItemGroup>
 
     <ItemGroup>
         <ProjectReference Include="..\EventStore.Replicator.Esdb.Grpc\EventStore.Replicator.Esdb.Grpc.csproj" />
         <ProjectReference Include="..\EventStore.Replicator.Esdb.Tcp\EventStore.Replicator.Esdb.Tcp.csproj" />
         <ProjectReference Include="..\EventStore.Replicator.Http\EventStore.Replicator.Http.csproj" />
+        <ProjectReference Include="..\EventStore.Replicator.JavaScript\EventStore.Replicator.JavaScript.csproj" />
         <ProjectReference Include="..\EventStore.Replicator\EventStore.Replicator.csproj" />
     </ItemGroup>
 
