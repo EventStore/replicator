@@ -36,11 +36,11 @@ namespace es_replicator {
             Measurements.ConfigureMetrics(Environment.EnvironmentName);
 
             var replicatorOptions = Configuration.GetAs<Replicator>();
-            Console.WriteLine(replicatorOptions);
 
             var reader = ConfigureReader(
                 Ensure.NotEmpty(replicatorOptions.Reader.ConnectionString, "Reader connection string"),
                 replicatorOptions.Reader.Protocol,
+                replicatorOptions.Reader.PageSize,
                 services
             );
 
@@ -102,9 +102,9 @@ namespace es_replicator {
             app.UseSpa(spa => spa.Options.SourcePath = "ClientApp");
         }
 
-        static IEventReader ConfigureReader(string connectionString, string protocol, IServiceCollection services) {
+        static IEventReader ConfigureReader(string connectionString, string protocol, int pageSize, IServiceCollection services) {
             return protocol switch {
-                "tcp"  => new TcpEventReader(ConfigureEventStoreTcp(connectionString, true, services)),
+                "tcp"  => new TcpEventReader(ConfigureEventStoreTcp(connectionString, true, services), pageSize),
                 "grpc" => new GrpcEventReader(ConfigureEventStoreGrpc(connectionString, true)),
                 _      => throw new ArgumentOutOfRangeException(nameof(protocol))
             };

@@ -8,6 +8,7 @@ namespace es_replicator.Settings {
     public record EsdbSettings {
         public string ConnectionString { get; init; }
         public string Protocol         { get; init; }
+        public int    PageSize         { get; init; } = 4096;
     }
 
     public record Checkpoint {

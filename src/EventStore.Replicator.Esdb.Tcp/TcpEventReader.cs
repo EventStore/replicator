@@ -20,13 +20,13 @@ namespace EventStore.Replicator.Esdb.Tcp {
         const string StreamDeletedBody = "{\"$tb\":9223372036854775807}";
 
         readonly IEventStoreConnection _connection;
-
+        readonly int                   _pageSize;
         readonly ScavengedEventsFilter _filter;
+        readonly Realtime              _realtime;
 
-        readonly Realtime _realtime;
-
-        public TcpEventReader(IEventStoreConnection connection) {
-            _connection = connection;
+        public TcpEventReader(IEventStoreConnection connection, int pageSize = 4096) {
+            _connection    = connection;
+            _pageSize = pageSize;
             var metaCache = new StreamMetaCache();
             _filter   = new ScavengedEventsFilter(connection, metaCache);
             _realtime = new Realtime(connection, metaCache);
@@ -58,12 +58,12 @@ namespace EventStore.Replicator.Esdb.Tcp {
                 activity.Start();
 
                 var slice = await ReplicationMetrics.Measure(
-                    () => _connection.ReadAllEventsForwardAsync(start, 4096, false),
+                    () => _connection.ReadAllEventsForwardAsync(start, _pageSize, false),
                     ReplicationMetrics.ReadsHistogram,
                     x => x.Events.Length,
                     ReplicationMetrics.ReadErrorsCount
                 );
-                
+
                 foreach (var sliceEvent in slice?.Events ?? Enumerable.Empty<ResolvedEvent>()) {
                     if (sliceEvent.Event.EventType.StartsWith('$') &&
                         sliceEvent.Event.EventType != Predefined.MetadataEventType) {
@@ -100,7 +100,7 @@ namespace EventStore.Replicator.Esdb.Tcp {
                         var originalEvent = Map(sliceEvent, sequence++, activity);
 
                         if (await _filter.Filter(originalEvent)) {
-                             await next(originalEvent);
+                            await next(originalEvent);
                         }
                         else {
                             await next(MapIgnored(sliceEvent, sequence++, activity));

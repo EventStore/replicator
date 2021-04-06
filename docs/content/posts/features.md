@@ -37,7 +37,7 @@ You can configure zero or more filters. Scavenge filter is enabled by the `scave
 
 During the replication, you might want to change the event schema. For example, some fields need to be removed, the JSON schema should change, or some data need to be merged, split, or even enriched with external data.
 
-For this purpose, you can use the transformation function. Currently, we provide one type of transformations, which is the HTTP transformation function. Read more about it on a [dedicated page](http-transform.md). 
+For this purpose, you can use the transformation function. Currently, we provide one type of transformations, which is the HTTP transformation function. Read more about it on a [dedicated page](../http-transform.md). 
 
 ## Streams metadata
 

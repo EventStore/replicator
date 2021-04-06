@@ -55,6 +55,7 @@ Available options are:
 | :----- | :---------- | :------ |
 | `replicator.reader.connectionString` | Connection string for the source cluster or instance | nil |
 | `replicator.reader.protocol` | Reader protocol | `tcp` |
+| `replicator.reader.pageSize` | Reader page size (only applicable for TCP protocol | `4096` |
 | `replicator.sink.connectionString` | Connection string for the target cluster or instance | nil |
 | `replicator.sink.protocol` | Writer protocol | `grpc` |
 | `replicator.sink.partitionCount` | Number of partitioned concurrent writers | `1` |
