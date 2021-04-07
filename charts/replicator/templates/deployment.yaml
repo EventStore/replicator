@@ -44,6 +44,8 @@ spec:
           name: {{ template "replicator.name" . }}
         - name: config-volume
           mountPath: /app/config
+        resources:
+{{ toYaml .Values.resources | indent 10 }}
       imagePullSecrets: []
       terminationGracePeriodSeconds: 60
       volumes:

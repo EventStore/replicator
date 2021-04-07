@@ -64,6 +64,10 @@ Available options are:
 | `replicator.transform` | Configure the [event transformation](features.md#transformations) |
 | `prometheus.metrics` | Enable annotations for Prometheus | `false` |
 | `prometheus.operator` | Create `PodMonitor` custom resource for Prometheus Operator | `false` |
+| `resources.requests.cpu` | CPU request | `250m` |
+| `resources.requests.memory` | Memory request | `512Mi` |
+| `resources.limits.cpu` | CPU limit | `1` |
+| `resources.limits.memory` | Memory limit | `1Gi` |
 
 **Note:**
 - As Replicator uses 20.10 TCP client, you have to specify `UseSsl=false` in the connection string when connecting to an insecure cluster or instance.
