@@ -68,6 +68,7 @@ Available options are:
 | `resources.requests.memory` | Memory request | `512Mi` |
 | `resources.limits.cpu` | CPU limit | `1` |
 | `resources.limits.memory` | Memory limit | `1Gi` |
+| `pvc.storageClass` | Persistent volume storage class name | `null` |
 
 **Note:**
 - As Replicator uses 20.10 TCP client, you have to specify `UseSsl=false` in the connection string when connecting to an insecure cluster or instance.

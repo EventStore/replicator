@@ -13,3 +13,6 @@ spec:
   resources:
     requests:
       storage: 1Mi
+  {{ if .Values.pvc.storageClass }}
+  storageClassName: {{ .Values.pvc.storageClass }}
+  {{ end }}
