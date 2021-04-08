@@ -3,10 +3,14 @@ replicator:
     connectionString: ConnectTo=tcp://admin:changeit@localhost:1113; HeartBeatTimeout=500; UseSslConnection=false;
     protocol: tcp
   sink:
-    connectionString: esdb://localhost:2114?tls=false
-    protocol: grpc
+    connectionString: bootstrap.servers=localhost:9092
+    protocol: kafka
     partitionCount: 1
+    router: ./config/route.js
   scavenge: false
+  transform: 
+    type: js
+    config: ./config/transform.js
   filters: []
   checkpoint:
     path: "./checkpoint"

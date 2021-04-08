@@ -17,7 +17,7 @@ namespace es_replicator.Settings {
                 _         => Transforms.DefaultWithExtraMeta,
             };
 
-            JavaScriptTransform GetJsTransform() {
+            JsTransform GetJsTransform() {
                 Ensure.NotEmpty(settings.Transform?.Config, "Transform config");
 
                 var fileName = settings.Transform!.Config;
@@ -25,7 +25,7 @@ namespace es_replicator.Settings {
                     throw new ArgumentException($"JavaScript file {fileName} not found");
 
                 var js = File.ReadAllText(fileName);
-                return new JavaScriptTransform(js);
+                return new JsTransform(js);
             }
         }
     }

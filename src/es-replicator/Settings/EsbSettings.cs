@@ -16,7 +16,8 @@ namespace es_replicator.Settings {
     }
 
     public record SinkSettings : EsdbSettings {
-        public int PartitionCount { get; init; } = 1;
+        public int    PartitionCount { get; init; } = 1;
+        public string Router         { get; init; }
     }
 
     public record TransformSettings {

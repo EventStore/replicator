@@ -1,4 +1,8 @@
 using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using Confluent.Kafka;
 using es_replicator.Settings;
 using EventStore.Client;
 using EventStore.ClientAPI;
@@ -10,6 +14,7 @@ using EventStore.Replicator.Sink;
 using EventStore.Replicator.Esdb.Tcp;
 using EventStore.Replicator.Http;
 using EventStore.Replicator.JavaScript;
+using EventStore.Replicator.Kafka;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
@@ -24,9 +29,8 @@ using Replicator = es_replicator.Settings.Replicator;
 
 namespace es_replicator {
     public class Startup {
-        IConfiguration Configuration { get; }
-
-        IWebHostEnvironment Environment { get; }
+        IConfiguration      Configuration { get; }
+        IWebHostEnvironment Environment   { get; }
 
         public Startup(IConfiguration configuration, IWebHostEnvironment environment) {
             Configuration = configuration;
@@ -48,6 +52,7 @@ namespace es_replicator {
             var sink = ConfigureSink(
                 Ensure.NotEmpty(replicatorOptions.Sink.ConnectionString, "Sink connection string"),
                 replicatorOptions.Sink.Protocol,
+                replicatorOptions.Sink.Router,
                 services
             );
 
@@ -103,7 +108,9 @@ namespace es_replicator {
             app.UseSpa(spa => spa.Options.SourcePath = "ClientApp");
         }
 
-        static IEventReader ConfigureReader(string connectionString, string protocol, int pageSize, IServiceCollection services) {
+        static IEventReader ConfigureReader(
+            string connectionString, string protocol, int pageSize, IServiceCollection services
+        ) {
             return protocol switch {
                 "tcp"  => new TcpEventReader(ConfigureEventStoreTcp(connectionString, true, services), pageSize),
                 "grpc" => new GrpcEventReader(ConfigureEventStoreGrpc(connectionString, true)),
@@ -111,12 +118,35 @@ namespace es_replicator {
             };
         }
 
-        static IEventWriter ConfigureSink(string connectionString, string protocol, IServiceCollection services) {
+        static IEventWriter ConfigureSink(string connectionString, string protocol, string? router, IServiceCollection services) {
             return protocol switch {
-                "tcp"  => new TcpEventWriter(ConfigureEventStoreTcp(connectionString, false, services)),
-                "grpc" => new GrpcEventWriter(ConfigureEventStoreGrpc(connectionString, false)),
-                _      => throw new ArgumentOutOfRangeException(nameof(protocol))
+                "tcp"   => new TcpEventWriter(ConfigureEventStoreTcp(connectionString, false, services)),
+                "grpc"  => new GrpcEventWriter(ConfigureEventStoreGrpc(connectionString, false)),
+                "kafka" => new KafkaWriter(ParseKafkaConnection(), LoadRouter()),
+                _       => throw new ArgumentOutOfRangeException(nameof(protocol))
             };
+
+            ProducerConfig ParseKafkaConnection() {
+                var settings = connectionString.Split(';');
+
+                var dict = settings
+                    .Select(ParsePair)
+                    .ToDictionary(x => x.Key, x => x.Value);
+                return new ProducerConfig(dict);
+            }
+
+            static KeyValuePair<string, string> ParsePair(string s) {
+                var split = s.Split('=');
+                return new KeyValuePair<string, string>(split[0].Trim(), split[1].Trim());
+            }
+
+            string? LoadRouter() {
+                if (router == null) return null;
+
+                if (!File.Exists(router))
+                    throw new ArgumentException("Router function file doesn't exist", nameof(router));
+                return File.ReadAllText(router);
+            }
         }
 
         static IEventStoreConnection ConfigureEventStoreTcp(

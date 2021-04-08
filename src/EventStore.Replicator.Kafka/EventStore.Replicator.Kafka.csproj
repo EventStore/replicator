@@ -2,6 +2,7 @@
 
     <PropertyGroup>
         <TargetFramework>net5.0</TargetFramework>
+        <Nullable>enable</Nullable>
     </PropertyGroup>
 
     <ItemGroup>
@@ -9,6 +10,7 @@
     </ItemGroup>
 
     <ItemGroup>
+      <ProjectReference Include="..\EventStore.Replicator.JavaScript\EventStore.Replicator.JavaScript.csproj" />
       <ProjectReference Include="..\EventStore.Replicator.Shared\EventStore.Replicator.Shared.csproj" />
     </ItemGroup>
 
