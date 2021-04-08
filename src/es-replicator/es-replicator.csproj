@@ -33,6 +33,10 @@
         <ProjectReference Include="..\EventStore.Replicator\EventStore.Replicator.csproj" />
     </ItemGroup>
 
+    <ItemGroup>
+      <None Remove="start" />
+    </ItemGroup>
+
     <Target Name="DebugEnsureNodeEnv" BeforeTargets="Build" Condition=" '$(Configuration)' == 'Debug' And !Exists('$(SpaRoot)node_modules') ">
         <Exec Command="node --version" ContinueOnError="true">
             <Output TaskParameter="ExitCode" PropertyName="ErrorCode" />
