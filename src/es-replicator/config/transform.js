@@ -1,6 +1,4 @@
 function transform(stream, eventType, data, meta) {
-    return null;
-    
     const event = JSON.parse(data);
     const newEvent = {
         ...event,
