@@ -1,29 +1,34 @@
 using System;
-using Microsoft.ClearScript.V8;
+using EventStore.Replicator.Shared.Logging;
+using Jint;
+using Jint.Native;
 
 namespace EventStore.Replicator.JavaScript {
     public class JsFunction {
-        public JsFunction(string jsFunc) {
-            var engine = new V8ScriptEngine();
-            engine.Execute(jsFunc);
-            Script = engine.Script;
-        }
+        protected readonly JsValue _func;
 
-        public dynamic Script { get; }
+        public JsFunction(string jsFunc, string name) {
+            var log    = LogProvider.GetLogger($"js-{name}");
+            var engine = new Engine().SetValue("log", new Action<string>(log.Debug));
+
+            _func = engine.Execute(jsFunc).GetValue(name);
+        }
     }
 
-    public class TypedJsFunction<T, TResult> : JsFunction {
-        readonly Func<dynamic, T, dynamic> _execute;
-        readonly Func<dynamic, T, TResult>    _convert;
+    public class TypedJsFunction<T, TResult> : JsFunction where T : class {
+        readonly Func<JsValue, T, JsValue> _execute;
+        readonly Func<JsValue, T, TResult> _convert;
 
-        public TypedJsFunction(string jsFunc, Func<dynamic, T, dynamic> execute, Func<dynamic, T, TResult> convert)
-            : base(jsFunc) {
+        public TypedJsFunction(
+            string jsFunc, string name, Func<JsValue, T, JsValue> execute, Func<JsValue, T, TResult> convert
+        )
+            : base(jsFunc, name) {
             _execute = execute;
             _convert = convert;
         }
 
         public TResult Execute(T arg) {
-            var result = _execute(Script, arg);
+            var result = _execute(_func, arg);
             return _convert(result, arg);
         }
     }

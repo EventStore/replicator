@@ -1,17 +1,9 @@
 <Project Sdk="Microsoft.NET.Sdk">
-
-  <PropertyGroup>
-    <TargetFramework>net5</TargetFramework>
-    <LangVersion>9</LangVersion>
-    <Nullable>enable</Nullable>
-  </PropertyGroup>
-
   <ItemGroup>
-    <PackageReference Include="EventStore.Client" Version="20.10.0" />
+    <PackageReference Include="EventStore.Client" Version="21.2.0" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\EventStore.Replicator.Shared\EventStore.Replicator.Shared.csproj" />
   </ItemGroup>
-
 </Project>

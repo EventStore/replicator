@@ -20,7 +20,7 @@ namespace EventStore.Replicator.Kafka {
             var producerBuilder = new ProducerBuilder<string, byte[]>(config);
             _producer = producerBuilder.Build();
             _debug    = Log.IsDebugEnabled() ? Log.Debug : null;
-            _route    = RouteByCategory;
+            _route    = DefaultRouters.RouteByCategory;
         }
 
         public KafkaWriter(ProducerConfig config, string? routingFunction) : this(config) {
@@ -63,14 +63,5 @@ namespace EventStore.Replicator.Kafka {
             static Task<long> NoOp() => Task.FromResult(-1L);
         }
 
-        static MessageRoute RouteByCategory(ProposedEvent proposedEvent) {
-            var catIndex = proposedEvent.EventDetails.Stream.IndexOf('-');
-
-            var topic = catIndex >= 0
-                ? proposedEvent.EventDetails.Stream[..catIndex]
-                : proposedEvent.EventDetails.Stream;
-
-            return new MessageRoute(topic, proposedEvent.EventDetails.Stream);
-        }
     }
 }

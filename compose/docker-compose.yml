@@ -1,0 +1,29 @@
+version: '3.7'
+
+services:
+
+  replicator:
+    container_name: repl-replicator
+    image: eu.gcr.io/esc-platform-advocacy/eventstore/replicator:latest
+    ports:
+      - "5000:5000"
+    environment:
+      EVENTSTORE_CLUSTER_SIZE: 1
+      
+  prometheus:
+    container_name: repl-prometheus
+    image: prom/prometheus:v2.17.1
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+
+  grafana:
+    container_name: repl-grafana
+    image: grafana/grafana:6.7.2
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./grafana/dashboards.yml:/etc/grafana/provisioning/dashboards/rabbitmq.yaml
+      - ./grafana/datasources.yml:/etc/grafana/provisioning/datasources/prometheus.yaml
+      - ./grafana/dashboards:/dashboards 
