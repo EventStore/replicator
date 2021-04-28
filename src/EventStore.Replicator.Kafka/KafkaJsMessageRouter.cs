@@ -5,24 +5,18 @@ using Jint.Native;
 
 namespace EventStore.Replicator.Kafka {
     public class KafkaJsMessageRouter {
-        readonly TypedJsFunction<ProposedEvent, MessageRoute> _function;
+        readonly TypedJsFunction<TransformEvent, MessageRoute> _function;
 
         public KafkaJsMessageRouter(string routingFunction) {
-            _function = new TypedJsFunction<ProposedEvent, MessageRoute>(
+            _function = new TypedJsFunction<TransformEvent, MessageRoute>(
                 routingFunction,
                 "route",
-                (script, evt) => script.Invoke(
-                    evt.EventDetails.Stream,
-                    evt.EventDetails.EventType,
-                    evt.Data.AsUtf8String(),
-                    evt.Metadata?.AsUtf8String()
-                ),
                 AsRoute
             );
 
-            static MessageRoute AsRoute(JsValue result, ProposedEvent proposed) {
+            static MessageRoute AsRoute(JsValue result, TransformEvent evt) {
                 if (result == null || result.IsUndefined() || !result.IsObject())
-                    return DefaultRouters.RouteByCategory(proposed);
+                    return DefaultRouters.RouteByCategory(evt.Stream);
 
                 var obj = result.AsObject();
 
@@ -33,8 +27,18 @@ namespace EventStore.Replicator.Kafka {
             }
         }
 
-        public MessageRoute Route(ProposedEvent evt) => _function.Execute(evt);
+        public MessageRoute Route(ProposedEvent evt)
+            => _function.Execute(
+                new TransformEvent(
+                    evt.EventDetails.Stream,
+                    evt.EventDetails.EventType,
+                    evt.Data.AsUtf8String(),
+                    evt.Metadata?.AsUtf8String()
+                )
+            );
     }
+
+    record TransformEvent(string Stream, string EventType, string Data, string? Meta);
 
     public record MessageRoute(string Topic, string PartitionKey);
 }

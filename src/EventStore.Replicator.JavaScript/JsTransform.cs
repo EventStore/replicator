@@ -1,4 +1,7 @@
-﻿using System.Threading;
+﻿using System;
+using System.Text;
+using System.Text.Json;
+using System.Threading;
 using System.Threading.Tasks;
 using EventStore.Replicator.Shared.Contracts;
 using EventStore.Replicator.Shared.Logging;
@@ -10,47 +13,43 @@ namespace EventStore.Replicator.JavaScript {
     public class JsTransform {
         static readonly ILog Log = LogProvider.GetCurrentClassLogger();
 
-        readonly TypedJsFunction<OriginalEvent, BaseProposedEvent> _function;
+        readonly TypedJsFunction<TransformEvent, TransformedEvent?> _function;
 
         public JsTransform(string jsFunc) {
-            _function = new TypedJsFunction<OriginalEvent, BaseProposedEvent>(
+            _function = new TypedJsFunction<TransformEvent, TransformedEvent?>(
                 jsFunc,
                 "transform",
-                (script, x) => script.Invoke(
-                    x.EventDetails.Stream,
-                    x.EventDetails.EventType,
-                    x.Data.AsUtf8String(),
-                    x.Metadata?.AsUtf8String()
-                ),
                 HandleResponse
             );
 
-            static BaseProposedEvent HandleResponse(JsValue result, OriginalEvent original) {
+            static TransformedEvent? HandleResponse(JsValue result, TransformEvent original) {
                 if (result == null || result.IsUndefined()) {
                     Log.Debug("Got empty response, ignoring");
-                    return AsIgnored();
+                    return null;
                 }
 
                 ObjectInstance obj = result.AsObject();
 
-                var meta = TryGetString("meta", false, out var metaString)
-                    ? metaString.AsUtf8Bytes()
-                    : null;
+                if (!TryGetString("stream", true, out var stream) || string.IsNullOrWhiteSpace(stream) ||
+                    !TryGetString("eventType", true, out var eventType) || string.IsNullOrWhiteSpace(eventType))
+                    return null;
 
-                if (!TryGetString("data", true, out var data) ||
-                    !TryGetString("stream", true, out var stream) ||
-                    !TryGetString("eventType", true, out var eventType))
-                    return AsIgnored();
+                var data = GetSerializedObject("data");
+                if (data == null) return null;
 
-                return new ProposedEvent(
-                    original.EventDetails with {Stream = stream, EventType = eventType},
-                    data.AsUtf8Bytes(),
-                    meta,
-                    original.Position,
-                    original.SequenceNumber
-                );
+                var meta = GetSerializedObject("meta");
 
-                IgnoredEvent AsIgnored() => new(original.EventDetails, original.Position, original.SequenceNumber);
+                return new TransformedEvent(stream, eventType, data, meta);
+
+                byte[]? GetSerializedObject(string propName) {
+                    var candidate = obj.Get(propName);
+
+                    if (candidate == null || !candidate.IsObject()) {
+                        return null;
+                    }
+
+                    return JsonSerializer.SerializeToUtf8Bytes(candidate.ToObject());
+                }
 
                 bool TryGetString(string propName, bool log, out string value) {
                     var candidate = obj.Get(propName);
@@ -68,7 +67,43 @@ namespace EventStore.Replicator.JavaScript {
         }
 
         public ValueTask<BaseProposedEvent> Transform(
-            OriginalEvent originalEvent, CancellationToken cancellationToken
-        ) => new(_function.Execute(originalEvent));
+            OriginalEvent original, CancellationToken cancellationToken
+        ) {
+            var result = _function.Execute(
+                new TransformEvent(
+                    original.Created,
+                    original.EventDetails.Stream,
+                    original.EventDetails.EventType,
+                    original.Data.AsUtf8String(),
+                    original.Metadata?.AsUtf8String()
+                )
+            );
+
+            BaseProposedEvent evt = result == null
+                ? new IgnoredEvent(original.EventDetails, original.Position, original.SequenceNumber)
+                : new ProposedEvent(
+                    original.EventDetails with {Stream = result.Stream, EventType = result.EventType},
+                    result.Data,
+                    result.Meta,
+                    original.Position,
+                    original.SequenceNumber
+                );
+            return new ValueTask<BaseProposedEvent>(evt);
+        }
+
+        record TransformEvent(
+            DateTimeOffset Created,
+            string         Stream,
+            string         EventType,
+            string         Data,
+            string?        Meta
+        );
+
+        record TransformedEvent(
+            string  Stream,
+            string  EventType,
+            byte[]  Data,
+            byte[]? Meta
+        );
     }
 }

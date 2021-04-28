@@ -20,7 +20,7 @@ namespace EventStore.Replicator.Kafka {
             var producerBuilder = new ProducerBuilder<string, byte[]>(config);
             _producer = producerBuilder.Build();
             _debug    = Log.IsDebugEnabled() ? Log.Debug : null;
-            _route    = DefaultRouters.RouteByCategory;
+            _route    = x => DefaultRouters.RouteByCategory(x.EventDetails.Stream);
         }
 
         public KafkaWriter(ProducerConfig config, string? routingFunction) : this(config) {
