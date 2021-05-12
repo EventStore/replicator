@@ -44,10 +44,10 @@ namespace EventStore.Replicator.Http {
                         originalEvent.SequenceNumber
                     );
 
-                var httpResponse = await JsonSerializer.DeserializeAsync<HttpEvent>(
+                HttpEvent httpResponse = (await JsonSerializer.DeserializeAsync<HttpEvent>(
                     await response.Content.ReadAsStreamAsync(cancellationToken),
                     cancellationToken: cancellationToken
-                );
+                ))!;
 
                 return new ProposedEvent(
                     originalEvent.EventDetails with {

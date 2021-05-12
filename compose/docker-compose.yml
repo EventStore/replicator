@@ -2,13 +2,46 @@ version: '3.7'
 
 services:
 
+  eventstore:
+    container_name: repl-eventstore
+    image: eventstore/eventstore:latest
+    ports:
+      - '2113:2113'
+      - '1113:1113'
+    environment:
+      EVENTSTORE_INSECURE: 'true'
+      EVENTSTORE_CLUSTER_SIZE: 1
+      EVENTSTORE_EXT_TCP_PORT: 1113
+      EVENTSTORE_HTTP_PORT: 2113
+      EVENTSTORE_ENABLE_EXTERNAL_TCP: 'true'
+      EVENTSTORE_RUN_PROJECTIONS: all
+      EVENTSTORE_ENABLE_ATOM_PUB_OVER_HTTP: "true"
+
+  esdb:
+    container_name: repl-esdb
+    image: eventstore/eventstore:latest
+    ports:
+      - '2114:2114'
+      - '1114:1114'
+    environment:
+      EVENTSTORE_INSECURE: 'true'
+      EVENTSTORE_CLUSTER_SIZE: 1
+      EVENTSTORE_EXT_TCP_PORT: 1114
+      EVENTSTORE_HTTP_PORT: 2114
+      EVENTSTORE_ENABLE_EXTERNAL_TCP: 'true'
+      EVENTSTORE_RUN_PROJECTIONS: all
+      EVENTSTORE_ENABLE_ATOM_PUB_OVER_HTTP: "true"
+
   replicator:
     container_name: repl-replicator
     image: eu.gcr.io/esc-platform-advocacy/eventstore/replicator:latest
     ports:
       - "5000:5000"
     environment:
-      EVENTSTORE_CLUSTER_SIZE: 1
+      REPLICATOR_READER_PROTOCOL: "grpc"
+      REPLICATOR_READER_CONNECTIONSTRING: "esdb://eventstore:2113?tls=false"
+      REPLICATOR_SINK_PROTOCOL: "grpc"
+      REPLICATOR_SINK_CONNECTIONSTRING: "esdb://esdb:2114?tls=false"
       
   prometheus:
     container_name: repl-prometheus

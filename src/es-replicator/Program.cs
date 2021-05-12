@@ -54,8 +54,6 @@ catch (Exception ex) {
     while (true) {
         await Task.Delay(5000);
     }
-
-    return 1;
 }
 finally {
     Log.CloseAndFlush();

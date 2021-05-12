@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using Confluent.Kafka;
+using es_replicator.HttpApi;
 using es_replicator.Settings;
 using EventStore.Client;
 using EventStore.ClientAPI;
@@ -39,6 +40,7 @@ namespace es_replicator {
 
         public void ConfigureServices(IServiceCollection services) {
             Measurements.ConfigureMetrics(Environment.EnvironmentName);
+            services.AddSingleton<CountersKeep>();
 
             var replicatorOptions = Configuration.GetAs<Replicator>();
 

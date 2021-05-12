@@ -143,7 +143,7 @@ namespace EventStore.Replicator {
                     await channel.Reader.WaitToReadAsync(token)) {
                     await foreach (var ctx in channel.Reader.ReadAllAsync(token)) {
                         await send(ctx);
-                        channelSizeGauge.Set(channel.Reader.Count);
+                        channelSizeGauge.Set(channel.Reader.Count, "");
                     }
                 }
             }

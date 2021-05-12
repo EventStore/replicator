@@ -17,7 +17,6 @@ replicator:
   sink:
     connectionString:
     protocol: grpc
-    concurrencyLimit: 1
     partitionCount: 1
   scavenge: true
   filters: []
