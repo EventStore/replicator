@@ -60,6 +60,7 @@ build_gcr:
       mkdir -p ./cache && mv ./cache $(pwd)
       echo $GCR_ACCOUNT > /kaniko/secret.json
       export GOOGLE_APPLICATION_CREDENTIALS=/kaniko/secret.json
+      cat $GOOGLE_APPLICATION_CREDENTIALS
       cat <<EOF > /kaniko/.docker/config.json
       {
         "auths": {
