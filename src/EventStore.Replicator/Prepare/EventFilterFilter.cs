@@ -17,10 +17,10 @@ namespace EventStore.Replicator.Prepare {
                 var accept = await Metrics.Measure(
                     () => _filter(context.OriginalEvent),
                     ReplicationMetrics.PrepareHistogram
-                );
+                ).ConfigureAwait(false);
 
                 if (!accept) context.IgnoreEvent();
-                await next.Send(context);
+                await next.Send(context).ConfigureAwait(false);
             }
         }
 

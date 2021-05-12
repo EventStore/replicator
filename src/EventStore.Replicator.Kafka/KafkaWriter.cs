@@ -56,7 +56,7 @@ namespace EventStore.Replicator.Kafka {
                     Key   = route.PartitionKey,
                     Value = p.Data
                 };
-                var result = await _producer.ProduceAsync(route.Topic, message, cancellationToken);
+                var result = await _producer.ProduceAsync(route.Topic, message, cancellationToken).ConfigureAwait(false);
                 return result.Offset.Value;
             }
 

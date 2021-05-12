@@ -14,8 +14,8 @@ namespace EventStore.Replicator.Shared.Pipeline {
     public static class Transforms {
         public static ValueTask<ProposedEvent> Default(
             OriginalEvent originalEvent, CancellationToken _
-        ) {
-            return new(
+        )
+            => new(
                 new ProposedEvent(
                     originalEvent.EventDetails,
                     originalEvent.Data,
@@ -24,7 +24,6 @@ namespace EventStore.Replicator.Shared.Pipeline {
                     originalEvent.SequenceNumber
                 )
             );
-        }
 
         public static ValueTask<BaseProposedEvent> DefaultWithExtraMeta(
             OriginalEvent originalEvent, CancellationToken _

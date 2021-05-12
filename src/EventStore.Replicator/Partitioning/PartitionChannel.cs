@@ -19,14 +19,14 @@ namespace EventStore.Replicator.Partitioning {
 
         public async Task Send<T>(T context, IPipe<T> next)
             where T : class, PipeContext {
-            await _writer.WriteAsync(next.Send(context));
+            await _writer.WriteAsync(next.Send(context)).ConfigureAwait(false);
         }
 
         async Task Reader(ChannelReader<Task> reader) {
             while (!IsStopping) {
                 try {
-                    var task = await reader.ReadAsync(Stopping);
-                    await task;
+                    var task = await reader.ReadAsync(Stopping).ConfigureAwait(false);
+                    await task.ConfigureAwait(false);
                 }
                 catch (OperationCanceledException) {
                     if (!IsStopping) throw;
@@ -35,8 +35,8 @@ namespace EventStore.Replicator.Partitioning {
         }
 
         protected override async Task StopAgent(StopContext context) {
-            await _reader;
-            await base.StopAgent(context);
+            await _reader.ConfigureAwait(false);
+            await base.StopAgent(context).ConfigureAwait(false);
         }
 
         public void Probe(ProbeContext context) => context.CreateScope($"partition-{_index}");

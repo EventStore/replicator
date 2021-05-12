@@ -60,7 +60,7 @@ namespace EventStore.Replicator.Shared.Observe {
             T? result = null;
 
             try {
-                result = await action();
+                result = await action().ConfigureAwait(false);
             }
             catch (Exception) {
                 errorCount?.Inc(labels);

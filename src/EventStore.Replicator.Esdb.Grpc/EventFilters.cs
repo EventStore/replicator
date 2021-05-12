@@ -20,8 +20,8 @@ namespace EventStore.Replicator.Esdb.Grpc {
             var meta = await _cache.GetOrAddStreamMeta(
                 originalEvent.EventDetails.Stream,
                 _client.GetStreamMeta
-            );
-            return !meta.IsDeleted && !TtlExpired() && !await OverMaxCount();
+            ).ConfigureAwait(false);
+            return !meta.IsDeleted && !TtlExpired() && !await OverMaxCount().ConfigureAwait(false);
             
             bool TtlExpired()
                 => meta.MaxAge.HasValue && originalEvent.Created < DateTime.Now - meta.MaxAge;
@@ -33,7 +33,7 @@ namespace EventStore.Replicator.Esdb.Grpc {
                 var streamSize = await _cache.GetOrAddStreamSize(
                     originalEvent.EventDetails.Stream,
                     _client.GetStreamSize
-                );
+                ).ConfigureAwait(false);
 
                 return originalEvent.Position.EventNumber < streamSize.LastEventNumber - meta.MaxCount;
             }

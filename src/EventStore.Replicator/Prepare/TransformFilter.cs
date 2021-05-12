@@ -16,14 +16,14 @@ namespace EventStore.Replicator.Prepare {
 
         public async Task Send(PrepareContext context, IPipe<PrepareContext> next) {
             var transformed = context.OriginalEvent is OriginalEvent oe
-                ? await Metrics.Measure(() => Transform(oe), ReplicationMetrics.PrepareHistogram)
+                ? await Metrics.Measure(() => Transform(oe), ReplicationMetrics.PrepareHistogram).ConfigureAwait(false)
                 : TransformMeta(context.OriginalEvent);
 
             if (transformed is NoEvent) return;
 
             context.AddOrUpdatePayload(() => transformed, _ => transformed);
 
-            await next.Send(context);
+            await next.Send(context).ConfigureAwait(false);
 
             async Task<BaseProposedEvent> Transform(OriginalEvent originalEvent) {
                 using var activity = new Activity("transform");
@@ -37,7 +37,7 @@ namespace EventStore.Replicator.Prepare {
                 return await _transform(
                     originalEvent,
                     context.CancellationToken
-                );
+                ).ConfigureAwait(false);
             }
         }
 

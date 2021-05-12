@@ -13,7 +13,7 @@ namespace EventStore.Replicator.Esdb.Tcp {
                 StreamPosition.End,
                 1,
                 false
-            );
+            ).ConfigureAwait(false);
 
             return new StreamSize(last.LastEventNumber);
         }
@@ -25,7 +25,7 @@ namespace EventStore.Replicator.Esdb.Tcp {
                     Metrics.Measure(
                         () => connection.GetStreamMetadataAsync(stream),
                         ReplicationMetrics.MetaReadsHistogram
-                    );
+                    ).ConfigureAwait(false);
 
             return new StreamMeta(
                 streamMeta.IsStreamDeleted,

@@ -8,7 +8,7 @@ namespace es_replicator.Settings {
     public record EsdbSettings {
         public string ConnectionString { get; init; }
         public string Protocol         { get; init; }
-        public int    PageSize         { get; init; } = 4096;
+        public int    PageSize         { get; init; } = 1024;
     }
 
     public record Checkpoint {
@@ -18,11 +18,13 @@ namespace es_replicator.Settings {
     public record SinkSettings : EsdbSettings {
         public int    PartitionCount { get; init; } = 1;
         public string Router         { get; init; }
+        public int    BufferSize     { get; init; } = 1000;
     }
 
     public record TransformSettings {
-        public string Type   { get; init; } = "default";
-        public string Config { get; init; }
+        public string Type       { get; init; } = "default";
+        public string Config     { get; init; }
+        public int    BufferSize { get; init; } = 1;
     }
 
     public record Filter {

@@ -67,7 +67,7 @@ namespace EventStore.Replicator.Esdb.Grpc {
                     () => enumerator.MoveNextAsync(cancellationToken),
                     ReplicationMetrics.ReadsHistogram,
                     ReplicationMetrics.ReadErrorsCount
-                );
+                ).ConfigureAwait(false);
 
                 if (!hasValue) break;
 
@@ -100,15 +100,15 @@ namespace EventStore.Replicator.Esdb.Grpc {
                     originalEvent = Map(evt, sequence++, activity);
                 }
                 else {
-                    await next(MapIgnored(evt, sequence++, activity));
+                    await next(MapIgnored(evt, sequence++, activity)).ConfigureAwait(false);
                     continue;
                 }
 
-                if (await _filter.Filter(originalEvent)) {
-                    await next(originalEvent);
+                if (await _filter.Filter(originalEvent).ConfigureAwait(false)) {
+                    await next(originalEvent).ConfigureAwait(false);
                 }
                 else {
-                    await next(MapIgnored(evt, sequence++, activity));
+                    await next(MapIgnored(evt, sequence++, activity)).ConfigureAwait(false);
                 }
             } while (true);
 
@@ -122,7 +122,7 @@ namespace EventStore.Replicator.Esdb.Grpc {
                 1,
                 resolveLinkTos: false,
                 cancellationToken: cancellationToken
-            ).ToArrayAsync(cancellationToken);
+            ).ToArrayAsync(cancellationToken).ConfigureAwait(false);
             var position = (long?) events[0].OriginalPosition?.CommitPosition;
             return position ?? 0L;
         }

@@ -45,7 +45,8 @@ namespace EventStore.Replicator.Sink {
         public static void UseEventWriter(this IPipeConfigurator<SinkContext> cfg, IEventWriter writer)
             => cfg.UseExecuteAsync(
                 async ctx => {
-                    var position = await writer.WriteEvent(ctx.ProposedEvent, ctx.CancellationToken);
+                    var position = await writer.WriteEvent(ctx.ProposedEvent, ctx.CancellationToken)
+                        .ConfigureAwait(false);
 
                     if (position != -1)
                         ReplicationMetrics.WriterPosition.Set(position);
@@ -59,7 +60,7 @@ namespace EventStore.Replicator.Sink {
                 async ctx => await checkpointStore.StoreCheckpoint(
                     ctx.ProposedEvent.SourcePosition,
                     ctx.CancellationToken
-                )
+                ).ConfigureAwait(false)
             );
     }
 }

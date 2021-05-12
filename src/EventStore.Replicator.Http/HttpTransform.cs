@@ -32,7 +32,7 @@ namespace EventStore.Replicator.Http {
                     "",
                     new ByteArrayContent(JsonSerializer.SerializeToUtf8Bytes(httpEvent)),
                     cancellationToken
-                );
+                ).ConfigureAwait(false);
 
                 if (!response.IsSuccessStatusCode)
                     throw new HttpRequestException($"Transformation request failed: {response.ReasonPhrase}");
@@ -45,9 +45,9 @@ namespace EventStore.Replicator.Http {
                     );
 
                 HttpEvent httpResponse = (await JsonSerializer.DeserializeAsync<HttpEvent>(
-                    await response.Content.ReadAsStreamAsync(cancellationToken),
+                    await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false),
                     cancellationToken: cancellationToken
-                ))!;
+                ).ConfigureAwait(false))!;
 
                 return new ProposedEvent(
                     originalEvent.EventDetails with {

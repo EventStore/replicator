@@ -34,7 +34,7 @@ namespace EventStore.Replicator.Esdb.Grpc {
                         () => task,
                         ReplicationMetrics.WritesHistogram,
                         ReplicationMetrics.WriteErrorsCount
-                    );
+                    ).ConfigureAwait(false);
 
             async Task<long> AppendEvent(ProposedEvent p) {
                 if (Log.IsDebugEnabled())
@@ -51,7 +51,7 @@ namespace EventStore.Replicator.Esdb.Grpc {
                     StreamState.Any,
                     new[] {Map(p)},
                     cancellationToken: cancellationToken
-                );
+                ).ConfigureAwait(false);
                 return (long) result.LogPosition.CommitPosition;
             }
 
@@ -63,7 +63,7 @@ namespace EventStore.Replicator.Esdb.Grpc {
                     stream,
                     StreamState.Any,
                     cancellationToken: cancellationToken
-                );
+                ).ConfigureAwait(false);
                 return (long) result.LogPosition.CommitPosition;
             }
 
@@ -92,7 +92,7 @@ namespace EventStore.Replicator.Esdb.Grpc {
                         )
                     ),
                     cancellationToken: cancellationToken
-                );
+                ).ConfigureAwait(false);
                 return (long) result.LogPosition.CommitPosition;
             }
         }

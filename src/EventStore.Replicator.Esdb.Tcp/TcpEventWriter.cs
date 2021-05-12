@@ -9,6 +9,7 @@ using EventStore.Replicator.Shared.Observe;
 using Ubiquitous.Metrics;
 using StreamAcl = EventStore.ClientAPI.StreamAcl;
 using StreamMetadata = EventStore.ClientAPI.StreamMetadata;
+// ReSharper disable SuggestBaseTypeForParameter
 
 namespace EventStore.Replicator.Esdb.Tcp {
     public class TcpEventWriter : IEventWriter {
@@ -19,15 +20,6 @@ namespace EventStore.Replicator.Esdb.Tcp {
         public TcpEventWriter(IEventStoreConnection connection) => _connection = connection;
 
         public Task<long> WriteEvent(BaseProposedEvent proposedEvent, CancellationToken cancellationToken) {
-            if (Log.IsDebugEnabled())
-                Log.Debug(
-                    "TCP: Write event with id {Id} of type {Type} to {Stream} with original position {Position}",
-                    proposedEvent.EventDetails.EventId,
-                    proposedEvent.EventDetails.EventType,
-                    proposedEvent.EventDetails.Stream,
-                    proposedEvent.SourcePosition.EventPosition
-                );
-
             Task<long> task = proposedEvent switch {
                 ProposedEvent p             => Append(p),
                 ProposedMetaEvent meta      => SetMeta(meta),
@@ -39,15 +31,31 @@ namespace EventStore.Replicator.Esdb.Tcp {
             return Metrics.Measure(() => task, ReplicationMetrics.WritesHistogram, ReplicationMetrics.WriteErrorsCount);
 
             async Task<long> Append(ProposedEvent p) {
+                if (Log.IsDebugEnabled())
+                    Log.Debug(
+                        "TCP: Write event with id {Id} of type {Type} to {Stream} with original position {Position}",
+                        proposedEvent.EventDetails.EventId,
+                        proposedEvent.EventDetails.EventType,
+                        proposedEvent.EventDetails.Stream,
+                        proposedEvent.SourcePosition.EventPosition
+                    );
+
                 var result = await _connection.AppendToStreamAsync(
                     p.EventDetails.Stream,
                     ExpectedVersion.Any,
                     Map(p)
-                );
+                ).ConfigureAwait(false);
                 return result.LogPosition.CommitPosition;
             }
 
             async Task<long> SetMeta(ProposedMetaEvent meta) {
+                if (Log.IsDebugEnabled())
+                    Log.Debug(
+                        "TCP: Setting metadata to {Stream} with original position {Position}",
+                        proposedEvent.EventDetails.Stream,
+                        proposedEvent.SourcePosition.EventPosition
+                    );
+
                 var result = await _connection.SetStreamMetadataAsync(
                     meta.EventDetails.Stream,
                     ExpectedVersion.Any,
@@ -64,15 +72,22 @@ namespace EventStore.Replicator.Esdb.Tcp {
                             meta.Data.StreamAcl?.MetaWriteRoles
                         )
                     )
-                );
+                ).ConfigureAwait(false);
                 return result.LogPosition.CommitPosition;
             }
 
             async Task<long> Delete(ProposedDeleteStream delete) {
+                if (Log.IsDebugEnabled())
+                    Log.Debug(
+                        "TCP: Deleting stream {Stream} with original position {Position}",
+                        proposedEvent.EventDetails.Stream,
+                        proposedEvent.SourcePosition.EventPosition
+                    );
+
                 var result = await _connection.DeleteStreamAsync(
                     delete.EventDetails.Stream,
                     ExpectedVersion.Any
-                );
+                ).ConfigureAwait(false);
                 return result.LogPosition.CommitPosition;
             }
 

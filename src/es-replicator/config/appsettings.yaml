@@ -6,10 +6,12 @@ replicator:
     connectionString: esdb://localhost:2114?tls=false
     protocol: grpc
     partitionCount: 1
+    bufferSize: 1000
   scavenge: false
   transform: 
     type: js
     config: ./config/transform.js
+    bufferSize: 1000
   filters: []
   checkpoint:
     path: "./checkpoint"

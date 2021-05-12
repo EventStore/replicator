@@ -43,8 +43,8 @@ namespace EventStore.Replicator.Esdb.Tcp {
             Task.Run(() => task);
 
             async Task StartAfterDelay() {
-                await Task.Delay(5000);
-                await Start();
+                await Task.Delay(5000).ConfigureAwait(false);
+                await Start().ConfigureAwait(false);
             }
         }
 

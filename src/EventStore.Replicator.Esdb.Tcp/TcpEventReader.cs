@@ -25,7 +25,7 @@ namespace EventStore.Replicator.Esdb.Tcp {
         readonly Realtime              _realtime;
 
         public TcpEventReader(IEventStoreConnection connection, int pageSize = 4096) {
-            _connection    = connection;
+            _connection = connection;
             _pageSize = pageSize;
             var metaCache = new StreamMetaCache();
             _filter   = new ScavengedEventsFilter(connection, metaCache);
@@ -35,7 +35,7 @@ namespace EventStore.Replicator.Esdb.Tcp {
         public async Task ReadEvents(
             Shared.Position fromPosition, Func<BaseOriginalEvent, ValueTask> next, CancellationToken cancellationToken
         ) {
-            await _realtime.Start();
+            await _realtime.Start().ConfigureAwait(false);
 
             Log.Info("Starting TCP reader");
 
@@ -48,7 +48,7 @@ namespace EventStore.Replicator.Esdb.Tcp {
 
             if (fromPosition != Shared.Position.Start) {
                 // skip one
-                var e = await _connection.ReadAllEventsForwardAsync(start, 1, false);
+                var e = await _connection.ReadAllEventsForwardAsync(start, 1, false).ConfigureAwait(false);
 
                 start = e.NextPosition;
             }
@@ -62,12 +62,12 @@ namespace EventStore.Replicator.Esdb.Tcp {
                     ReplicationMetrics.ReadsHistogram,
                     x => x.Events.Length,
                     ReplicationMetrics.ReadErrorsCount
-                );
+                ).ConfigureAwait(false);
 
                 foreach (var sliceEvent in slice?.Events ?? Enumerable.Empty<ResolvedEvent>()) {
                     if (sliceEvent.Event.EventType.StartsWith('$') &&
                         sliceEvent.Event.EventType != Predefined.MetadataEventType) {
-                        await next(MapIgnored(sliceEvent, sequence++, activity));
+                        await next(MapIgnored(sliceEvent, sequence++, activity)).ConfigureAwait(false);
                         continue;
                     }
 
@@ -81,6 +81,8 @@ namespace EventStore.Replicator.Esdb.Tcp {
                         );
 
                     if (sliceEvent.Event.EventType == Predefined.MetadataEventType) {
+                        if (sliceEvent.Event.EventStreamId.StartsWith('$')) continue;
+
                         if (Encoding.UTF8.GetString(sliceEvent.Event.Data) == StreamDeletedBody) {
                             if (Log.IsDebugEnabled())
                                 Log.Debug("Stream deletion {Stream}", sliceEvent.Event.EventStreamId);
@@ -100,10 +102,10 @@ namespace EventStore.Replicator.Esdb.Tcp {
                         var originalEvent = Map(sliceEvent, sequence++, activity);
 
                         if (await _filter.Filter(originalEvent)) {
-                            await next(originalEvent);
+                            await next(originalEvent).ConfigureAwait(false);
                         }
                         else {
-                            await next(MapIgnored(sliceEvent, sequence++, activity));
+                            await next(MapIgnored(sliceEvent, sequence++, activity)).ConfigureAwait(false);
                         }
                     }
                 }
@@ -118,7 +120,7 @@ namespace EventStore.Replicator.Esdb.Tcp {
         }
 
         public async Task<long> GetLastPosition(CancellationToken cancellationToken) {
-            var last = await _connection.ReadAllEventsBackwardAsync(Position.End, 1, false);
+            var last = await _connection.ReadAllEventsBackwardAsync(Position.End, 1, false).ConfigureAwait(false);
             return last.NextPosition.CommitPosition;
         }
 

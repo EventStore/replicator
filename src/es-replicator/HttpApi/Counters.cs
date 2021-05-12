@@ -1,6 +1,5 @@
 using EventStore.Replicator.Shared.Observe;
 using Microsoft.AspNetCore.Mvc;
-using Ubiquitous.Metrics;
 using Ubiquitous.Metrics.InMemory;
 using static EventStore.Replicator.Shared.Observe.ReplicationMetrics;
 

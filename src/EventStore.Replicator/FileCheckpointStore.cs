@@ -41,7 +41,7 @@ namespace EventStore.Replicator {
                 return Position.Start;
             }
 
-            var content = await File.ReadAllTextAsync(_fileName, cancellationToken);
+            var content = await File.ReadAllTextAsync(_fileName, cancellationToken).ConfigureAwait(false);
             var numbers = content.Split(',').Select(x => Convert.ToInt64(x)).ToArray();
             
             Log.Info("Loaded the checkpoint from file: {Checkpoint}", numbers[1]);
@@ -58,7 +58,7 @@ namespace EventStore.Replicator {
             Interlocked.Increment(ref _counter);
             if (_counter < _checkpointAfter) return;
 
-            await Flush(cancellationToken);
+            await Flush(cancellationToken).ConfigureAwait(false);
 
             Interlocked.Exchange(ref _counter, 0);
         }
@@ -70,7 +70,7 @@ namespace EventStore.Replicator {
                 _fileName,
                 $"{_lastPosition.EventNumber},{_lastPosition.EventPosition}",
                 cancellationToken
-            );
+            ).ConfigureAwait(false);
         }
     }
 }

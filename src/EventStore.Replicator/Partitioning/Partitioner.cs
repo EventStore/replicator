@@ -31,7 +31,7 @@ namespace EventStore.Replicator.Partitioning {
             var scope = context.CreateScope("partitioner");
             scope.Add("id", _id);
             scope.Add("partitionCount", _partitionCount);
-            
+
             foreach (var t in _partitions) t.Probe(scope);
         }
 
@@ -63,25 +63,19 @@ namespace EventStore.Replicator.Partitioning {
                 return _partitioner.Send(key, context, next);
             }
 
-            public void Probe(ProbeContext context) {
-                _partitioner.Probe(context);
-            }
+            public void Probe(ProbeContext context) => _partitioner.Probe(context);
 
             Task IAgent.             Ready     => _partitioner.Ready;
             Task IAgent.             Completed => _partitioner.Completed;
             CancellationToken IAgent.Stopping  => _partitioner.Stopping;
             CancellationToken IAgent.Stopped   => _partitioner.Stopped;
 
-            Task IAgent.Stop(StopContext context) {
-                return _partitioner.Stop(context);
-            }
+            Task IAgent.Stop(StopContext context) => _partitioner.Stop(context);
 
             int ISupervisor. PeakActiveCount => _partitioner.PeakActiveCount;
             long ISupervisor.TotalCount      => _partitioner.TotalCount;
 
-            void ISupervisor.Add(IAgent agent) {
-                _partitioner.Add(agent);
-            }
+            void ISupervisor.Add(IAgent agent) => _partitioner.Add(agent);
         }
     }
 }

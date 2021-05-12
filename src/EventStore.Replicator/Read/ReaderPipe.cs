@@ -1,6 +1,5 @@
 using System;
 using System.Threading;
-using System.Threading.Channels;
 using System.Threading.Tasks;
 using EventStore.Replicator.Observers;
 using EventStore.Replicator.Prepare;
@@ -8,7 +7,6 @@ using EventStore.Replicator.Shared;
 using EventStore.Replicator.Shared.Logging;
 using EventStore.Replicator.Shared.Observe;
 using GreenPipes;
-using Ubiquitous.Metrics;
 
 namespace EventStore.Replicator.Read {
     public class ReaderPipe {
@@ -41,7 +39,7 @@ namespace EventStore.Replicator.Read {
 
             async Task Reader(ReaderContext ctx) {
                 try {
-                    var start = await checkpointStore.LoadCheckpoint(ctx.CancellationToken);
+                    var start = await checkpointStore.LoadCheckpoint(ctx.CancellationToken).ConfigureAwait(false);
                     log.Info("Reading from {Position}", start);
 
                     await reader.ReadEvents(
@@ -49,10 +47,10 @@ namespace EventStore.Replicator.Read {
                         async read => {
                             ReplicationMetrics.ReadingPosition.Set(read.Position.EventPosition);
 
-                            await send(new PrepareContext(read, ctx.CancellationToken));
+                            await send(new PrepareContext(read, ctx.CancellationToken)).ConfigureAwait(false);
                         },
                         ctx.CancellationToken
-                    );
+                    ).ConfigureAwait(false);
                 }
                 catch (OperationCanceledException) {
                     // it's ok

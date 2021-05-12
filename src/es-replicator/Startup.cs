@@ -3,28 +3,23 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using Confluent.Kafka;
-using es_replicator.HttpApi;
 using es_replicator.Settings;
 using EventStore.Client;
 using EventStore.ClientAPI;
 using EventStore.Replicator;
 using EventStore.Replicator.Esdb.Grpc;
 using EventStore.Replicator.Shared;
-using EventStore.Replicator.Shared.Pipeline;
 using EventStore.Replicator.Sink;
 using EventStore.Replicator.Esdb.Tcp;
-using EventStore.Replicator.Http;
-using EventStore.Replicator.JavaScript;
 using EventStore.Replicator.Kafka;
+using EventStore.Replicator.Prepare;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Prometheus;
-using Ubiquitous.Metrics.Internals;
 using Ensure = EventStore.Replicator.Shared.Ensure;
-using Filter = es_replicator.Settings.Filter;
 using NodePreference = EventStore.Client.NodePreference;
 using Replicator = es_replicator.Settings.Replicator;
 
@@ -40,7 +35,7 @@ namespace es_replicator {
 
         public void ConfigureServices(IServiceCollection services) {
             Measurements.ConfigureMetrics(Environment.EnvironmentName);
-            services.AddSingleton<CountersKeep>();
+            // services.AddSingleton<CountersKeep>();
 
             var replicatorOptions = Configuration.GetAs<Replicator>();
 
@@ -59,15 +54,22 @@ namespace es_replicator {
             );
 
             var filter = EventFilters.GetFilter(replicatorOptions, reader);
-            if (filter != null) services.AddSingleton(filter);
 
-            services.AddSingleton(Transformers.GetTransformer(replicatorOptions));
+            var prepareOptions = new PreparePipelineOptions(
+                filter,
+                Transformers.GetTransformer(replicatorOptions),
+                1,
+                replicatorOptions.Transform.BufferSize
+            );
+
+            services.AddSingleton(prepareOptions);
             services.AddSingleton(reader);
 
             services.AddSingleton(
                 new SinkPipeOptions(
                     sink,
-                    replicatorOptions.Sink.PartitionCount
+                    replicatorOptions.Sink.PartitionCount,
+                    replicatorOptions.Sink.BufferSize
                 )
             );
 

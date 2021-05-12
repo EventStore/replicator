@@ -40,7 +40,7 @@ namespace EventStore.Replicator.Prepare {
                                         proposedEvent,
                                         CancellationToken.None
                                     )
-                                );
+                                ).ConfigureAwait(false);
                             }
                             catch (OperationCanceledException) { }
                         }

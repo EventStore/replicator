@@ -13,7 +13,7 @@
         <PackageReference Include="NetEscapades.Configuration.Yaml" Version="2.1.0" />
         <PackageReference Include="Serilog.Sinks.File" Version="4.1.0" />
         <PackageReference Include="Microsoft.AspNetCore.SpaServices.Extensions" Version="5.0.6" />
-        <PackageReference Include="Ubiquitous.Metrics.Prometheus" Version="0.1.5" />
+        <PackageReference Include="Ubiquitous.Metrics.Prometheus" Version="0.1.6" />
     </ItemGroup>
 
     <ItemGroup>
@@ -23,10 +23,6 @@
         <ProjectReference Include="..\EventStore.Replicator.JavaScript\EventStore.Replicator.JavaScript.csproj" />
         <ProjectReference Include="..\EventStore.Replicator.Kafka\EventStore.Replicator.Kafka.csproj" />
         <ProjectReference Include="..\EventStore.Replicator\EventStore.Replicator.csproj" />
-    </ItemGroup>
-
-    <ItemGroup>
-      <None Remove="start" />
     </ItemGroup>
 
     <Target Name="DebugEnsureNodeEnv" BeforeTargets="Build" Condition=" '$(Configuration)' == 'Debug' And !Exists('$(SpaRoot)node_modules') ">

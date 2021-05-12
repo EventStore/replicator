@@ -15,26 +15,23 @@ namespace EventStore.Replicator {
     public static class Replicator {
         static readonly ILog Log = LogProvider.GetCurrentClassLogger();
 
-        const int Capacity = 50000;
-
         public static async Task Replicate(
-            IEventReader      reader,
-            SinkPipeOptions   sinkPipeOptions,
-            ICheckpointStore  checkpointStore,
-            CancellationToken stoppingToken,
-            bool              restartWhenComplete = false,
-            FilterEvent?      filter              = null,
-            TransformEvent?   transform           = null
+            IEventReader           reader,
+            SinkPipeOptions        sinkPipeOptions,
+            PreparePipelineOptions preparePipeOptions,
+            ICheckpointStore       checkpointStore,
+            CancellationToken      stoppingToken,
+            bool                   restartWhenComplete = false
         ) {
-            ReplicationMetrics.SetCapacity(Capacity, Capacity);
+            ReplicationMetrics.SetCapacity(preparePipeOptions.BufferSize, sinkPipeOptions.BufferSize);
 
             var cts = new CancellationTokenSource();
 
             var linkedCts =
                 CancellationTokenSource.CreateLinkedTokenSource(stoppingToken, cts.Token);
 
-            var prepareChannel = Channel.CreateBounded<PrepareContext>(Capacity);
-            var sinkChannel    = Channel.CreateBounded<SinkContext>(Capacity);
+            var prepareChannel = Channel.CreateBounded<PrepareContext>(preparePipeOptions.BufferSize);
+            var sinkChannel    = Channel.CreateBounded<SinkContext>(sinkPipeOptions.BufferSize);
 
             var readerPipe = new ReaderPipe(
                 reader,
@@ -43,8 +40,8 @@ namespace EventStore.Replicator {
             );
 
             var preparePipe = new PreparePipe(
-                filter,
-                transform,
+                preparePipeOptions.Filter,
+                preparePipeOptions.Transform,
                 ctx => sinkChannel.Writer.WriteAsync(ctx, ctx.CancellationToken)
             );
             var sinkPipe = new SinkPipe(sinkPipeOptions, checkpointStore);
@@ -69,25 +66,25 @@ namespace EventStore.Replicator {
             while (true) {
                 ReplicationStatus.Start();
 
-                await readerPipe.Start(linkedCts.Token);
+                await readerPipe.Start(linkedCts.Token).ConfigureAwait(false);
 
                 if (!restartWhenComplete) {
                     do {
                         Log.Info("Closing the prepare channel...");
-                        await Task.Delay(1000, CancellationToken.None);
+                        await Task.Delay(1000, CancellationToken.None).ConfigureAwait(false);
                     } while (!prepareChannel.Writer.TryComplete());
                 }
 
                 ReplicationStatus.Stop();
 
                 while (sinkChannel.Reader.Count > 0) {
-                    await checkpointStore.Flush(CancellationToken.None);
+                    await checkpointStore.Flush(CancellationToken.None).ConfigureAwait(false);
                     Log.Info("Waiting for the sink pipe to exhaust ({Left} left)...", sinkChannel.Reader.Count);
-                    await Task.Delay(1000, CancellationToken.None);
+                    await Task.Delay(1000, CancellationToken.None).ConfigureAwait(false);
                 }
 
                 Log.Info("Storing the last known checkpoint");
-                await checkpointStore.Flush(CancellationToken.None);
+                await checkpointStore.Flush(CancellationToken.None).ConfigureAwait(false);
 
                 if (linkedCts.IsCancellationRequested || !restartWhenComplete) {
                     sinkChannel.Writer.Complete();
@@ -99,13 +96,15 @@ namespace EventStore.Replicator {
             }
 
             try {
-                await prepareTask;
-                await writerTask;
-                await reporter;
+                await prepareTask.ConfigureAwait(false);
+                await writerTask.ConfigureAwait(false);
+                await reporter.ConfigureAwait(false);
             }
             catch (OperationCanceledException) { }
 
-            static Task CreateChannelShovel<T>(string name, Channel<T> channel, Func<T, Task> send, IGaugeMetric size, CancellationToken token)
+            static Task CreateChannelShovel<T>(
+                string name, Channel<T> channel, Func<T, Task> send, IGaugeMetric size, CancellationToken token
+            )
                 => Task.Run(
                     () => channel.Shovel(
                         send,
@@ -119,9 +118,9 @@ namespace EventStore.Replicator {
 
             async Task Report() {
                 while (!stoppingToken.IsCancellationRequested) {
-                    var position = await reader.GetLastPosition(stoppingToken);
+                    var position = await reader.GetLastPosition(stoppingToken).ConfigureAwait(false);
                     ReplicationMetrics.LastSourcePosition.Set(position);
-                    await Task.Delay(5000, stoppingToken);
+                    await Task.Delay(5000, stoppingToken).ConfigureAwait(false);
                 }
             }
         }
@@ -139,11 +138,12 @@ namespace EventStore.Replicator {
             beforeStart();
 
             try {
-                while (!token.IsCancellationRequested && !channel.Reader.Completion.IsCompleted &&
-                    await channel.Reader.WaitToReadAsync(token)) {
-                    await foreach (var ctx in channel.Reader.ReadAllAsync(token)) {
-                        await send(ctx);
-                        channelSizeGauge.Set(channel.Reader.Count, "");
+                while (!token.IsCancellationRequested &&
+                    !channel.Reader.Completion.IsCompleted &&
+                    await channel.Reader.WaitToReadAsync(token).ConfigureAwait(false)) {
+                    await foreach (var ctx in channel.Reader.ReadAllAsync(token).ConfigureAwait(false)) {
+                        await send(ctx).ConfigureAwait(false);
+                        channelSizeGauge.Set(channel.Reader.Count);
                     }
                 }
             }
