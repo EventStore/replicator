@@ -10,10 +10,6 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "es-replicator", "src\es-rep
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EventStore.Replicator.Esdb.Grpc", "src\EventStore.Replicator.Esdb.Grpc\EventStore.Replicator.Esdb.Grpc.csproj", "{BB3E9A7A-4116-4F86-B2EA-9CEE207C7977}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Deployment", "Deployment", "{734896E5-1A02-4C11-9E50-10D2F9D4E818}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Deployment", "deploy\Deployment.csproj", "{C3EC6408-735E-431D-8474-17E06812CBC6}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EventStore.Replicator.Kafka", "src\EventStore.Replicator.Kafka\EventStore.Replicator.Kafka.csproj", "{7A28F19B-1CD2-400F-9BEB-6C210C5CC79B}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EventStore.Replicator.Http", "src\EventStore.Replicator.Http\EventStore.Replicator.Http.csproj", "{7AB2A602-0566-43E2-B855-296657F894E9}"
@@ -46,10 +42,6 @@ Global
 		{BB3E9A7A-4116-4F86-B2EA-9CEE207C7977}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{BB3E9A7A-4116-4F86-B2EA-9CEE207C7977}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{BB3E9A7A-4116-4F86-B2EA-9CEE207C7977}.Release|Any CPU.Build.0 = Release|Any CPU
-		{C3EC6408-735E-431D-8474-17E06812CBC6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{C3EC6408-735E-431D-8474-17E06812CBC6}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{C3EC6408-735E-431D-8474-17E06812CBC6}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{C3EC6408-735E-431D-8474-17E06812CBC6}.Release|Any CPU.Build.0 = Release|Any CPU
 		{7A28F19B-1CD2-400F-9BEB-6C210C5CC79B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{7A28F19B-1CD2-400F-9BEB-6C210C5CC79B}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{7A28F19B-1CD2-400F-9BEB-6C210C5CC79B}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -64,6 +56,5 @@ Global
 		{6F511145-BD33-49C6-9778-3DA9B14B9B17}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
-		{C3EC6408-735E-431D-8474-17E06812CBC6} = {734896E5-1A02-4C11-9E50-10D2F9D4E818}
 	EndGlobalSection
 EndGlobal

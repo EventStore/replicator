@@ -8,10 +8,9 @@ function transform(original) {
         Data1: `new${original.data.Data1}`,
         NewProp: `${original.data.Id} - ${original.data.Data2}`
     };
-    const et = original.stream.length <= 6 ? `V2.${original.eventType}` : null;
     return {
         stream: `transformed${original.stream}`,
-        eventType: et,
+        eventType: `V2.${original.eventType}`,
         data: newEvent,
         meta: original.meta
     }

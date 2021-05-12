@@ -1,0 +1,13 @@
+replicator:
+  reader:
+    connectionString: "ConnectTo=localhost:2113;UseSslConnection=false;"
+    pageSize: 2048
+  sink:
+    connectionString: "esdb://admin:changeit@c1etr0lo0aeu6ojco770.mesdb.eventstore.cloud:2113"
+    partitionCount: 1
+  transform:
+    type: js
+    config: transform.js
+prometheus:
+  metrics: true
+  operator: true
