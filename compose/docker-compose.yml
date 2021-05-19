@@ -9,7 +9,7 @@ services:
       - "5000:5000"
     volumes:
       - ./replicator.yml:/app/config/appsettings.yaml
-      - ./transform.js:/app/config/transform.js
+      - ./transform.js:/app/transform.js
     environment:
       REPLICATOR_DEBUG: 1
       

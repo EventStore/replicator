@@ -44,6 +44,12 @@ spec:
           name: {{ template "replicator.name" . }}
         - name: config-volume
           mountPath: /app/config
+{{- if .Values.jsConfigMaps }}
+{{- range (keys .Values.jsConfigMaps | sortAlpha) }}
+        - name: js-{{ . }}
+          mountPath: "/app/js/{{ . }}"
+{{- end }}
+{{- end }}
         resources:
 {{ toYaml .Values.resources | indent 10 }}
       imagePullSecrets: []

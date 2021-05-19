@@ -4,6 +4,7 @@ prometheus:
 pvc:
   storageClass: null
 terminationGracePeriodSeconds: 300
+jsConfigMaps: {}
 resources:
   limits:
     cpu: 1

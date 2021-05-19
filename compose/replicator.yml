@@ -10,7 +10,7 @@ replicator:
   scavenge: false
   transform:
     type: js
-    config: ./config/transform.js
+    config: ./transform.js
     bufferSize: 1000
   filters: []
   checkpoint:
