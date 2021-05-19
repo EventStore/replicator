@@ -1,9 +1,17 @@
-function transform(stream, eventType, data, meta) {
-    const evt = JSON.parse(data);
+function transform(original) {
+    log.debug("Transforming event {Type} from {Stream}", original.EventType, original.Stream);
+
+    if (original.Stream.length > 7) return undefined;
+
+    const newEvent = {
+        ...original.Data,
+        Data1: `new${original.Data.Data1}`,
+        NewProp: `${original.Data.Id} - ${original.Data.Data2}`
+    };
     return {
-        stream: 'blah' + stream,
-        eventType: 'new' + eventType,
-        data: JSON.stringify({...evt, prop: 'test'}),
-        metadata: meta
+        Stream: `transformed${original.Stream}`,
+        EventType: `V2.${original.EventType}`,
+        Data: newEvent,
+        Meta: original.Meta
     }
 }

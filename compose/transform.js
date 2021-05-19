@@ -1,17 +1,17 @@
 function transform(original) {
-    log.info("Transforming event {Type} from {Stream}", original.eventType, original.stream);
+    log.debug("Transforming event {Type} from {Stream}", original.EventType, original.Stream);
 
-    if (original.stream.length > 7) return undefined;
-    
+    if (original.Stream.length > 7) return undefined;
+
     const newEvent = {
-        ...original.data,
-        Data1: `new${original.data.Data1}`,
-        NewProp: `${original.data.Id} - ${original.data.Data2}`
+        ...original.Data,
+        Data1: `new${original.Data.Data1}`,
+        NewProp: `${original.Data.Id} - ${original.Data.Data2}`
     };
     return {
-        stream: `transformed${original.stream}`,
-        eventType: `V2.${original.eventType}`,
-        data: newEvent,
-        meta: original.meta
+        Stream: `transformed${original.Stream}`,
+        EventType: `V2.${original.EventType}`,
+        Data: newEvent,
+        Meta: original.Meta
     }
 }
