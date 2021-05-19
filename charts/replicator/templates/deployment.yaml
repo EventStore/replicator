@@ -44,11 +44,10 @@ spec:
           name: {{ template "replicator.name" . }}
         - name: config-volume
           mountPath: /app/config
-{{- if .Values.jsConfigMaps }}
-{{- range (keys .Values.jsConfigMaps | sortAlpha) }}
-        - name: js-{{ . }}
-          mountPath: "/app/js/{{ . }}"
-{{- end }}
+{{- range .Values.jsConfigMaps }}
+        - name: {{ .configMapName }}
+          mountPath: /app/js/{{ .fileName }}
+          subPath: {{ .fileName }}
 {{- end }}
         resources:
 {{ toYaml .Values.resources | indent 10 }}
@@ -58,6 +57,11 @@ spec:
       - name: config-volume
         configMap:
           name: {{ template "replicator.fullname" . }}
+{{- range .Values.jsConfigMaps }}
+      - name: {{ .configMapName }}
+        configMap:
+          name: {{ .configMapName }}
+{{- end }}
       - name: {{ template "replicator.name" . }}
         persistentVolumeClaim:
           claimName: {{ template "replicator.fullname" . }}
