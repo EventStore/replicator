@@ -1,0 +1,17 @@
+replicator:
+  reader:
+    connectionString: ConnectTo=tcp://admin:changeit@10.211.55.3:1113; HeartBeatTimeout=500; UseSslConnection=false;
+    protocol: tcp
+  sink:
+    connectionString: esdb://10.211.55.3:2114?tls=false
+    protocol: grpc
+    partitionCount: 1
+    bufferSize: 1000
+  scavenge: false
+  transform:
+    type: js
+    config: ./config/transform.js
+    bufferSize: 1000
+  filters: []
+  checkpoint:
+    path: "./checkpoint"

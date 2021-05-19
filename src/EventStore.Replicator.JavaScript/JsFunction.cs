@@ -10,15 +10,16 @@ using Jint.Native.Json;
 namespace EventStore.Replicator.JavaScript {
     public class JsFunction {
         protected readonly JsValue _func;
-        protected readonly Engine  _engine;
 
-        public JsFunction(string jsFunc, string name) {
+        internal Engine Engine1 { get; }
+
+        protected JsFunction(string jsFunc, string name) {
             var jsLog = new JsLog(name);
 
-            _engine = new Engine(cfg => cfg.AllowClr())
+            Engine1 = new Engine(cfg => cfg.AllowClr())
                 .SetValue("log", jsLog);
 
-            _func = _engine.Execute(jsFunc).GetValue(name);
+            _func = Engine1.Execute(jsFunc).GetValue(name);
         }
     }
 
@@ -29,7 +30,7 @@ namespace EventStore.Replicator.JavaScript {
             => _convert = convert;
 
         public TResult Execute(T arg) {
-            var result = _func.Invoke(JsValue.FromObject(_engine, arg));
+            var result = _func.Invoke(JsValue.FromObject(Engine1, arg));
             return _convert(result, arg);
         }
     }

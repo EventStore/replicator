@@ -7,11 +7,11 @@ services:
     image: eu.gcr.io/esc-platform-advocacy/eventstore/replicator:latest
     ports:
       - "5000:5000"
+    volumes:
+      - ./replicator.yml:/app/config/appsettings.yaml
+      - ./transform.js:/app/config/transform.js
     environment:
-      REPLICATOR_READER_PROTOCOL: "grpc"
-      REPLICATOR_READER_CONNECTIONSTRING: "esdb://eventstore:2113?tls=false"
-      REPLICATOR_SINK_PROTOCOL: "grpc"
-      REPLICATOR_SINK_CONNECTIONSTRING: "esdb://esdb:2114?tls=false"
+      REPLICATOR_DEBUG: 1
       
   prometheus:
     container_name: repl-prometheus

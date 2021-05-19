@@ -1,13 +1,14 @@
 ﻿using System;
 using System.Text;
-using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using EventStore.Replicator.Shared.Contracts;
 using EventStore.Replicator.Shared.Logging;
 using Jint;
 using Jint.Native;
+using Jint.Native.Json;
 using Jint.Native.Object;
+using JsonSerializer = System.Text.Json.JsonSerializer;
 
 namespace EventStore.Replicator.JavaScript {
     public class JsTransform {
@@ -30,14 +31,16 @@ namespace EventStore.Replicator.JavaScript {
 
                 ObjectInstance obj = result.AsObject();
 
-                if (!TryGetString("stream", true, out var stream) || string.IsNullOrWhiteSpace(stream) ||
-                    !TryGetString("eventType", true, out var eventType) || string.IsNullOrWhiteSpace(eventType))
+                if (!TryGetString("Stream", true, out var stream) ||
+                    string.IsNullOrWhiteSpace(stream) ||
+                    !TryGetString("EventType", true, out var eventType) ||
+                    string.IsNullOrWhiteSpace(eventType))
                     return null;
 
-                var data = GetSerializedObject("data");
+                var data = GetSerializedObject("Data");
                 if (data == null) return null;
 
-                var meta = GetSerializedObject("meta");
+                var meta = GetSerializedObject("Meta");
 
                 return new TransformedEvent(stream, eventType, data, meta);
 
@@ -69,13 +72,16 @@ namespace EventStore.Replicator.JavaScript {
         public ValueTask<BaseProposedEvent> Transform(
             OriginalEvent original, CancellationToken cancellationToken
         ) {
+            var parser = new JsonParser(_function.Engine1);
+            var data   = parser.Parse(original.Data.AsUtf8String());
+
             var result = _function.Execute(
                 new TransformEvent(
                     original.Created,
                     original.EventDetails.Stream,
                     original.EventDetails.EventType,
-                    original.Data.AsUtf8String(),
-                    original.Metadata?.AsUtf8String()
+                    data,
+                    parser.Parse(original.Metadata?.AsUtf8String())
                 )
             );
 
@@ -95,8 +101,8 @@ namespace EventStore.Replicator.JavaScript {
             DateTimeOffset Created,
             string         Stream,
             string         EventType,
-            string         Data,
-            string?        Meta
+            JsValue?       Data,
+            JsValue?       Meta
         );
 
         record TransformedEvent(

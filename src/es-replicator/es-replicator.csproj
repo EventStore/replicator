@@ -13,7 +13,7 @@
         <PackageReference Include="NetEscapades.Configuration.Yaml" Version="2.1.0" />
         <PackageReference Include="Serilog.Sinks.File" Version="4.1.0" />
         <PackageReference Include="Microsoft.AspNetCore.SpaServices.Extensions" Version="5.0.6" />
-        <PackageReference Include="Ubiquitous.Metrics.Prometheus" Version="0.1.6" />
+        <PackageReference Include="Ubiquitous.Metrics.Prometheus" Version="0.2.2" />
     </ItemGroup>
 
     <ItemGroup>

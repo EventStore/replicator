@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using Confluent.Kafka;
+using es_replicator.HttpApi;
 using es_replicator.Settings;
 using EventStore.Client;
 using EventStore.ClientAPI;
@@ -78,6 +79,7 @@ namespace es_replicator {
             );
             services.AddHostedService<ReplicatorService>();
             services.Configure<HostOptions>(opts => opts.ShutdownTimeout = TimeSpan.FromMinutes(5));
+            services.AddSingleton<CountersKeep>();
 
             services.AddSpaStaticFiles(configuration => configuration.RootPath = "ClientApp/dist");
             services.AddControllers();
