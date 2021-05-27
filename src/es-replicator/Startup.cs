@@ -60,7 +60,7 @@ namespace es_replicator {
                 filter,
                 Transformers.GetTransformer(replicatorOptions),
                 1,
-                replicatorOptions.Transform.BufferSize
+                replicatorOptions.Transform?.BufferSize ?? 1
             );
 
             services.AddSingleton(prepareOptions);
