@@ -37,8 +37,8 @@ namespace es_replicator.Settings {
         public EsdbSettings      Reader     { get; init; }
         public SinkSettings      Sink       { get; init; }
         public bool              Scavenge   { get; init; }
-        public Checkpoint        Checkpoint { get; init; }
-        public TransformSettings Transform  { get; init; }
+        public Checkpoint        Checkpoint { get; init; } = new();
+        public TransformSettings Transform  { get; init; } = new();
         public Filter[]          Filters    { get; init; }
     }
 
