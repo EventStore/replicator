@@ -20,16 +20,25 @@ namespace EventStore.Replicator.Esdb.Tcp {
         const string StreamDeletedBody = "{\"$tb\":9223372036854775807}";
 
         readonly IEventStoreConnection _connection;
-        readonly int                   _pageSize;
+        int                            _pageSize;
         readonly ScavengedEventsFilter _filter;
         readonly Realtime              _realtime;
 
         public TcpEventReader(IEventStoreConnection connection, int pageSize = 4096) {
             _connection = connection;
-            _pageSize = pageSize;
+            _pageSize   = pageSize;
             var metaCache = new StreamMetaCache();
-            _filter   = new ScavengedEventsFilter(connection, metaCache);
-            _realtime = new Realtime(connection, metaCache);
+            _filter            =  new ScavengedEventsFilter(connection, metaCache);
+            _realtime          =  new Realtime(connection, metaCache);
+            _connection.Closed += HandleConnectionError;
+        }
+
+        void HandleConnectionError(object? sender, ClientClosedEventArgs args) {
+            if (!args.Reason.Contains("Invalid TCP frame") || _pageSize <= 1)
+                return;
+            
+            Log.Warn("Connection closed because of an invalid TCP frame, reducing the page size to {@PageSize}", _pageSize);
+            _pageSize /= 2;
         }
 
         public async Task ReadEvents(
