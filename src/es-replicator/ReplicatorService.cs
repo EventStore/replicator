@@ -26,8 +26,8 @@ namespace es_replicator {
             _checkpointStore = checkpointStore;
         }
 
-        protected override Task ExecuteAsync(CancellationToken stoppingToken) {
-            return Replicator.Replicate(
+        protected override Task ExecuteAsync(CancellationToken stoppingToken)
+            => Replicator.Replicate(
                 _reader,
                 _sinkOptions,
                 _prepareOptions,
@@ -35,6 +35,5 @@ namespace es_replicator {
                 stoppingToken,
                 true
             );
-        }
     }
 }

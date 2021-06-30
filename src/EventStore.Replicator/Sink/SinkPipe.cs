@@ -1,6 +1,7 @@
 using System;
 using System.Threading.Tasks;
 using EventStore.Replicator.Observers;
+using EventStore.Replicator.Partitioning;
 using EventStore.Replicator.Shared;
 using EventStore.Replicator.Shared.Observe;
 using GreenPipes;
@@ -21,11 +22,20 @@ namespace EventStore.Replicator.Sink {
                         }
                     );
 
-                    if (options.PartitionCount > 1)
+                    if (options.PartitionCount > 1) {
+                        Func<SinkContext, string> keyProvider =
+                            string.IsNullOrWhiteSpace(options.Partitioner)
+                                ? x => KeyProvider.ByStreamName(x.ProposedEvent)
+                                : GetJsPartitioner();
+
                         cfg.UsePartitioner(
-                            new Partitioner(options.PartitionCount, new Murmur3UnsafeHashGenerator()),
-                            x => x.ProposedEvent.EventDetails.Stream
+                            new Partitioner(
+                                options.PartitionCount,
+                                new Murmur3UnsafeHashGenerator()
+                            ),
+                            keyProvider
                         );
+                    }
 
                     cfg.UseLog();
 
@@ -33,8 +43,15 @@ namespace EventStore.Replicator.Sink {
                     cfg.UseCheckpointStore(checkpointStore);
 
                     cfg.UseExecute(
-                        ctx => ReplicationMetrics.ProcessedPosition.Set(ctx.ProposedEvent.SourcePosition.EventPosition)
+                        ctx => ReplicationMetrics.ProcessedPosition.Set(
+                            ctx.ProposedEvent.SourcePosition.EventPosition
+                        )
                     );
+
+                    Func<SinkContext, string> GetJsPartitioner() {
+                        var jsProvider = new JsKeyProvider(options.Partitioner!);
+                        return x => jsProvider.GetPartitionKey(x.ProposedEvent);
+                    }
                 }
             );
 
@@ -42,7 +59,9 @@ namespace EventStore.Replicator.Sink {
     }
 
     static class SinkPipelineExtensions {
-        public static void UseEventWriter(this IPipeConfigurator<SinkContext> cfg, IEventWriter writer)
+        public static void UseEventWriter(
+            this IPipeConfigurator<SinkContext> cfg, IEventWriter writer
+        )
             => cfg.UseExecuteAsync(
                 async ctx => {
                     var position = await writer.WriteEvent(ctx.ProposedEvent, ctx.CancellationToken)
@@ -58,9 +77,10 @@ namespace EventStore.Replicator.Sink {
         )
             => cfg.UseExecuteAsync(
                 async ctx => await checkpointStore.StoreCheckpoint(
-                    ctx.ProposedEvent.SourcePosition,
-                    ctx.CancellationToken
-                ).ConfigureAwait(false)
+                        ctx.ProposedEvent.SourcePosition,
+                        ctx.CancellationToken
+                    )
+                    .ConfigureAwait(false)
             );
     }
 }

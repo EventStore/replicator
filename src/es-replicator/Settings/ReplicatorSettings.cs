@@ -1,3 +1,4 @@
+using JetBrains.Annotations;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -18,6 +19,7 @@ namespace es_replicator.Settings {
     public record SinkSettings : EsdbSettings {
         public int    PartitionCount { get; init; } = 1;
         public string Router         { get; init; }
+        public string Partitioner    { get; init; }
         public int    BufferSize     { get; init; } = 1000;
     }
 
@@ -49,7 +51,9 @@ namespace es_replicator.Settings {
             return result;
         }
 
-        public static void AddOptions<T>(this IServiceCollection services, IConfiguration configuration)
+        public static void AddOptions<T>(
+            this IServiceCollection services, IConfiguration configuration
+        )
             where T : class {
             services.Configure<T>(configuration.GetSection(typeof(T).Name));
         }

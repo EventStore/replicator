@@ -18,9 +18,8 @@ namespace EventStore.Replicator.Partitioning {
         }
 
         public async Task Send<T>(T context, IPipe<T> next)
-            where T : class, PipeContext {
-            await _writer.WriteAsync(next.Send(context)).ConfigureAwait(false);
-        }
+            where T : class, PipeContext
+            => await _writer.WriteAsync(next.Send(context)).ConfigureAwait(false);
 
         async Task Reader(ChannelReader<Task> reader) {
             while (!IsStopping) {

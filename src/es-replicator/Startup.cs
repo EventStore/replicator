@@ -36,12 +36,14 @@ namespace es_replicator {
 
         public void ConfigureServices(IServiceCollection services) {
             Measurements.ConfigureMetrics(Environment.EnvironmentName);
-            // services.AddSingleton<CountersKeep>();
 
             var replicatorOptions = Configuration.GetAs<Replicator>();
 
             var reader = ConfigureReader(
-                Ensure.NotEmpty(replicatorOptions.Reader.ConnectionString, "Reader connection string"),
+                Ensure.NotEmpty(
+                    replicatorOptions.Reader.ConnectionString,
+                    "Reader connection string"
+                ),
                 replicatorOptions.Reader.Protocol,
                 replicatorOptions.Reader.PageSize,
                 services
@@ -66,11 +68,13 @@ namespace es_replicator {
             services.AddSingleton(prepareOptions);
             services.AddSingleton(reader);
 
+            // var partitioner = 
             services.AddSingleton(
                 new SinkPipeOptions(
                     sink,
                     replicatorOptions.Sink.PartitionCount,
-                    replicatorOptions.Sink.BufferSize
+                    replicatorOptions.Sink.BufferSize,
+                    LoadFile(replicatorOptions.Sink.Partitioner, "Partitioner")
                 )
             );
 
@@ -116,19 +120,25 @@ namespace es_replicator {
 
         static IEventReader ConfigureReader(
             string connectionString, string protocol, int pageSize, IServiceCollection services
-        ) {
-            return protocol switch {
-                "tcp"  => new TcpEventReader(ConfigureEventStoreTcp(connectionString, true, services), pageSize),
+        )
+            => protocol switch {
+                "tcp" => new TcpEventReader(
+                    ConfigureEventStoreTcp(connectionString, true, services),
+                    pageSize
+                ),
                 "grpc" => new GrpcEventReader(ConfigureEventStoreGrpc(connectionString, true)),
                 _      => throw new ArgumentOutOfRangeException(nameof(protocol))
             };
-        }
 
-        static IEventWriter ConfigureSink(string connectionString, string protocol, string? router, IServiceCollection services) {
+        static IEventWriter ConfigureSink(
+            string connectionString, string protocol, string? router, IServiceCollection services
+        ) {
             return protocol switch {
-                "tcp"   => new TcpEventWriter(ConfigureEventStoreTcp(connectionString, false, services)),
+                "tcp" => new TcpEventWriter(
+                    ConfigureEventStoreTcp(connectionString, false, services)
+                ),
                 "grpc"  => new GrpcEventWriter(ConfigureEventStoreGrpc(connectionString, false)),
-                "kafka" => new KafkaWriter(ParseKafkaConnection(), LoadRouter()),
+                "kafka" => new KafkaWriter(ParseKafkaConnection(), LoadFile(router, "Router")),
                 _       => throw new ArgumentOutOfRangeException(nameof(protocol))
             };
 
@@ -145,14 +155,6 @@ namespace es_replicator {
                 var split = s.Split('=');
                 return new KeyValuePair<string, string>(split[0].Trim(), split[1].Trim());
             }
-
-            string? LoadRouter() {
-                if (router == null) return null;
-
-                if (!File.Exists(router))
-                    throw new ArgumentException("Router function file doesn't exist", nameof(router));
-                return File.ReadAllText(router);
-            }
         }
 
         static IEventStoreConnection ConfigureEventStoreTcp(
@@ -163,7 +165,8 @@ namespace es_replicator {
                 .KeepReconnecting()
                 .KeepRetrying();
 
-            if (follower) builder = builder.PreferFollowerNode();
+            if (follower)
+                builder = builder.PreferFollowerNode();
 
             var connection = EventStoreConnection.Create(connectionString, builder);
 
@@ -178,6 +181,19 @@ namespace es_replicator {
             if (follower)
                 settings.ConnectivitySettings.NodePreference = NodePreference.Follower;
             return new EventStoreClient(settings);
+        }
+
+        static string? LoadFile(string? name, string description) {
+            if (name == null)
+                return null;
+
+            if (!File.Exists(name))
+                throw new ArgumentException(
+                    $"{description} function file doesn't exist",
+                    nameof(name)
+                );
+
+            return File.ReadAllText(name);
         }
     }
 }

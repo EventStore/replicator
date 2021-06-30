@@ -4,6 +4,7 @@
     </ItemGroup>
 
     <ItemGroup>
+        <ProjectReference Include="..\EventStore.Replicator.JavaScript\EventStore.Replicator.JavaScript.csproj" />
         <ProjectReference Include="..\EventStore.Replicator.Shared\EventStore.Replicator.Shared.csproj" />
     </ItemGroup>
 

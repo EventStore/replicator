@@ -32,7 +32,8 @@ namespace EventStore.Replicator.Partitioning {
             scope.Add("id", _id);
             scope.Add("partitionCount", _partitionCount);
 
-            foreach (var t in _partitions) t.Probe(scope);
+            foreach (var t in _partitions)
+                t.Probe(scope);
         }
 
         Task Send<T>(byte[] key, T context, IPipe<T> next) where T : class, PipeContext {
@@ -43,13 +44,14 @@ namespace EventStore.Replicator.Partitioning {
             return _partitions[partitionId].Send(context, next);
         }
 
-        class ContextPartitioner<TContext> :
-            IPartitioner<TContext>
+        class ContextPartitioner<TContext> : IPartitioner<TContext>
             where TContext : class, PipeContext {
             readonly PartitionKeyProvider<TContext> _keyProvider;
             readonly Partitioner                    _partitioner;
 
-            public ContextPartitioner(Partitioner partitioner, PartitionKeyProvider<TContext> keyProvider) {
+            public ContextPartitioner(
+                Partitioner partitioner, PartitionKeyProvider<TContext> keyProvider
+            ) {
                 _partitioner = partitioner;
                 _keyProvider = keyProvider;
             }
@@ -65,10 +67,11 @@ namespace EventStore.Replicator.Partitioning {
 
             public void Probe(ProbeContext context) => _partitioner.Probe(context);
 
-            Task IAgent.             Ready     => _partitioner.Ready;
-            Task IAgent.             Completed => _partitioner.Completed;
-            CancellationToken IAgent.Stopping  => _partitioner.Stopping;
-            CancellationToken IAgent.Stopped   => _partitioner.Stopped;
+            Task IAgent.Ready     => _partitioner.Ready;
+            Task IAgent.Completed => _partitioner.Completed;
+
+            CancellationToken IAgent.Stopping => _partitioner.Stopping;
+            CancellationToken IAgent.Stopped  => _partitioner.Stopped;
 
             Task IAgent.Stop(StopContext context) => _partitioner.Stop(context);
 
