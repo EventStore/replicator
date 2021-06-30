@@ -3,15 +3,25 @@ using System.Collections.Concurrent;
 using System.Threading.Tasks;
 using EventStore.ClientAPI;
 using EventStore.Replicator.Shared.Extensions;
+using EventStore.Replicator.Shared.Logging;
 
 namespace EventStore.Replicator.Esdb.Tcp {
     class StreamMetaCache {
+        static readonly ILog Log = LogProvider.GetCurrentClassLogger();
+        
         readonly ConcurrentDictionary<string, StreamSize> _streamsSize = new();
-
         readonly ConcurrentDictionary<string, StreamMeta> _streamsMeta = new();
 
-        public Task<StreamMeta> GetOrAddStreamMeta(string stream, Func<string, Task<StreamMeta>> getMeta)
-            => _streamsMeta.GetOrAddAsync(stream, () => getMeta(stream));
+        public async Task<StreamMeta?> GetOrAddStreamMeta(string stream, Func<string, Task<StreamMeta>> getMeta) {
+            try {
+                var meta = await _streamsMeta.GetOrAddAsync(stream, () => getMeta(stream));
+                return meta;
+            }
+            catch (Exception e) {
+                Log.Warn(e, "Unable to read metadata for stream {Stream}", stream);
+                return null;
+            }
+        }
 
         public void UpdateStreamMeta(string stream, StreamMetadata streamMetadata, long version, DateTime created) {
             var isDeleted = IsStreamDeleted(streamMetadata);

@@ -104,12 +104,7 @@ namespace EventStore.Replicator.Esdb.Grpc {
                     continue;
                 }
 
-                if (await _filter.Filter(originalEvent).ConfigureAwait(false)) {
-                    await next(originalEvent).ConfigureAwait(false);
-                }
-                else {
-                    await next(MapIgnored(evt, sequence++, activity)).ConfigureAwait(false);
-                }
+                await next(originalEvent).ConfigureAwait(false);
             } while (true);
 
             _log.Info("Reached the end of the stream at {Position}", lastPosition);

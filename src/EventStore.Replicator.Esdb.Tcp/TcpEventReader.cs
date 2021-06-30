@@ -109,13 +109,7 @@ namespace EventStore.Replicator.Esdb.Tcp {
                     }
                     else if (sliceEvent.Event.EventType[0] != '$') {
                         var originalEvent = Map(sliceEvent, sequence++, activity);
-
-                        if (await _filter.Filter(originalEvent)) {
-                            await next(originalEvent).ConfigureAwait(false);
-                        }
-                        else {
-                            await next(MapIgnored(sliceEvent, sequence++, activity)).ConfigureAwait(false);
-                        }
+                        await next(originalEvent).ConfigureAwait(false);
                     }
                 }
 

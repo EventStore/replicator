@@ -21,7 +21,7 @@ namespace EventStore.Replicator.Esdb.Tcp {
         ) {
             if (originalEvent is not OriginalEvent) return true;
             
-            StreamMeta meta = await _cache.GetOrAddStreamMeta(
+            var meta = await _cache.GetOrAddStreamMeta(
                 originalEvent.EventDetails.Stream,
                 _connection.GetStreamMeta
             ).ConfigureAwait(false);

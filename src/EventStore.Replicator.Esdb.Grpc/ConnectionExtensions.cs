@@ -1,6 +1,8 @@
+using System;
 using System.Linq;
 using System.Threading.Tasks;
 using EventStore.Client;
+using EventStore.Replicator.Shared.Logging;
 
 namespace EventStore.Replicator.Esdb.Grpc {
     static class ConnectionExtensions {
@@ -18,8 +20,11 @@ namespace EventStore.Replicator.Esdb.Grpc {
         ) {
             var streamMeta = await client.GetStreamMetadataAsync(stream).ConfigureAwait(false);
 
+            var streamDeleted = streamMeta.StreamDeleted ||
+                streamMeta.Metadata.TruncateBefore == StreamPosition.End;
+
             return new StreamMeta(
-                streamMeta.StreamDeleted,
+                streamDeleted,
                 streamMeta.Metadata.MaxAge,
                 streamMeta.Metadata.MaxCount,
                 streamMeta.MetastreamRevision!.Value.ToInt64()
