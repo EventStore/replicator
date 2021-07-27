@@ -68,7 +68,6 @@ namespace es_replicator {
             services.AddSingleton(prepareOptions);
             services.AddSingleton(reader);
 
-            // var partitioner = 
             services.AddSingleton(
                 new SinkPipeOptions(
                     sink,
@@ -76,6 +75,10 @@ namespace es_replicator {
                     replicatorOptions.Sink.BufferSize,
                     LoadFile(replicatorOptions.Sink.Partitioner, "Partitioner")
                 )
+            );
+
+            services.AddSingleton(
+                new ReplicatorOptions(replicatorOptions.RestartOnFailure, replicatorOptions.RunContinuously)
             );
 
             services.AddSingleton<ICheckpointStore>(

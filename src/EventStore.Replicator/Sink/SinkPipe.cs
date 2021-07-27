@@ -6,7 +6,6 @@ using EventStore.Replicator.Shared;
 using EventStore.Replicator.Shared.Observe;
 using GreenPipes;
 using GreenPipes.Partitioning;
-using Partitioner = EventStore.Replicator.Partitioning.Partitioner;
 
 namespace EventStore.Replicator.Sink {
     public class SinkPipe {
@@ -17,24 +16,28 @@ namespace EventStore.Replicator.Sink {
                 cfg => {
                     cfg.UseRetry(
                         r => {
-                            r.Incremental(10, TimeSpan.Zero, TimeSpan.FromMilliseconds(100));
+                            r.Incremental(10, TimeSpan.Zero, TimeSpan.FromMilliseconds(10));
                             r.ConnectRetryObserver(new LoggingRetryObserver());
                         }
                     );
 
+                    var useJsPartitioner = !string.IsNullOrWhiteSpace(options.Partitioner);
                     if (options.PartitionCount > 1) {
                         Func<SinkContext, string> keyProvider =
-                            string.IsNullOrWhiteSpace(options.Partitioner)
+                            !useJsPartitioner
                                 ? x => KeyProvider.ByStreamName(x.ProposedEvent)
                                 : GetJsPartitioner();
 
                         cfg.UsePartitioner(
-                            new Partitioner(
+                            new HashPartitioner(
                                 options.PartitionCount,
                                 new Murmur3UnsafeHashGenerator()
                             ),
                             keyProvider
                         );
+                    }
+                    else if (useJsPartitioner) {
+                        cfg.UsePartitioner(new ValuePartitioner(), GetJsPartitioner());
                     }
 
                     cfg.UseLog();

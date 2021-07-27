@@ -1,4 +1,3 @@
-using JetBrains.Annotations;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -36,12 +35,14 @@ namespace es_replicator.Settings {
     }
 
     public record Replicator {
-        public EsdbSettings      Reader     { get; init; }
-        public SinkSettings      Sink       { get; init; }
-        public bool              Scavenge   { get; init; }
-        public Checkpoint        Checkpoint { get; init; } = new();
-        public TransformSettings Transform  { get; init; } = new();
-        public Filter[]          Filters    { get; init; }
+        public EsdbSettings      Reader           { get; init; }
+        public SinkSettings      Sink             { get; init; }
+        public bool              Scavenge         { get; init; }
+        public bool              RestartOnFailure { get; init; } = true;
+        public bool              RunContinuously  { get; init; } = true;
+        public Checkpoint        Checkpoint       { get; init; } = new();
+        public TransformSettings Transform        { get; init; } = new();
+        public Filter[]          Filters          { get; init; }
     }
 
     public static class ConfigExtensions {

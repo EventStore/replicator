@@ -7,13 +7,13 @@ using GreenPipes.Agents;
 using GreenPipes.Partitioning;
 
 namespace EventStore.Replicator.Partitioning {
-    public class Partitioner : Supervisor, IPartitioner {
+    public class HashPartitioner : Supervisor, IPartitioner {
         readonly IHashGenerator     _hashGenerator;
         readonly string             _id;
         readonly int                _partitionCount;
         readonly PartitionChannel[] _partitions;
 
-        public Partitioner(int partitionCount, IHashGenerator hashGenerator) {
+        public HashPartitioner(int partitionCount, IHashGenerator hashGenerator) {
             _id = Guid.NewGuid().ToString("N");
 
             _partitionCount = partitionCount;
@@ -47,10 +47,10 @@ namespace EventStore.Replicator.Partitioning {
         class ContextPartitioner<TContext> : IPartitioner<TContext>
             where TContext : class, PipeContext {
             readonly PartitionKeyProvider<TContext> _keyProvider;
-            readonly Partitioner                    _partitioner;
+            readonly HashPartitioner                    _partitioner;
 
             public ContextPartitioner(
-                Partitioner partitioner, PartitionKeyProvider<TContext> keyProvider
+                HashPartitioner partitioner, PartitionKeyProvider<TContext> keyProvider
             ) {
                 _partitioner = partitioner;
                 _keyProvider = keyProvider;
