@@ -78,6 +78,7 @@ build_gcr:
         --cache-dir=$(pwd)/cache \
         --context $CI_PROJECT_DIR --dockerfile $CI_PROJECT_DIR/Dockerfile \
         --destination eu.gcr.io/esc-platform-advocacy/$CI_PROJECT_PATH:latest \
+        --destination eu.gcr.io/esc-platform-advocacy/$CI_PROJECT_PATH:$APPLICATION_VERSION \
         --build-arg DOTNET_SDK_VERSION="$DOTNET_SDK_VERSION" \
         --build-arg DOTNET_RUNTIME_VERSION="$DOTNET_RUNTIME_VERSION" \
         --build-arg APPLICATION_VERSION="$APPLICATION_VERSION"
@@ -85,7 +86,6 @@ build_gcr:
   tags:
     - docker
   only:
-    - branches
     - tags
   cache:
     key: kaniko-cache
