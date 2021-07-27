@@ -20,8 +20,8 @@ namespace EventStore.Replicator {
             SinkPipeOptions        sinkPipeOptions,
             PreparePipelineOptions preparePipeOptions,
             ICheckpointStore       checkpointStore,
-            CancellationToken      stoppingToken,
-            bool                   restartWhenComplete = false
+            ReplicatorOptions      replicatorOptions,
+            CancellationToken      stoppingToken
         ) {
             ReplicationMetrics.SetCapacity(preparePipeOptions.BufferSize, sinkPipeOptions.BufferSize);
 
@@ -68,7 +68,7 @@ namespace EventStore.Replicator {
 
                 await readerPipe.Start(linkedCts.Token).ConfigureAwait(false);
 
-                if (!restartWhenComplete) {
+                if (!replicatorOptions.RunContinuously) {
                     do {
                         Log.Info("Closing the prepare channel...");
                         await Task.Delay(1000, CancellationToken.None).ConfigureAwait(false);
@@ -86,7 +86,7 @@ namespace EventStore.Replicator {
                 Log.Info("Storing the last known checkpoint");
                 await checkpointStore.Flush(CancellationToken.None).ConfigureAwait(false);
 
-                if (linkedCts.IsCancellationRequested || !restartWhenComplete) {
+                if (linkedCts.IsCancellationRequested || !replicatorOptions.RunContinuously) {
                     sinkChannel.Writer.Complete();
                     break;
                 }
@@ -98,7 +98,6 @@ namespace EventStore.Replicator {
             try {
                 await prepareTask.ConfigureAwait(false);
                 await writerTask.ConfigureAwait(false);
-                await reporter.ConfigureAwait(false);
             }
             catch (OperationCanceledException) { }
 

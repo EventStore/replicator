@@ -24,9 +24,9 @@ namespace EventStore.Replicator.Read {
                     cfg.UseRetry(
                         retry => {
                             retry.Incremental(
-                                100,
+                                50,
                                 TimeSpan.Zero,
-                                TimeSpan.FromMilliseconds(100)
+                                TimeSpan.FromMilliseconds(10)
                             );
                             retry.ConnectRetryObserver(new LoggingRetryObserver());
                         }

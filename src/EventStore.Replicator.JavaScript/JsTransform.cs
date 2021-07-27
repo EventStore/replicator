@@ -72,15 +72,14 @@ namespace EventStore.Replicator.JavaScript {
         public ValueTask<BaseProposedEvent> Transform(
             OriginalEvent original, CancellationToken cancellationToken
         ) {
-            var parser = new JsonParser(_function.Engine1);
-            var data   = parser.Parse(original.Data.AsUtf8String());
+            var parser = new JsonParser(_function.Engine);
 
             var result = _function.Execute(
                 new TransformEvent(
                     original.Created,
                     original.EventDetails.Stream,
                     original.EventDetails.EventType,
-                    data,
+                    parser.Parse(original.Data.AsUtf8String()),
                     parser.Parse(original.Metadata?.AsUtf8String())
                 )
             );

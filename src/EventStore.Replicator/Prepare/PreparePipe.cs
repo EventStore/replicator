@@ -19,7 +19,7 @@ namespace EventStore.Replicator.Prepare {
                 cfg => {
                     cfg.UseRetry(
                         r => {
-                            r.Incremental(10, TimeSpan.Zero, TimeSpan.FromMilliseconds(100));
+                            r.Incremental(10, TimeSpan.Zero, TimeSpan.FromMilliseconds(10));
                             r.ConnectRetryObserver(new LoggingRetryObserver());
                         }
                     );

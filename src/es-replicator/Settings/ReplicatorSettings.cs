@@ -18,6 +18,7 @@ namespace es_replicator.Settings {
     public record SinkSettings : EsdbSettings {
         public int    PartitionCount { get; init; } = 1;
         public string Router         { get; init; }
+        public string Partitioner    { get; init; }
         public int    BufferSize     { get; init; } = 1000;
     }
 
@@ -34,12 +35,14 @@ namespace es_replicator.Settings {
     }
 
     public record Replicator {
-        public EsdbSettings      Reader     { get; init; }
-        public SinkSettings      Sink       { get; init; }
-        public bool              Scavenge   { get; init; }
-        public Checkpoint        Checkpoint { get; init; } = new();
-        public TransformSettings Transform  { get; init; } = new();
-        public Filter[]          Filters    { get; init; }
+        public EsdbSettings      Reader           { get; init; }
+        public SinkSettings      Sink             { get; init; }
+        public bool              Scavenge         { get; init; }
+        public bool              RestartOnFailure { get; init; } = true;
+        public bool              RunContinuously  { get; init; } = true;
+        public Checkpoint        Checkpoint       { get; init; } = new();
+        public TransformSettings Transform        { get; init; } = new();
+        public Filter[]          Filters          { get; init; }
     }
 
     public static class ConfigExtensions {
@@ -49,7 +52,9 @@ namespace es_replicator.Settings {
             return result;
         }
 
-        public static void AddOptions<T>(this IServiceCollection services, IConfiguration configuration)
+        public static void AddOptions<T>(
+            this IServiceCollection services, IConfiguration configuration
+        )
             where T : class {
             services.Configure<T>(configuration.GetSection(typeof(T).Name));
         }
