@@ -20,8 +20,10 @@ replicator:
     connectionString:
     protocol: grpc
     partitionCount: 1
+    partitioner:
     bufferSize: 1000
   scavenge: true
   filters: []
   transform: null
-    
+#  restartOnFailure: false
+#  runContinuously: true
