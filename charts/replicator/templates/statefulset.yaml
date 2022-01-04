@@ -1,5 +1,5 @@
 apiVersion: {{ template "deployment.apiVersion" . }}
-kind: Deployment
+kind: StatefulSet
 metadata:
   name: {{ template "replicator.fullname" . }}
   labels:
@@ -9,6 +9,7 @@ metadata:
     heritage: {{ .Release.Service }}
     tier: web
 spec:
+  serviceName: {{ template "replicator.fullname" . }}
   replicas: 1
   selector:
     matchLabels:
