@@ -2,9 +2,9 @@ apiVersion: v1
 entries:
   es-replicator:
   - apiVersion: v1
-    created: "2021-07-27T13:50:12.106884094Z"
+    created: "2022-01-04T10:57:16.431138907Z"
     description: EventStore Replicator Helm chart
-    digest: c235815dd721918608ca3f0d8b0fbe66aefea56616ad01a45c10302a6414031a
+    digest: 67aa9383fafee228b14fbee6f47f75d67cb8ac4123093f33d991c9a4a77103b7
     home: https://replicator.eventstore.org
     icon: https://github.com/EventStore/EventStore/blob/db2de074fcf1d4a9b29cfa4baac560706e087386/ouro.png
     name: es-replicator
@@ -12,7 +12,7 @@ entries:
     - es-replicator-0.4.0.tgz
     version: 0.4.0
   - apiVersion: v1
-    created: "2021-07-27T13:50:12.106563482Z"
+    created: "2022-01-04T10:57:16.430749305Z"
     description: EventStore Replicator Helm chart
     digest: 9e79e2dd91637b3c92a3643bd5633f07421f7c23541ff2f48ea8597b00acdb0f
     home: https://replicator.eventstore.org
@@ -22,7 +22,7 @@ entries:
     - es-replicator-0.3.1.tgz
     version: 0.3.1
   - apiVersion: v1
-    created: "2021-07-27T13:50:12.105695948Z"
+    created: "2022-01-04T10:57:16.430378203Z"
     description: EventStore Replicator Helm chart
     digest: e89f912dbf21821c5fc3a8f5ae532fc0f0bb7cc5788611a8d7ed7406e14c4c5a
     home: https://replicator.eventstore.org
@@ -32,7 +32,7 @@ entries:
     - es-replicator-0.3.0.tgz
     version: 0.3.0
   - apiVersion: v1
-    created: "2021-07-27T13:50:12.105352934Z"
+    created: "2022-01-04T10:57:16.4299659Z"
     description: EventStore Replicator Helm chart
     digest: 19b99ff28af9276b7240e2d75f0da7f6919c9861018b872c6e798a7259732e90
     home: https://replicator.eventstore.org
@@ -42,7 +42,7 @@ entries:
     - es-replicator-0.2.4.tgz
     version: 0.2.4
   - apiVersion: v1
-    created: "2021-07-27T13:50:12.105040922Z"
+    created: "2022-01-04T10:57:16.429038895Z"
     description: EventStore Replicator Helm chart
     digest: a9d44d7a55a493ee1473752f04541292a4e23137f6399551984cde91da94f371
     home: https://replicator.eventstore.org
@@ -52,7 +52,7 @@ entries:
     - es-replicator-0.2.3.tgz
     version: 0.2.3
   - apiVersion: v1
-    created: "2021-07-27T13:50:12.104730209Z"
+    created: "2022-01-04T10:57:16.428587092Z"
     description: EventStore Replicator Helm chart
     digest: 90f502dca19eca394e639b4916aa99f71cafdf9e2350b7bb6d5362d0a80fc7f0
     home: https://replicator.eventstore.org
@@ -62,7 +62,7 @@ entries:
     - es-replicator-0.2.2.tgz
     version: 0.2.2
   - apiVersion: v1
-    created: "2021-07-27T13:50:12.104399796Z"
+    created: "2022-01-04T10:57:16.427624086Z"
     description: EventStore Replicator Helm chart
     digest: 8351ade8579cedb3fa0d425fb521dde82b9e777d1a203506af8c1d42cb54da1f
     name: es-replicator
@@ -70,7 +70,7 @@ entries:
     - es-replicator-0.2.1.tgz
     version: 0.2.1
   - apiVersion: v1
-    created: "2021-07-27T13:50:12.104073784Z"
+    created: "2022-01-04T10:57:16.427298784Z"
     description: EventStore Replicator Helm chart
     digest: ab3693b27d17a3a8dfb561ce768eb0913bfd8298b79a73947d9d081cf88919b8
     name: es-replicator
@@ -78,7 +78,7 @@ entries:
     - es-replicator-0.2.0.tgz
     version: 0.2.0
   - apiVersion: v1
-    created: "2021-07-27T13:50:12.103788372Z"
+    created: "2022-01-04T10:57:16.426978182Z"
     description: EventStore Replicator Helm chart
     digest: 98ce4ef29293d79fd4a6d7c7a738e8b52fc894ff530115c3265cc1067de686fb
     name: es-replicator
@@ -86,7 +86,7 @@ entries:
     - es-replicator-0.1.4.tgz
     version: 0.1.4
   - apiVersion: v1
-    created: "2021-07-27T13:50:12.103509061Z"
+    created: "2022-01-04T10:57:16.42663278Z"
     description: EventStore Replicator Helm chart
     digest: 62fe96019dcb3f6c08280d436d557f9c664bdcd7ae81c8704e20724af75eec31
     name: es-replicator
@@ -94,7 +94,7 @@ entries:
     - es-replicator-0.1.3.tgz
     version: 0.1.3
   - apiVersion: v1
-    created: "2021-07-27T13:50:12.103243251Z"
+    created: "2022-01-04T10:57:16.426236378Z"
     description: EventStore Replicator Helm chart
     digest: c71e924d89e17cae8eb3f60ee462523e5da86c603a3204e7ca56723db3953e7e
     name: es-replicator
@@ -102,7 +102,7 @@ entries:
     - es-replicator-0.1.2.tgz
     version: 0.1.2
   - apiVersion: v1
-    created: "2021-07-27T13:50:12.10298074Z"
+    created: "2022-01-04T10:57:16.425924576Z"
     description: EventStore Replicator Helm chart
     digest: 60fa3b5390ad6ea86de66ffe20d4c45a7a52dd049a3be168f0327654d133eaea
     name: es-replicator
@@ -110,11 +110,11 @@ entries:
     - es-replicator-0.1.1.tgz
     version: 0.1.1
   - apiVersion: v1
-    created: "2021-07-27T13:50:12.102676128Z"
+    created: "2022-01-04T10:57:16.425640074Z"
     description: EventStore Replicator Helm chart
     digest: f927cff06e11012bba17c220561db799dda3a793cb171e26bae0b465c22f0cf9
     name: es-replicator
     urls:
     - es-replicator-0.1.0.tgz
     version: 0.1.0
-generated: "2021-07-27T13:50:12.102097406Z"
+generated: "2022-01-04T10:57:16.417950828Z"
