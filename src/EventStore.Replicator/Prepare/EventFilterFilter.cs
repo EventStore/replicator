@@ -1,50 +1,48 @@
-using System.Collections.Generic;
-using System.Threading.Tasks;
-using EventStore.Replicator.Shared.Contracts;
 using EventStore.Replicator.Shared.Observe;
 using EventStore.Replicator.Shared.Pipeline;
 using GreenPipes;
 using Ubiquitous.Metrics;
 
-namespace EventStore.Replicator.Prepare {
-    public class EventFilterFilter : IFilter<PrepareContext> {
-        readonly FilterEvent _filter;
+namespace EventStore.Replicator.Prepare; 
 
-        public EventFilterFilter(FilterEvent filter) => _filter = filter;
+public class EventFilterFilter : IFilter<PrepareContext> {
+    readonly FilterEvent _filter;
 
-        public async Task Send(PrepareContext context, IPipe<PrepareContext> next) {
-            if (context.OriginalEvent != null) {
-                var accept = await Metrics.Measure(
-                    () => _filter(context.OriginalEvent),
-                    ReplicationMetrics.PrepareHistogram
-                ).ConfigureAwait(false);
+    public EventFilterFilter(FilterEvent filter) => _filter = filter;
 
-                if (!accept) context.IgnoreEvent();
-                await next.Send(context).ConfigureAwait(false);
-            }
-        }
+    public async Task Send(PrepareContext context, IPipe<PrepareContext> next) {
+        // ReSharper disable once ConditionIsAlwaysTrueOrFalse
+        if (context.OriginalEvent != null) {
+            var accept = await Metrics.Measure(
+                () => _filter(context.OriginalEvent),
+                ReplicationMetrics.PrepareHistogram
+            ).ConfigureAwait(false);
 
-        public void Probe(ProbeContext context) { }
-    }
-
-    public class EventFilterSpecification : IPipeSpecification<PrepareContext> {
-        readonly FilterEvent? _filter;
-
-        public EventFilterSpecification(FilterEvent? filter) => _filter = filter;
-
-        public void Apply(IPipeBuilder<PrepareContext> builder)
-            => builder.AddFilter(new EventFilterFilter(_filter!));
-
-        public IEnumerable<ValidationResult> Validate() {
-            if (_filter == null)
-                yield return this.Failure("validationFilterPipe", "Event filter is missing");
+            if (!accept) context.IgnoreEvent();
+            await next.Send(context).ConfigureAwait(false);
         }
     }
 
-    public static class EventFilterPipeExtensions {
-        public static void UseEventFilter(
-            this IPipeConfigurator<PrepareContext> configurator, FilterEvent filter
-        )
-            => configurator.AddPipeSpecification(new EventFilterSpecification(filter));
+    public void Probe(ProbeContext context) { }
+}
+
+public class EventFilterSpecification : IPipeSpecification<PrepareContext> {
+    readonly FilterEvent? _filter;
+
+    public EventFilterSpecification(FilterEvent? filter) => _filter = filter;
+
+    public void Apply(IPipeBuilder<PrepareContext> builder)
+        => builder.AddFilter(new EventFilterFilter(_filter!));
+
+    public IEnumerable<ValidationResult> Validate() {
+        if (_filter == null)
+            yield return this.Failure("validationFilterPipe", "Event filter is missing");
     }
+}
+
+public static class EventFilterPipeExtensions {
+    public static void UseEventFilter(
+        this IPipeConfigurator<PrepareContext> configurator, FilterEvent filter
+    )
+        => configurator.AddPipeSpecification(new EventFilterSpecification(filter));
 }

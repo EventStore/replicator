@@ -68,6 +68,7 @@ resharper_csharp_wrap_after_invocation_lpar = true
 resharper_csharp_wrap_arguments_style = chop_if_long
 resharper_csharp_wrap_before_declaration_rpar = true
 resharper_csharp_wrap_before_invocation_rpar = true
+resharper_csharp_wrap_parameters_style = chop_if_long
 resharper_enforce_line_ending_style = true
 resharper_int_align_assignments = true
 resharper_int_align_nested_ternary = true

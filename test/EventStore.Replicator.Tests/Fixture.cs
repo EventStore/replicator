@@ -1,5 +1,3 @@
-using System.Linq;
-using System.Threading.Tasks;
 using DockerComposeFixture;
 using EventStore.Client;
 using EventStore.ClientAPI;
@@ -11,54 +9,54 @@ using Xunit;
 using Xunit.Abstractions;
 using Xunit.Sdk;
 
-namespace EventStore.Replicator.Tests {
-    public class Fixture : DockerFixture, IAsyncLifetime {
-        const string TcpConnectionString =
-            "ConnectTo=tcp://admin:changeit@localhost:1113; HeartBeatTimeout=500; UseSslConnection=false;";
-        const string GrpcConnectionString = "esdb://localhost:2114?tls=false";
+namespace EventStore.Replicator.Tests; 
 
-        public Fixture(IMessageSink output) : base(output) {
-            output.OnMessage(new DiagnosticMessage("Starting containers..."));
-            InitOnce(
-                () => new DockerFixtureOptions {
-                    DockerComposeFiles = new[] {"docker-compose.yml"},
-                    CustomUpTest       = o => o.Any(l => l.Contains("IS MASTER.."))
-                }
-            );
-            output.OnMessage(new DiagnosticMessage("Containers started"));
+public class Fixture : DockerFixture, IAsyncLifetime {
+    const string TcpConnectionString =
+        "ConnectTo=tcp://admin:changeit@localhost:1113; HeartBeatTimeout=500; UseSslConnection=false;";
+    const string GrpcConnectionString = "esdb://localhost:2114?tls=false";
 
-            TcpClient  = ConfigureEventStoreTcp(TcpConnectionString);
-            GrpcClient = ConfigureEventStoreGrpc(GrpcConnectionString);
+    public Fixture(IMessageSink output) : base(output) {
+        output.OnMessage(new DiagnosticMessage("Starting containers..."));
+        InitOnce(
+            () => new DockerFixtureOptions {
+                DockerComposeFiles = new[] {"docker-compose.yml"},
+                CustomUpTest       = o => o.Any(l => l.Contains("IS MASTER.."))
+            }
+        );
+        output.OnMessage(new DiagnosticMessage("Containers started"));
+
+        TcpClient  = ConfigureEventStoreTcp(TcpConnectionString);
+        GrpcClient = ConfigureEventStoreGrpc(GrpcConnectionString);
             
-            ReplicationMetrics.Configure(Metrics.CreateUsing(new NoMetricsProvider()));
-        }
+        ReplicationMetrics.Configure(Metrics.CreateUsing(new NoMetricsProvider()));
+    }
 
-        public IEventStoreConnection TcpClient       { get; }
-        public EventStoreClient      GrpcClient      { get; }
-        public CheckpointStore       CheckpointStore { get; } = new();
+    public IEventStoreConnection TcpClient       { get; }
+    public EventStoreClient      GrpcClient      { get; }
+    public CheckpointStore       CheckpointStore { get; } = new();
 
-        public async Task InitializeAsync() {
-            await TcpClient.ConnectAsync();
-        }
+    public async Task InitializeAsync() {
+        await TcpClient.ConnectAsync();
+    }
 
-        public Task DisposeAsync() {
-            TcpClient.Close();
-            return Task.CompletedTask;
-        }
+    public Task DisposeAsync() {
+        TcpClient.Close();
+        return Task.CompletedTask;
+    }
 
-        static IEventStoreConnection ConfigureEventStoreTcp(string connectionString) {
-            var builder = ConnectionSettings.Create()
-                .KeepReconnecting()
-                .KeepRetrying();
+    static IEventStoreConnection ConfigureEventStoreTcp(string connectionString) {
+        var builder = ConnectionSettings.Create()
+            .KeepReconnecting()
+            .KeepRetrying();
 
-            var connection = EventStoreConnection.Create(connectionString, builder);
+        var connection = EventStoreConnection.Create(connectionString, builder);
 
-            return connection;
-        }
+        return connection;
+    }
 
-        static EventStoreClient ConfigureEventStoreGrpc(string connectionString) {
-            var settings = EventStoreClientSettings.Create(connectionString);
-            return new EventStoreClient(settings);
-        }
+    static EventStoreClient ConfigureEventStoreGrpc(string connectionString) {
+        var settings = EventStoreClientSettings.Create(connectionString);
+        return new EventStoreClient(settings);
     }
 }

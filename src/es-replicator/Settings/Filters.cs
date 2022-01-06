@@ -1,26 +1,23 @@
-using System;
-using System.Linq;
 using EventStore.Replicator.Shared;
 using EventStore.Replicator.Shared.Pipeline;
-using Ubiquitous.Metrics.Internals;
 
-namespace es_replicator.Settings {
-    public static class EventFilters {
-        public static FilterEvent? GetFilter(Replicator settings, IEventReader reader) {
-            var filters = (settings.Filters ?? Array.Empty<Filter>()).Select(Configure).ToList();
-            if (settings.Scavenge) filters.Add(reader.Filter);
+namespace es_replicator.Settings; 
 
-            return filters.Count > 1
-                ? x => Filters.CombinedFilter(x, filters.ToArray())
-                : filters.Count == 0
-                    ? null
-                    : filters[0];
+public static class EventFilters {
+    public static FilterEvent? GetFilter(Replicator settings, IEventReader reader) {
+        var filters = (settings.Filters ?? Array.Empty<Filter>()).Select(Configure).ToList();
+        if (settings.Scavenge) filters.Add(reader.Filter);
 
-            static FilterEvent Configure(Filter cfg) => cfg.Type switch {
-                "eventType"  => new Filters.EventTypeFilter(cfg.Include, cfg.Exclude).Filter,
-                "streamName" => new Filters.StreamNameFilter(cfg.Include, cfg.Exclude).Filter,
-                _            => throw new ArgumentException($"Unknown filter: {cfg.Type}")
-            };
-        }
+        return filters.Count > 1
+            ? x => Filters.CombinedFilter(x, filters.ToArray())
+            : filters.Count == 0
+                ? null
+                : filters[0];
+
+        static FilterEvent Configure(Filter cfg) => cfg.Type switch {
+            "eventType"  => new Filters.EventTypeFilter(cfg.Include, cfg.Exclude).Filter,
+            "streamName" => new Filters.StreamNameFilter(cfg.Include, cfg.Exclude).Filter,
+            _            => throw new ArgumentException($"Unknown filter: {cfg.Type}")
+        };
     }
 }

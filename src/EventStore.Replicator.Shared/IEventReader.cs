@@ -1,14 +1,13 @@
-using System;
-using System.Threading;
-using System.Threading.Tasks;
 using EventStore.Replicator.Shared.Contracts;
 
-namespace EventStore.Replicator.Shared {
-    public interface IEventReader {
-        Task ReadEvents(Position fromPosition, Func<BaseOriginalEvent, ValueTask> next, CancellationToken cancellationToken);
+namespace EventStore.Replicator.Shared; 
 
-        Task<long> GetLastPosition(CancellationToken cancellationToken);
+public interface IEventReader {
+    string Protocol { get; }
+        
+    Task ReadEvents(Position fromPosition, Func<BaseOriginalEvent, ValueTask> next, CancellationToken cancellationToken);
 
-        ValueTask<bool> Filter(BaseOriginalEvent originalEvent);
-    }
+    Task<long> GetLastPosition(CancellationToken cancellationToken);
+
+    ValueTask<bool> Filter(BaseOriginalEvent originalEvent);
 }
