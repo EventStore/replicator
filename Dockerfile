@@ -1,5 +1,5 @@
 ARG BUILDER_IMG=registry.ubiquitous.no/gitlab/dotnet-node-image:latest
-ARG RUNNER_IMG=mcr.microsoft.com/dotnet/aspnet:5.0
+ARG RUNNER_IMG=mcr.microsoft.com/dotnet/aspnet:6.0
 
 FROM $BUILDER_IMG AS builder
 
