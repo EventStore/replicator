@@ -12,7 +12,11 @@ public record EsdbSettings {
 }
 
 public record Checkpoint {
-    public string Path { get; init; }
+    public string Path            { get; init; }
+    public string Type            { get; init; } = "file";
+    public int    CheckpointAfter { get; init; } = 1000;
+    public string Database        { get; init; } = "replicator";
+    public string InstanceId      { get; init; } = "default";
 }
 
 public record SinkSettings : EsdbSettings {

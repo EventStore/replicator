@@ -6,6 +6,7 @@ using Serilog.Events;
 using Serilog.Formatting.Compact;
 using es_replicator.Settings;
 using EventStore.Replicator;
+using ConfigurationExtensions = es_replicator.Settings.ConfigurationExtensions;
 
 var environment = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT");
 var isDebug     = Environment.GetEnvironmentVariable("REPLICATOR_DEBUG") != null;
@@ -27,23 +28,18 @@ Log.Logger = logConfig.CreateLogger();
 var fileInfo = FileVersionInfo.GetVersionInfo(Assembly.GetExecutingAssembly().Location);
 Log.Information("Starting replicator {Version}", fileInfo.ProductVersion);
 
-var host = Host.CreateDefaultBuilder(args)
-    .ConfigureWebHostDefaults(
-        webBuilder => {
-            webBuilder.UseSerilog();
-            webBuilder.UseStartup<Startup>();
-        }
-    )
-    .ConfigureAppConfiguration(
-        config => config
-            .AddYamlFile("./config/appsettings.yaml", false, true)
-            .AndEnvConfig()
-    )
-    .Build();
-var restartOnFailure = host.Services.GetService<ReplicatorOptions>()?.RestartOnFailure == true;
+var builder = WebApplication.CreateBuilder(args);
+builder.Host.UseSerilog();
+builder.Configuration.AddYamlFile("./config/appsettings.yaml", false, true).AndEnvConfig();
+Startup.ConfigureServices(builder);
+
+var app = builder.Build();
+Startup.Configure(app);
+
+var restartOnFailure = app.Services.GetService<ReplicatorOptions>()?.RestartOnFailure == true;
 
 try {
-    host.Run();
+    app.Run();
     return 0;
 }
 catch (Exception ex) {
