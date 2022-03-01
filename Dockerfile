@@ -17,7 +17,7 @@ RUN cd ./src/es-replicator/ClientApp && yarn install
 
 # copy everything else, build and publish the final binaries
 COPY ./src ./src
-RUN dotnet publish ./src/es-replicator -c Release -r linux-x64 --no-restore --no-self-contained -clp:NoSummary -o /app/publish \
+RUN dotnet publish ./src/es-replicator -c Release -r linux-x64 --no-restore --no-self-contained -clp:NoSummary -o /app/publish
 /p:PublishReadyToRun=true,PublishSingleFile=false
 
 # Create final runtime image
@@ -32,4 +32,4 @@ ENV ALLOWED_HOSTS "*"
 ENV ASPNETCORE_URLS "http://*:5000"
 
 EXPOSE 5000
-ENTRYPOINT ["./es-replicator"]
+ENTRYPOINT ["dotnet es-replicator.dll"]
