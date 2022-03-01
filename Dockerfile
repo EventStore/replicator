@@ -18,7 +18,6 @@ RUN cd ./src/es-replicator/ClientApp && yarn install
 # copy everything else, build and publish the final binaries
 COPY ./src ./src
 RUN dotnet publish ./src/es-replicator -c Release -r linux-x64 --no-restore --no-self-contained -clp:NoSummary -o /app/publish
-/p:PublishReadyToRun=true,PublishSingleFile=false
 
 # Create final runtime image
 FROM $RUNNER_IMG AS runner
