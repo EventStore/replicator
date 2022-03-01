@@ -10,7 +10,7 @@ public class KafkaConfigurator : IConfigurator {
     public KafkaConfigurator(string router) => _router = router;
 
     public IEventReader ConfigureReader(string connectionString) {
-        throw new System.NotImplementedException("Kafka reader is not supported");
+        throw new NotImplementedException("Kafka reader is not supported");
     }
 
     public IEventWriter ConfigureWriter(string connectionString)

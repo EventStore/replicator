@@ -38,25 +38,25 @@ public class KafkaWriter : IEventWriter {
         return Metrics.Measure(() => task, ReplicationMetrics.WritesHistogram, ReplicationMetrics.WriteErrorsCount);
 
         async Task<long> Append(ProposedEvent p) {
-            var route = _route(p);
+            var (topic, partitionKey) = _route(p);
 
             _debug?.Invoke(
                 "Kafka: Write event with id {Id} of type {Type} to {Stream} with original position {Position}",
                 new object[] {
                     proposedEvent.EventDetails.EventId,
                     proposedEvent.EventDetails.EventType,
-                    route.Topic,
+                    topic,
                     proposedEvent.SourcePosition.EventPosition
                 }
             );
 
             // TODO: Map meta to headers, but only for JSON
             var message = new Message<string, byte[]> {
-                Key   = route.PartitionKey,
+                Key   = partitionKey,
                 Value = p.Data
             };
 
-            var result = await _producer.ProduceAsync(route.Topic, message, cancellationToken)
+            var result = await _producer.ProduceAsync(topic, message, cancellationToken)
                 .ConfigureAwait(false);
             return result.Offset.Value;
         }
