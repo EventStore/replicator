@@ -4,44 +4,44 @@ using Jint;
 using Jint.Native;
 using Jint.Native.Json;
 
-namespace EventStore.Replicator.Kafka {
-    public class KafkaJsMessageRouter {
-        readonly TypedJsFunction<RouteEvent, MessageRoute> _function;
+namespace EventStore.Replicator.Kafka; 
 
-        public KafkaJsMessageRouter(string routingFunction) {
-            _function = new TypedJsFunction<RouteEvent, MessageRoute>(
-                routingFunction,
-                "route",
-                AsRoute
-            );
+public class KafkaJsMessageRouter {
+    readonly TypedJsFunction<RouteEvent, MessageRoute> _function;
 
-            static MessageRoute AsRoute(JsValue result, RouteEvent evt) {
-                if (result == null || result.IsUndefined() || !result.IsObject())
-                    return DefaultRouters.RouteByCategory(evt.Stream);
+    public KafkaJsMessageRouter(string routingFunction) {
+        _function = new TypedJsFunction<RouteEvent, MessageRoute>(
+            routingFunction,
+            "route",
+            AsRoute
+        );
 
-                var obj = result.AsObject();
+        static MessageRoute AsRoute(JsValue result, RouteEvent evt) {
+            if (result == null || result.IsUndefined() || !result.IsObject())
+                return DefaultRouters.RouteByCategory(evt.Stream);
 
-                return new MessageRoute(
-                    obj.Get("topic").AsString(),
-                    obj.Get("partitionKey").AsString()
-                );
-            }
-        }
+            var obj = result.AsObject();
 
-        public MessageRoute Route(ProposedEvent evt) {
-            var parser = new JsonParser(_function.Engine);
-            return _function.Execute(
-                new RouteEvent(
-                    evt.EventDetails.Stream,
-                    evt.EventDetails.EventType,
-                    parser.Parse(evt.Data.AsUtf8String()),
-                    parser.Parse(evt.Metadata?.AsUtf8String())
-                )
+            return new MessageRoute(
+                obj.Get("topic").AsString(),
+                obj.Get("partitionKey").AsString()
             );
         }
     }
 
-    record RouteEvent(string Stream, string EventType, object Data, object? Meta);
-
-    public record MessageRoute(string Topic, string PartitionKey);
+    public MessageRoute Route(ProposedEvent evt) {
+        var parser = new JsonParser(_function.Engine);
+        return _function.Execute(
+            new RouteEvent(
+                evt.EventDetails.Stream,
+                evt.EventDetails.EventType,
+                parser.Parse(evt.Data.AsUtf8String()),
+                parser.Parse(evt.Metadata?.AsUtf8String())
+            )
+        );
+    }
 }
+
+record RouteEvent(string Stream, string EventType, object Data, object? Meta);
+
+public record MessageRoute(string Topic, string PartitionKey);

@@ -1,6 +1,6 @@
 <Project Sdk="Microsoft.NET.Sdk">
     <ItemGroup>
-      <PackageReference Include="EventStore.Client.Grpc.Streams" Version="21.2.0" />
+      <PackageReference Include="EventStore.Client.Grpc.Streams" Version="22.0.0" />
     </ItemGroup>
 
     <ItemGroup>

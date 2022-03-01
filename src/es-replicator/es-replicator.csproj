@@ -8,12 +8,12 @@
 
     <ItemGroup>
         <PackageReference Include="Serilog" Version="2.10.0" />
-        <PackageReference Include="Serilog.AspNetCore" Version="4.1.0" />
-        <PackageReference Include="prometheus-net.AspNetCore" Version="4.1.1" />
-        <PackageReference Include="NetEscapades.Configuration.Yaml" Version="2.1.0" />
-        <PackageReference Include="Serilog.Sinks.File" Version="4.1.0" />
-        <PackageReference Include="Microsoft.AspNetCore.SpaServices.Extensions" Version="5.0.6" />
-        <PackageReference Include="Ubiquitous.Metrics.Prometheus" Version="0.2.2" />
+        <PackageReference Include="Serilog.AspNetCore" Version="5.0.0" />
+        <PackageReference Include="prometheus-net.AspNetCore" Version="5.0.2" />
+        <PackageReference Include="NetEscapades.Configuration.Yaml" Version="2.2.0" />
+        <PackageReference Include="Serilog.Sinks.File" Version="5.0.0" />
+        <PackageReference Include="Microsoft.AspNetCore.SpaServices.Extensions" Version="6.0.2" />
+        <PackageReference Include="Ubiquitous.Metrics.Prometheus" Version="0.4.0" />
     </ItemGroup>
 
     <ItemGroup>
@@ -22,6 +22,7 @@
         <ProjectReference Include="..\EventStore.Replicator.Http\EventStore.Replicator.Http.csproj" />
         <ProjectReference Include="..\EventStore.Replicator.JavaScript\EventStore.Replicator.JavaScript.csproj" />
         <ProjectReference Include="..\EventStore.Replicator.Kafka\EventStore.Replicator.Kafka.csproj" />
+        <ProjectReference Include="..\EventStore.Replicator.Mongo\EventStore.Replicator.Mongo.csproj" />
         <ProjectReference Include="..\EventStore.Replicator\EventStore.Replicator.csproj" />
     </ItemGroup>
 
