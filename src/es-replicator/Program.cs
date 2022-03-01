@@ -1,17 +1,11 @@
-using System;
 using System.Diagnostics;
 using System.Reflection;
-using System.Threading.Tasks;
 using es_replicator;
-using Microsoft.AspNetCore.Hosting;
-using Microsoft.Extensions.Hosting;
 using Serilog;
 using Serilog.Events;
 using Serilog.Formatting.Compact;
 using es_replicator.Settings;
 using EventStore.Replicator;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
 
 var environment = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT");
 var isDebug     = Environment.GetEnvironmentVariable("REPLICATOR_DEBUG") != null;

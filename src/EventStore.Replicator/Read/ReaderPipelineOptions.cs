@@ -1,5 +1,2 @@
-using EventStore.Replicator.Shared;
-
-namespace EventStore.Replicator.Read {
-    // public record ReaderPipelineOptions(IEventReader Reader, )
-}
+namespace EventStore.Replicator.Read; 
+// public record ReaderPipelineOptions(IEventReader Reader, )
