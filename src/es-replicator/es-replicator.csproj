@@ -22,6 +22,7 @@
         <ProjectReference Include="..\EventStore.Replicator.Http\EventStore.Replicator.Http.csproj" />
         <ProjectReference Include="..\EventStore.Replicator.JavaScript\EventStore.Replicator.JavaScript.csproj" />
         <ProjectReference Include="..\EventStore.Replicator.Kafka\EventStore.Replicator.Kafka.csproj" />
+        <ProjectReference Include="..\EventStore.Replicator.Mongo\EventStore.Replicator.Mongo.csproj" />
         <ProjectReference Include="..\EventStore.Replicator\EventStore.Replicator.csproj" />
     </ItemGroup>
 

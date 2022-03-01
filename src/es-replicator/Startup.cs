@@ -7,6 +7,7 @@ using EventStore.Replicator.Sink;
 using EventStore.Replicator.Esdb.Tcp;
 using EventStore.Replicator.JavaScript;
 using EventStore.Replicator.Kafka;
+using EventStore.Replicator.Mongo;
 using EventStore.Replicator.Prepare;
 using Prometheus;
 using Ensure = EventStore.Replicator.Shared.Ensure;
@@ -14,19 +15,13 @@ using Replicator = es_replicator.Settings.Replicator;
 
 namespace es_replicator; 
 
-public class Startup {
-    IConfiguration      Configuration { get; }
-    IWebHostEnvironment Environment   { get; }
+static class Startup {
+    public static void ConfigureServices(WebApplicationBuilder builder) {
+        Measurements.ConfigureMetrics(builder.Environment.EnvironmentName);
 
-    public Startup(IConfiguration configuration, IWebHostEnvironment environment) {
-        Configuration = configuration;
-        Environment   = environment;
-    }
+        var replicatorOptions = builder.Configuration.GetAs<Replicator>();
 
-    public void ConfigureServices(IServiceCollection services) {
-        Measurements.ConfigureMetrics(Environment.EnvironmentName);
-
-        var replicatorOptions = Configuration.GetAs<Replicator>();
+        var services = builder.Services;
 
         services.AddSingleton<Factory>();
 
@@ -79,9 +74,7 @@ public class Startup {
             new ReplicatorOptions(replicatorOptions.RestartOnFailure, replicatorOptions.RunContinuously)
         );
 
-        services.AddSingleton<ICheckpointStore>(
-            new FileCheckpointStore(replicatorOptions.Checkpoint.Path, 1000)
-        );
+        RegisterCheckpointStore(replicatorOptions.Checkpoint, services);
         services.AddHostedService<ReplicatorService>();
         services.Configure<HostOptions>(opts => opts.ShutdownTimeout = TimeSpan.FromMinutes(5));
         services.AddSingleton<CountersKeep>();
@@ -91,7 +84,7 @@ public class Startup {
         services.AddCors();
     }
 
-    public void Configure(IApplicationBuilder app) {
+    public static void Configure(IApplicationBuilder app) {
         app.UseDeveloperExceptionPage();
 
         app.UseCors(
@@ -117,4 +110,17 @@ public class Startup {
 
         app.UseSpa(spa => spa.Options.SourcePath = "ClientApp");
     }
+    static void RegisterCheckpointStore(Checkpoint settings, IServiceCollection services) {
+        ICheckpointStore store = settings.Type switch {
+            "file" => new FileCheckpointStore(settings.Path, settings.CheckpointAfter),
+            "mongo" => new MongoCheckpointStore(
+                settings.Path,
+                settings.Database,
+                settings.InstanceId,
+                settings.CheckpointAfter
+            ),
+            _ => throw new ArgumentOutOfRangeException($"Unknown checkpoint store type: {settings.Type}")
+        };
+        services.AddSingleton(store);
+    } 
 }
