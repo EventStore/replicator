@@ -20,6 +20,7 @@ class Realtime {
 
         _started = true;
         return _client.SubscribeToAllAsync(
+            FromAll.End, 
             (_, evt, _) => HandleEvent(evt),
             subscriptionDropped: HandleDrop
         );

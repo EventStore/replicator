@@ -10,11 +10,11 @@ using Position = EventStore.Client.Position;
 using StreamAcl = EventStore.Replicator.Shared.Contracts.StreamAcl;
 using StreamMetadata = EventStore.Client.StreamMetadata;
 
-namespace EventStore.Replicator.Esdb.Grpc; 
+namespace EventStore.Replicator.Esdb.Grpc;
 
 public class GrpcEventReader : IEventReader {
     public string Protocol => "grpc";
-        
+
     readonly ILog  _log;
     readonly ILog? _debugLog;
 
@@ -35,7 +35,9 @@ public class GrpcEventReader : IEventReader {
     }
 
     public async Task ReadEvents(
-        Shared.Position fromPosition, Func<BaseOriginalEvent, ValueTask> next, CancellationToken cancellationToken
+        Shared.Position                    fromPosition,
+        Func<BaseOriginalEvent, ValueTask> next,
+        CancellationToken                  cancellationToken
     ) {
         var sequence     = 0;
         var lastPosition = 0L;
@@ -44,12 +46,11 @@ public class GrpcEventReader : IEventReader {
 
         await _realtime.Start();
 
+        var (_, eventPosition) = fromPosition;
+
         var read = _client.ReadAllAsync(
             Direction.Forwards,
-            new Position(
-                fromPosition.EventPosition,
-                fromPosition.EventPosition
-            ),
+            new Position(eventPosition, eventPosition),
             cancellationToken: cancellationToken
         );
 
@@ -59,7 +60,7 @@ public class GrpcEventReader : IEventReader {
             using var activity = new Activity("read");
             activity.Start();
 
-            var hasValue = await Metrics.Measure(
+            var hasValue = await Metrics.MeasureValueTask(
                 () => enumerator.MoveNextAsync(cancellationToken),
                 ReplicationMetrics.ReadsHistogram,
                 ReplicationMetrics.ReadErrorsCount
@@ -68,7 +69,7 @@ public class GrpcEventReader : IEventReader {
             if (!hasValue) break;
 
             var evt = enumerator.Current;
-            lastPosition = (long) (evt.OriginalPosition?.CommitPosition ?? 0);
+            lastPosition = (long)(evt.OriginalPosition?.CommitPosition ?? 0);
 
             _debugLog?.Debug(
                 "gRPC: Read event with id {Id} of type {Type} from {Stream} at {Position}",
@@ -111,10 +112,10 @@ public class GrpcEventReader : IEventReader {
             Direction.Backwards,
             Position.End,
             1,
-            resolveLinkTos: false,
+            false,
             cancellationToken: cancellationToken
         ).ToArrayAsync(cancellationToken).ConfigureAwait(false);
-        var position = (long?) events[0].OriginalPosition?.CommitPosition;
+        var position = (long?)events[0].OriginalPosition?.CommitPosition;
         return position ?? 0L;
     }
 

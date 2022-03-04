@@ -13,7 +13,7 @@ public class EventFilterFilter : IFilter<PrepareContext> {
     public async Task Send(PrepareContext context, IPipe<PrepareContext> next) {
         // ReSharper disable once ConditionIsAlwaysTrueOrFalse
         if (context.OriginalEvent != null) {
-            var accept = await Metrics.Measure(
+            var accept = await Metrics.MeasureValueTask(
                 () => _filter(context.OriginalEvent),
                 ReplicationMetrics.PrepareHistogram
             ).ConfigureAwait(false);

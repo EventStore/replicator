@@ -1,6 +1,6 @@
 <Project Sdk="Microsoft.NET.Sdk">
     <ItemGroup>
-        <PackageReference Include="GreenPipes" Version="4.0.0" />
+        <PackageReference Include="GreenPipes" Version="4.0.1" />
     </ItemGroup>
 
     <ItemGroup>

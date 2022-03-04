@@ -57,7 +57,7 @@ public class GrpcEventWriter : IEventWriter {
             if (Log.IsDebugEnabled())
                 Log.Debug("Deleting stream {Stream}", stream);
 
-            var result = await _client.SoftDeleteAsync(
+            var result = await _client.DeleteAsync(
                 stream,
                 StreamState.Any,
                 cancellationToken: cancellationToken
