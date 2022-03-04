@@ -1,10 +1,12 @@
-﻿using EventStore.Replicator.Shared.Contracts;
+﻿using Esprima;
+using EventStore.Replicator.Shared.Contracts;
 using EventStore.Replicator.Shared.Logging;
 using Jint;
 using Jint.Native;
 using Jint.Native.Json;
 using Jint.Native.Object;
 using JsonSerializer = System.Text.Json.JsonSerializer;
+// ReSharper disable NotAccessedPositionalProperty.Local
 
 namespace EventStore.Replicator.JavaScript; 
 
@@ -20,7 +22,7 @@ public class JsTransform {
             HandleResponse
         );
 
-        static TransformedEvent? HandleResponse(JsValue result, TransformEvent original) {
+        static TransformedEvent? HandleResponse(JsValue? result, TransformEvent original) {
             if (result == null || result.IsUndefined()) {
                 Log.Debug("Got empty response, ignoring");
                 return null;
@@ -66,9 +68,9 @@ public class JsTransform {
         }
     }
 
-    public ValueTask<BaseProposedEvent> Transform(
-        OriginalEvent original, CancellationToken cancellationToken
-    ) {
+    static readonly ParserOptions ParserOptions = new() { Tolerant = true };
+
+    public ValueTask<BaseProposedEvent> Transform( OriginalEvent original, CancellationToken cancellationToken ) {
         var parser = new JsonParser(_function.Engine);
 
         var result = _function.Execute(
@@ -77,7 +79,7 @@ public class JsTransform {
                 original.EventDetails.Stream,
                 original.EventDetails.EventType,
                 parser.Parse(original.Data.AsUtf8String()),
-                parser.Parse(original.Metadata?.AsUtf8String())
+                ParseMeta()
             )
         );
 
@@ -91,6 +93,18 @@ public class JsTransform {
                 original.SequenceNumber
             );
         return new ValueTask<BaseProposedEvent>(evt);
+
+        JsValue? ParseMeta() {
+            if (original.Metadata == null) return null;
+            var metaString = original.Metadata.AsUtf8String();
+
+            try {
+                return metaString.Length == 0 ? null : parser.Parse(metaString, ParserOptions);
+            }
+            catch (Exception) {
+                return null;
+            }
+        }
     }
 
     record TransformEvent(
