@@ -14,6 +14,20 @@ Implemented readers and writers:
 
 EventStoreDB readers implement one additional filter, which executes during the read. This filter checks metadata for all streams it gets events for and tries (best effort) to skip events, which should've been scavenged based on previous deletions, max count and max age.
 
+## Build
+
+On a standard x64 architecture:
+
+```sh
+docker build .
+```
+
+On an arm64 / Mac apple silicium:
+
+```sh
+docker build --build-arg RUNTIME=linux-arm64 .
+```
+
 ## Documentation
 
 Find out the details, including deployment scenarios, in the [documentation](https://replicator.eventstore.org).
