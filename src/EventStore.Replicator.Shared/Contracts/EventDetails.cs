@@ -1,15 +1,13 @@
-using System;
+namespace EventStore.Replicator.Shared.Contracts; 
 
-namespace EventStore.Replicator.Shared.Contracts {
-    public record EventDetails(
-        string Stream,
-        Guid   EventId,
-        string EventType,
-        string ContentType
-    );
+public record EventDetails(
+    string Stream,
+    Guid   EventId,
+    string EventType,
+    string ContentType
+);
 
-    public static class ContentTypes {
-        public const string Json   = "application/json";
-        public const string Binary = "application/octet-stream";
-    }
+public static class ContentTypes {
+    public const string Json   = "application/json";
+    public const string Binary = "application/octet-stream";
 }

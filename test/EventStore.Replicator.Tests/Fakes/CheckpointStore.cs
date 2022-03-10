@@ -1,15 +1,13 @@
-using System.Threading;
-using System.Threading.Tasks;
 using EventStore.Replicator.Shared;
 
-namespace EventStore.Replicator.Tests.Fakes {
-    public class CheckpointStore : ICheckpointStore {
-        public ValueTask<Position> LoadCheckpoint(CancellationToken cancellationToken)
-            => ValueTask.FromResult(Position.Start);
+namespace EventStore.Replicator.Tests.Fakes; 
 
-        public ValueTask StoreCheckpoint(Position position, CancellationToken cancellationToken)
-            => ValueTask.CompletedTask;
+public class CheckpointStore : ICheckpointStore {
+    public ValueTask<Position> LoadCheckpoint(CancellationToken cancellationToken)
+        => ValueTask.FromResult(Position.Start);
 
-        public ValueTask Flush(CancellationToken cancellationToken) => ValueTask.CompletedTask;
-    }
+    public ValueTask StoreCheckpoint(Position position, CancellationToken cancellationToken)
+        => ValueTask.CompletedTask;
+
+    public ValueTask Flush(CancellationToken cancellationToken) => ValueTask.CompletedTask;
 }

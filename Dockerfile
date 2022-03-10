@@ -1,6 +1,7 @@
-ARG BUILDER_IMG=mcr.microsoft.com/dotnet/sdk:5.0
-ARG RUNNER_IMG=mcr.microsoft.com/dotnet/aspnet:5.0
+ARG BUILDER_IMG=mcr.microsoft.com/dotnet/sdk:6.0
+ARG RUNNER_IMG=mcr.microsoft.com/dotnet/aspnet:6.0
 ARG RUNTIME=linux-x64
+
 FROM $BUILDER_IMG AS builder
 
 WORKDIR /app
@@ -22,8 +23,7 @@ RUN cd ./src/es-replicator/ClientApp && yarn install
 
 # copy everything else, build and publish the final binaries
 COPY ./src ./src
-RUN dotnet publish ./src/es-replicator -c Release --runtime=${RUNTIME} --no-restore --no-self-contained -clp:NoSummary -o /app/publish \
-/p:PublishReadyToRun=true,PublishSingleFile=false
+RUN dotnet publish ./src/es-replicator -c Release -r linux-x64 --no-restore --no-self-contained -clp:NoSummary -o /app/publish
 
 # Create final runtime image
 FROM $RUNNER_IMG AS runner
@@ -37,4 +37,4 @@ ENV ALLOWED_HOSTS "*"
 ENV ASPNETCORE_URLS "http://*:5000"
 
 EXPOSE 5000
-ENTRYPOINT ["./es-replicator"]
+ENTRYPOINT ["dotnet es-replicator.dll"]
