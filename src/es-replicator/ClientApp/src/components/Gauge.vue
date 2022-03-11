@@ -10,7 +10,7 @@ export default {
     name: "Gauge",
     props: {
         title: String,
-        value: Number
+        value: String
     }
 }
 </script>

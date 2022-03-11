@@ -4,7 +4,6 @@ import router from "./router";
 import {store, key} from "./store";
 // @ts-ignore
 import installElementPlus from "./plugins/element.js";
-import "./element-variables.scss";
 
 const app = createApp(App);
 installElementPlus(app);

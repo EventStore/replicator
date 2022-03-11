@@ -7,7 +7,7 @@
 </template>
 
 <script lang="ts">
-import {ref, computed} from "vue";
+import {computed} from "vue";
 
 export default {
     name: "ChannelSize",
