@@ -24,7 +24,7 @@ spec:
         tier: web
     spec:
       containers:
-      - image: eu.gcr.io/esc-platform-advocacy/eventstore/replicator:latest
+      - image: eventstore/replicator:0.4.3
         imagePullPolicy: Always
         livenessProbe:
           httpGet:
