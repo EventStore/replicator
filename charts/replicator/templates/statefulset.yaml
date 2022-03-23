@@ -24,7 +24,7 @@ spec:
         tier: web
     spec:
       containers:
-      - image: eventstore/replicator:0.4.4
+      - image: eventstore/replicator:0.4.5
         imagePullPolicy: Always
         livenessProbe:
           httpGet:
