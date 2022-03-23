@@ -6,8 +6,6 @@ using Ubiquitous.Metrics;
 namespace EventStore.Replicator.Kafka; 
 
 public class KafkaWriter : IEventWriter {
-    public string Protocol => "kafka";
-
     static readonly ILog Log = LogProvider.GetCurrentClassLogger();
 
     readonly IProducer<string, byte[]>         _producer;
@@ -25,6 +23,8 @@ public class KafkaWriter : IEventWriter {
         if (routingFunction != null)
             _route = new KafkaJsMessageRouter(routingFunction).Route;
     }
+
+    public Task Start() => Task.CompletedTask;
 
     public Task<long> WriteEvent(BaseProposedEvent proposedEvent, CancellationToken cancellationToken) {
         var task = proposedEvent switch {

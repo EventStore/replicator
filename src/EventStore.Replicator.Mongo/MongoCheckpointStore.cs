@@ -35,6 +35,9 @@ public class MongoCheckpointStore : ICheckpointStore {
 
         if (doc == null) {
             Log.Info("No checkpoint file found, starting from the beginning");
+
+            await _collection.InsertOneAsync(new Checkpoint(_id, Position.Start), cancellationToken: cancellationToken)
+                .ConfigureAwait(false);
             return Position.Start;
         }
 

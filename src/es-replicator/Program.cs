@@ -6,9 +6,9 @@ using Serilog.Events;
 using Serilog.Formatting.Compact;
 using es_replicator.Settings;
 using EventStore.Replicator;
-using ConfigurationExtensions = es_replicator.Settings.ConfigurationExtensions;
 
-var environment = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT");
+var builder = WebApplication.CreateBuilder(args);
+
 var isDebug     = Environment.GetEnvironmentVariable("REPLICATOR_DEBUG") != null;
 var logConfig   = new LoggerConfiguration();
 logConfig = isDebug ? logConfig.MinimumLevel.Debug() : logConfig.MinimumLevel.Information();
@@ -19,7 +19,7 @@ logConfig = logConfig
     .MinimumLevel.Override("Grpc", LogEventLevel.Error)
     .Enrich.FromLogContext();
 
-logConfig = environment?.ToLower() == "development"
+logConfig = builder.Environment.IsDevelopment()
     ? logConfig.WriteTo.Console(
         outputTemplate: "[{Timestamp:HH:mm:ss} {Level:u3}] {Message:lj} <s:{SourceContext}>;{NewLine}{Exception}"
     )
@@ -28,7 +28,6 @@ Log.Logger = logConfig.CreateLogger();
 var fileInfo = FileVersionInfo.GetVersionInfo(Assembly.GetExecutingAssembly().Location);
 Log.Information("Starting replicator {Version}", fileInfo.ProductVersion);
 
-var builder = WebApplication.CreateBuilder(args);
 builder.Host.UseSerilog();
 builder.Configuration.AddYamlFile("./config/appsettings.yaml", false, true).AndEnvConfig();
 Startup.ConfigureServices(builder);

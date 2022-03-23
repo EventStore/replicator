@@ -14,4 +14,8 @@ replicator:
     bufferSize: 1000
   filters: []
   checkpoint:
-    path: "./checkpoint"
+    type: "mongo"
+    path: "mongodb://mongoadmin:secret@localhost:27017"
+    database: "replicator"
+    instanceId: "test"
+    checkpointAfter: 10

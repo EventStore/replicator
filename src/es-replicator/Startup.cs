@@ -1,3 +1,4 @@
+using System.Collections.Immutable;
 using es_replicator.HttpApi;
 using es_replicator.Settings;
 using EventStore.Replicator;
@@ -13,7 +14,7 @@ using Prometheus;
 using Ensure = EventStore.Replicator.Shared.Ensure;
 using Replicator = es_replicator.Settings.Replicator;
 
-namespace es_replicator; 
+namespace es_replicator;
 
 static class Startup {
     public static void ConfigureServices(WebApplicationBuilder builder) {
@@ -26,7 +27,7 @@ static class Startup {
         services.AddSingleton<Factory>();
 
         services.AddSingleton<IConfigurator, TcpConfigurator>(
-            _ => new TcpConfigurator(replicatorOptions.Reader.PageSize, services)
+            _ => new TcpConfigurator(replicatorOptions.Reader.PageSize)
         );
         services.AddSingleton<IConfigurator, GrpcConfigurator>();
 
@@ -62,8 +63,7 @@ static class Startup {
         );
 
         services.AddSingleton(
-            sp => new SinkPipeOptions(
-                sp.GetRequiredService<IEventWriter>(),
+            new SinkPipeOptions(
                 replicatorOptions.Sink.PartitionCount,
                 replicatorOptions.Sink.BufferSize,
                 FunctionLoader.LoadFile(replicatorOptions.Sink.Partitioner, "Partitioner")
@@ -84,7 +84,7 @@ static class Startup {
         services.AddCors();
     }
 
-    public static void Configure(IApplicationBuilder app) {
+    public static void Configure(WebApplication app) {
         app.UseDeveloperExceptionPage();
 
         app.UseCors(
@@ -99,17 +99,12 @@ static class Startup {
         app.UseStaticFiles();
         app.UseSpaStaticFiles();
 
-        app.UseRouting();
-
-        app.UseEndpoints(
-            endpoints => {
-                endpoints.MapControllers();
-                endpoints.MapMetrics();
-            }
-        );
+        app.MapControllers();
+        app.MapMetrics();
 
         app.UseSpa(spa => spa.Options.SourcePath = "ClientApp");
     }
+
     static void RegisterCheckpointStore(Checkpoint settings, IServiceCollection services) {
         ICheckpointStore store = settings.Type switch {
             "file" => new FileCheckpointStore(settings.Path, settings.CheckpointAfter),
@@ -122,5 +117,5 @@ static class Startup {
             _ => throw new ArgumentOutOfRangeException($"Unknown checkpoint store type: {settings.Type}")
         };
         services.AddSingleton(store);
-    } 
+    }
 }

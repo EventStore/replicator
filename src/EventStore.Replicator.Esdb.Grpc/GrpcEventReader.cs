@@ -107,7 +107,7 @@ public class GrpcEventReader : IEventReader {
         _log.Info("Reached the end of the stream at {Position}", lastPosition);
     }
 
-    public async Task<long> GetLastPosition(CancellationToken cancellationToken) {
+    public async Task<long?> GetLastPosition(CancellationToken cancellationToken) {
         var events = await _client.ReadAllAsync(
             Direction.Backwards,
             Position.End,
@@ -115,8 +115,7 @@ public class GrpcEventReader : IEventReader {
             false,
             cancellationToken: cancellationToken
         ).ToArrayAsync(cancellationToken).ConfigureAwait(false);
-        var position = (long?)events[0].OriginalPosition?.CommitPosition;
-        return position ?? 0L;
+        return (long?)events[0].OriginalPosition?.CommitPosition;
     }
 
     static IgnoredOriginalEvent MapIgnored(ResolvedEvent evt, int sequence, Activity activity)

@@ -7,7 +7,7 @@ using Position = EventStore.ClientAPI.Position;
 using StreamAcl = EventStore.Replicator.Shared.Contracts.StreamAcl;
 using StreamMetadata = EventStore.ClientAPI.StreamMetadata;
 
-namespace EventStore.Replicator.Esdb.Tcp; 
+namespace EventStore.Replicator.Esdb.Tcp;
 
 public class TcpEventReader : IEventReader {
     public string Protocol => "tcp";
@@ -20,27 +20,40 @@ public class TcpEventReader : IEventReader {
     int                            _pageSize;
     readonly ScavengedEventsFilter _filter;
     readonly Realtime              _realtime;
+    bool                           _connected;
 
     public TcpEventReader(IEventStoreConnection connection, int pageSize = 4096) {
         _connection = connection;
         _pageSize   = pageSize;
         var metaCache = new StreamMetaCache();
-        _filter            =  new ScavengedEventsFilter(connection, metaCache);
-        _realtime          =  new Realtime(connection, metaCache);
-        _connection.Closed += HandleConnectionError;
+        _filter                  =  new ScavengedEventsFilter(connection, metaCache);
+        _realtime                =  new Realtime(connection, metaCache);
+        _connection.Closed       += HandleConnectionError;
+        _connection.Connected    += OnConnected;
+        _connection.Disconnected += OnDisconnected;
     }
+
+    void OnDisconnected(object? sender, ClientConnectionEventArgs e) => _connected = false;
+
+    void OnConnected(object? sender, ClientConnectionEventArgs e) => _connected = true;
 
     void HandleConnectionError(object? sender, ClientClosedEventArgs args) {
         if (!args.Reason.Contains("Invalid TCP frame") || _pageSize <= 1)
             return;
-            
+
         Log.Warn("Connection closed because of an invalid TCP frame, reducing the page size to {@PageSize}", _pageSize);
         _pageSize /= 2;
     }
 
     public async Task ReadEvents(
-        Shared.Position fromPosition, Func<BaseOriginalEvent, ValueTask> next, CancellationToken cancellationToken
+        Shared.Position                    fromPosition,
+        Func<BaseOriginalEvent, ValueTask> next,
+        CancellationToken                  cancellationToken
     ) {
+        if (!_connected) {
+            await _connection.ConnectAsync().ConfigureAwait(false);
+        }
+
         await _realtime.Start().ConfigureAwait(false);
 
         Log.Info("Starting TCP reader");
@@ -49,7 +62,7 @@ public class TcpEventReader : IEventReader {
 
         var start =
             fromPosition != Shared.Position.Start
-                ? new Position((long) fromPosition.EventPosition, (long) fromPosition.EventPosition)
+                ? new Position((long)fromPosition.EventPosition, (long)fromPosition.EventPosition)
                 : new Position(0, 0);
 
         if (fromPosition != Shared.Position.Start) {
@@ -119,7 +132,9 @@ public class TcpEventReader : IEventReader {
         }
     }
 
-    public async Task<long> GetLastPosition(CancellationToken cancellationToken) {
+    public async Task<long?> GetLastPosition(CancellationToken cancellationToken) {
+        if (!_connected) return null;
+        
         var last = await _connection.ReadAllEventsBackwardAsync(Position.End, 1, false).ConfigureAwait(false);
         return last.NextPosition.CommitPosition;
     }
@@ -153,7 +168,7 @@ public class TcpEventReader : IEventReader {
             evt.OriginalEvent.Created,
             MapSystemDetails(evt.OriginalEvent),
             new Shared.Contracts.StreamMetadata(
-                (int?) streamMeta.MaxCount,
+                (int?)streamMeta.MaxCount,
                 streamMeta.MaxAge,
                 streamMeta.TruncateBefore,
                 streamMeta.CacheControl,
@@ -197,5 +212,5 @@ public class TcpEventReader : IEventReader {
         );
 
     static Shared.Position MapPosition(ResolvedEvent evt) =>
-        new(evt.OriginalEventNumber, (ulong) evt.OriginalPosition!.Value.CommitPosition);
+        new(evt.OriginalEventNumber, (ulong)evt.OriginalPosition!.Value.CommitPosition);
 }

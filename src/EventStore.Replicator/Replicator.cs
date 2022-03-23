@@ -7,13 +7,14 @@ using EventStore.Replicator.Shared.Observe;
 using EventStore.Replicator.Sink;
 using Ubiquitous.Metrics;
 
-namespace EventStore.Replicator; 
+namespace EventStore.Replicator;
 
 public static class Replicator {
     static readonly ILog Log = LogProvider.GetCurrentClassLogger();
 
     public static async Task Replicate(
         IEventReader           reader,
+        IEventWriter           writer,
         SinkPipeOptions        sinkPipeOptions,
         PreparePipelineOptions preparePipeOptions,
         ICheckpointStore       checkpointStore,
@@ -41,7 +42,8 @@ public static class Replicator {
             preparePipeOptions.Transform,
             ctx => sinkChannel.Writer.WriteAsync(ctx, ctx.CancellationToken)
         );
-        var sinkPipe = new SinkPipe(sinkPipeOptions, checkpointStore);
+        var sinkPipe  = new SinkPipe(writer, sinkPipeOptions, checkpointStore);
+        var writerCts = new CancellationTokenSource();
 
         var prepareTask = CreateChannelShovel(
             "Prepare",
@@ -56,40 +58,64 @@ public static class Replicator {
             sinkChannel,
             sinkPipe.Send,
             ReplicationMetrics.SinkChannelSize,
-            CancellationToken.None
+            writerCts.Token
         );
         var reporter = Task.Run(Report, stoppingToken);
 
-        while (true) {
-            ReplicationStatus.Start();
+        await writer.Start();
 
-            await readerPipe.Start(linkedCts.Token).ConfigureAwait(false);
+        var stopping = false;
 
-            if (!replicatorOptions.RunContinuously) {
-                do {
-                    Log.Info("Closing the prepare channel...");
+        try {
+            while (!stopping) {
+                ReplicationStatus.Start();
+
+                await readerPipe.Start(linkedCts.Token).ConfigureAwait(false);
+                stopping = linkedCts.IsCancellationRequested || !replicatorOptions.RunContinuously;
+
+                if (stopping) {
+                    Log.Info("Replicator stopping");
+                }
+
+                if (!replicatorOptions.RunContinuously) {
+                    do {
+                        Log.Info("Closing the prepare channel...");
+                        await Task.Delay(1000, CancellationToken.None).ConfigureAwait(false);
+                    } while (!prepareChannel.Writer.TryComplete());
+                }
+
+                ReplicationStatus.Stop();
+
+                while (sinkChannel.Reader.Count > 0) {
+                    await checkpointStore.Flush(CancellationToken.None).ConfigureAwait(false);
+                    Log.Info("Waiting for the sink pipe to exhaust ({Left} left)...", sinkChannel.Reader.Count);
                     await Task.Delay(1000, CancellationToken.None).ConfigureAwait(false);
-                } while (!prepareChannel.Writer.TryComplete());
+                }
+
+                await Flush().ConfigureAwait(false);
+
+                if (stopping) {
+                    sinkChannel.Writer.Complete();
+                    writerCts.Cancel();
+                    break;
+                }
+
+                Log.Info("Will restart in 5 sec");
+
+                try {
+                    await Task.Delay(5000, stoppingToken);
+                }
+                catch (OperationCanceledException) {
+                    // stopping now
+                    break;
+                }
             }
-
-            ReplicationStatus.Stop();
-
-            while (sinkChannel.Reader.Count > 0) {
-                await checkpointStore.Flush(CancellationToken.None).ConfigureAwait(false);
-                Log.Info("Waiting for the sink pipe to exhaust ({Left} left)...", sinkChannel.Reader.Count);
-                await Task.Delay(1000, CancellationToken.None).ConfigureAwait(false);
-            }
-
-            Log.Info("Storing the last known checkpoint");
-            await checkpointStore.Flush(CancellationToken.None).ConfigureAwait(false);
-
-            if (linkedCts.IsCancellationRequested || !replicatorOptions.RunContinuously) {
-                sinkChannel.Writer.Complete();
-                break;
-            }
-
-            Log.Info("Will restart in 5 sec");
-            await Task.Delay(5000, stoppingToken);
+        }
+        catch (Exception e) {
+            Log.Error(e, "Replicator crashed");
+        }
+        finally {
+            Stop();
         }
 
         try {
@@ -97,9 +123,31 @@ public static class Replicator {
             await writerTask.ConfigureAwait(false);
         }
         catch (OperationCanceledException) { }
+        catch (Exception e) {
+            Log.Error(e, "Error stopping pending tasks");
+        }
+
+        await Flush().ConfigureAwait(false);
+        
+        Log.Info("Replicator stopped");
+
+        void Stop() {
+            Log.Info("Replicator stopping...");
+            stopping = true;
+            writerCts.Cancel();
+        }
+
+        async Task Flush() {
+            Log.Info("Storing the last known checkpoint");
+            await checkpointStore.Flush(CancellationToken.None).ConfigureAwait(false);
+        }
 
         static Task CreateChannelShovel<T>(
-            string name, Channel<T> channel, Func<T, Task> send, IGaugeMetric size, CancellationToken token
+            string            name,
+            Channel<T>        channel,
+            Func<T, Task>     send,
+            IGaugeMetric      size,
+            CancellationToken token
         )
             => Task.Run(
                 () => channel.Shovel(
@@ -113,11 +161,22 @@ public static class Replicator {
             );
 
         async Task Report() {
-            while (!stoppingToken.IsCancellationRequested) {
-                var position = await reader.GetLastPosition(stoppingToken).ConfigureAwait(false);
-                ReplicationMetrics.LastSourcePosition.Set(position);
-                await Task.Delay(5000, stoppingToken).ConfigureAwait(false);
+            try {
+                while (!stoppingToken.IsCancellationRequested) {
+                    var position = await reader.GetLastPosition(stoppingToken).ConfigureAwait(false);
+
+                    if (position.HasValue) {
+                        ReplicationMetrics.LastSourcePosition.Set(position.Value);
+                    }
+
+                    await Task.Delay(5000, stoppingToken).ConfigureAwait(false);
+                }
             }
+            catch (OperationCanceledException) {
+                // it's ok
+            }
+
+            Log.Info("Reporting stopped");
         }
     }
 }

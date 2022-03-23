@@ -37,13 +37,14 @@ public class ValuePartitionerTests : IClassFixture<Fixture> {
         var writer         = new GrpcEventWriter(_fixture.GrpcClient);
         var prepareOptions = new PreparePipelineOptions(null, null);
         var partitioner    = await File.ReadAllTextAsync("partition.js");
-        var sinkOptions    = new SinkPipeOptions(writer, 0, 100, partitioner);
+        var sinkOptions    = new SinkPipeOptions(0, 100, partitioner);
         // var sinkOptions    = new SinkPipeOptions(writer, 0, 100);
 
         Log.Information("Replicating...");
 
         var replication = Replicator.Replicate(
             reader,
+            writer,
             sinkOptions,
             prepareOptions,
             _fixture.CheckpointStore,

@@ -10,7 +10,7 @@ namespace EventStore.Replicator.Sink;
 public class SinkPipe {
     readonly IPipe<SinkContext> _pipe;
 
-    public SinkPipe(SinkPipeOptions options, ICheckpointStore checkpointStore)
+    public SinkPipe(IEventWriter writer, SinkPipeOptions options, ICheckpointStore checkpointStore)
         => _pipe = Pipe.New<SinkContext>(
             cfg => {
                 cfg.UseRetry(
@@ -23,16 +23,12 @@ public class SinkPipe {
                 var useJsPartitioner = !string.IsNullOrWhiteSpace(options.Partitioner);
 
                 if (options.PartitionCount > 1) {
-                    Func<SinkContext, string> keyProvider =
-                        !useJsPartitioner
-                            ? x => KeyProvider.ByStreamName(x.ProposedEvent)
-                            : GetJsPartitioner();
+                    var keyProvider = !useJsPartitioner
+                        ? x => KeyProvider.ByStreamName(x.ProposedEvent)
+                        : GetJsPartitioner();
 
                     cfg.UsePartitioner(
-                        new HashPartitioner(
-                            options.PartitionCount,
-                            new Murmur3UnsafeHashGenerator()
-                        ),
+                        new HashPartitioner(options.PartitionCount, new Murmur3UnsafeHashGenerator()),
                         keyProvider
                     );
                 }
@@ -42,7 +38,7 @@ public class SinkPipe {
 
                 cfg.UseLog();
 
-                cfg.UseEventWriter(options.Writer);
+                cfg.UseEventWriter(writer);
                 cfg.UseCheckpointStore(checkpointStore);
 
                 cfg.UseExecute(

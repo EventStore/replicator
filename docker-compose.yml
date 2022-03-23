@@ -17,7 +17,7 @@ services:
 
   esdb:
     container_name: repl-esdb
-    image: eventstore/eventstore:latest
+    image: eventstore/eventstore:21.10.2-buster-slim
     ports:
       - '2114:2114'
       - '1114:1114'
@@ -29,6 +29,15 @@ services:
       EVENTSTORE_ENABLE_EXTERNAL_TCP: 'true'
       EVENTSTORE_RUN_PROJECTIONS: all
       EVENTSTORE_ENABLE_ATOM_PUB_OVER_HTTP: "true"
+      
+  mongo:
+    container_name: repl-mongo
+    image: mongo
+    ports:
+      - '27017:27017'
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: mongoadmin
+      MONGO_INITDB_ROOT_PASSWORD: secret
 
   zookeeper:
     image: confluentinc/cp-zookeeper:6.1.0

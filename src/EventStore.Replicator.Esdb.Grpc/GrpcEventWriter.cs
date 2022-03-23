@@ -8,16 +8,16 @@ using StreamMetadata = EventStore.Client.StreamMetadata;
 namespace EventStore.Replicator.Esdb.Grpc; 
 
 public class GrpcEventWriter : IEventWriter {
-    public string Protocol => "grpc";
-        
     static readonly ILog Log = LogProvider.GetCurrentClassLogger();
 
     readonly EventStoreClient _client;
 
     public GrpcEventWriter(EventStoreClient client) => _client = client;
 
+    public Task Start() => Task.CompletedTask;
+
     public async Task<long> WriteEvent(BaseProposedEvent proposedEvent, CancellationToken cancellationToken) {
-        Task<long> task = proposedEvent switch {
+        var task = proposedEvent switch {
             ProposedEvent p             => AppendEvent(p),
             ProposedDeleteStream delete => DeleteStream(delete.EventDetails.Stream),
             ProposedMetaEvent meta      => SetStreamMeta(meta),

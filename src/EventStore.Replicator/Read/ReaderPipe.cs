@@ -33,9 +33,7 @@ public class ReaderPipe {
             }
         );
 
-        async Task Reader(
-            ReaderContext ctx
-        ) {
+        async Task Reader(ReaderContext ctx) {
             try {
                 var start = await checkpointStore.LoadCheckpoint(ctx.CancellationToken).ConfigureAwait(false);
                 log.Info("Reading from {Position}", start);
@@ -53,13 +51,24 @@ public class ReaderPipe {
             catch (OperationCanceledException) {
                 // it's ok
             }
+            catch (Exception e) {
+                log.Error(e, "Reader error");
+            }
             finally {
                 log.Info("Reader stopped");
             }
         }
     }
 
-    public Task Start(CancellationToken stoppingToken) => _pipe.Send(new ReaderContext(stoppingToken));
+    public async Task Start(CancellationToken stoppingToken) {
+        try {
+            await _pipe.Send(new ReaderContext(stoppingToken));
+        }
+        catch (Exception e) {
+            Console.WriteLine(e);
+            throw;
+        }
+    }
 }
 
 public class ReaderContext : BasePipeContext, PipeContext {

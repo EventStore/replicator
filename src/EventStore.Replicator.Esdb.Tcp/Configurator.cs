@@ -1,18 +1,13 @@
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 
 namespace EventStore.Replicator.Esdb.Tcp; 
 
 public class TcpConfigurator : IConfigurator {
     readonly int                _pageSize;
-    readonly IServiceCollection _services;
 
-    public string Protocol => "tpc";
+    public string Protocol => "tcp";
 
-    public TcpConfigurator(int pageSize, IServiceCollection services) {
-        _pageSize = pageSize;
-        _services = services;
-    }
+    public TcpConfigurator(int pageSize) => _pageSize = pageSize;
 
     public IEventReader ConfigureReader(string connectionString)
         => new TcpEventReader(
@@ -35,9 +30,6 @@ public class TcpConfigurator : IConfigurator {
             builder = builder.PreferFollowerNode();
 
         var connection = EventStoreConnection.Create(connectionString, builder);
-
-        _services.AddSingleton<IHostedService>(new TcpConnectionService(connection));
-
         return connection;
     }
 }

@@ -3,7 +3,7 @@ using EventStore.Replicator.Shared.Pipeline;
 using GreenPipes;
 using Ubiquitous.Metrics;
 
-namespace EventStore.Replicator.Prepare; 
+namespace EventStore.Replicator.Prepare;
 
 public class EventFilterFilter : IFilter<PrepareContext> {
     readonly FilterEvent _filter;
@@ -12,15 +12,16 @@ public class EventFilterFilter : IFilter<PrepareContext> {
 
     public async Task Send(PrepareContext context, IPipe<PrepareContext> next) {
         // ReSharper disable once ConditionIsAlwaysTrueOrFalse
-        if (context.OriginalEvent != null) {
-            var accept = await Metrics.MeasureValueTask(
-                () => _filter(context.OriginalEvent),
-                ReplicationMetrics.PrepareHistogram
-            ).ConfigureAwait(false);
+        // ReSharper disable once ConditionIsAlwaysTrueOrFalseAccordingToNullableAPIContract
+        if (context.OriginalEvent == null) return;
 
-            if (!accept) context.IgnoreEvent();
-            await next.Send(context).ConfigureAwait(false);
-        }
+        var accept = await Metrics.MeasureValueTask(
+            () => _filter(context.OriginalEvent),
+            ReplicationMetrics.PrepareHistogram
+        ).ConfigureAwait(false);
+
+        if (!accept) context.IgnoreEvent();
+        await next.Send(context).ConfigureAwait(false);
     }
 
     public void Probe(ProbeContext context) { }
@@ -42,7 +43,8 @@ public class EventFilterSpecification : IPipeSpecification<PrepareContext> {
 
 public static class EventFilterPipeExtensions {
     public static void UseEventFilter(
-        this IPipeConfigurator<PrepareContext> configurator, FilterEvent filter
+        this IPipeConfigurator<PrepareContext> configurator,
+        FilterEvent                            filter
     )
         => configurator.AddPipeSpecification(new EventFilterSpecification(filter));
 }

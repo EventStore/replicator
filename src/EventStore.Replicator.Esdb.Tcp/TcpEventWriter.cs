@@ -4,21 +4,22 @@ using EventStore.Replicator.Shared.Observe;
 using Ubiquitous.Metrics;
 using StreamAcl = EventStore.ClientAPI.StreamAcl;
 using StreamMetadata = EventStore.ClientAPI.StreamMetadata;
+
 // ReSharper disable SuggestBaseTypeForParameter
 
-namespace EventStore.Replicator.Esdb.Tcp; 
+namespace EventStore.Replicator.Esdb.Tcp;
 
 public class TcpEventWriter : IEventWriter {
-    public string Protocol => "tcp";
-        
     static readonly ILog Log = LogProvider.GetCurrentClassLogger();
 
     readonly IEventStoreConnection _connection;
 
     public TcpEventWriter(IEventStoreConnection connection) => _connection = connection;
 
+    public Task Start() => _connection.ConnectAsync();
+
     public Task<long> WriteEvent(BaseProposedEvent proposedEvent, CancellationToken cancellationToken) {
-        Task<long> task = proposedEvent switch {
+        var task = proposedEvent switch {
             ProposedEvent p             => Append(p),
             ProposedMetaEvent meta      => SetMeta(meta),
             ProposedDeleteStream delete => Delete(delete),
@@ -89,15 +90,12 @@ public class TcpEventWriter : IEventWriter {
             return result.LogPosition.CommitPosition;
         }
 
-        static EventData Map(ProposedEvent evt) {
-            return
-                new(
-                    evt.EventDetails.EventId,
-                    evt.EventDetails.EventType,
-                    evt.EventDetails.ContentType == ContentTypes.Json,
-                    evt.Data,
-                    evt.Metadata
-                );
-        }
+        static EventData Map(ProposedEvent evt) => new(
+            evt.EventDetails.EventId,
+            evt.EventDetails.EventType,
+            evt.EventDetails.ContentType == ContentTypes.Json,
+            evt.Data,
+            evt.Metadata
+        );
     }
 }
