@@ -23,6 +23,7 @@ public class PreparePipe {
                 cfg.UseLog();
                 cfg.UseConcurrencyLimit(10);
 
+                cfg.UseEventFilter(Filters.EmptyDataFilter);
                 cfg.UseEventFilter(filter ?? Filters.EmptyFilter);
 
                 cfg.UseEventTransform(transform ?? Transforms.DefaultWithExtraMeta);

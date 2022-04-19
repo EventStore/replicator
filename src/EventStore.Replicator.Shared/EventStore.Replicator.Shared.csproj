@@ -8,4 +8,8 @@
         <PackageReference Include="Ubiquitous.Metrics" Version="0.4.0" />
         <PackageReference Include="YamlDotNet" Version="11.2.1" />
     </ItemGroup>
+
+    <ItemGroup>
+      <Folder Include="Pipeline\Filters" />
+    </ItemGroup>
 </Project>

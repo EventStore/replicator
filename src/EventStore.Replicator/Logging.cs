@@ -1,17 +1,30 @@
 using EventStore.Replicator.Shared.Logging;
 using GreenPipes;
 
-namespace EventStore.Replicator; 
+namespace EventStore.Replicator;
 
 public class LoggingFilter<T> : IFilter<T> where T : class, PipeContext {
+    // ReSharper disable once StaticMemberInGenericType
     static readonly ILog Log = LogProvider.GetCurrentClassLogger();
 
     public async Task Send(T context, IPipe<T> next) {
         try {
-            await next.Send(context);
+            await next.Send(context).ConfigureAwait(false);
         }
         catch (Exception e) {
-            Log.Error(e, "Error occured in the {Type} pipe: {Message}", typeof(T).Name, e.Message);
+            if (context is IEventDetailsContext eventDetailsContext) {
+                Log.Error(
+                    e,
+                    "Error occured in the {Type} pipe {@Event}: {Message}",
+                    typeof(T).Name,
+                    eventDetailsContext.EventDetails,
+                    e.Message
+                );
+            }
+            else {
+                Log.Error(e, "Error occured in the {Type} pipe: {Message}", typeof(T).Name, e.Message);
+            }
+
             throw;
         }
     }

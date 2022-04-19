@@ -1,23 +1,28 @@
 using System.Diagnostics;
 using EventStore.Replicator.Shared.Contracts;
+using EventStore.Replicator.Shared.Logging;
 using EventStore.Replicator.Shared.Observe;
 using EventStore.Replicator.Shared.Pipeline;
 using GreenPipes;
 using Ubiquitous.Metrics;
 
-namespace EventStore.Replicator.Prepare; 
+namespace EventStore.Replicator.Prepare;
 
 public class TransformFilter : IFilter<PrepareContext> {
+    static readonly ILog Log = LogProvider.GetCurrentClassLogger();
+
     readonly TransformEvent _transform;
 
     public TransformFilter(TransformEvent transform) => _transform = transform;
 
     public async Task Send(PrepareContext context, IPipe<PrepareContext> next) {
         var transformed = context.OriginalEvent is OriginalEvent oe
-            ? await Metrics.Measure(() => Transform(oe), ReplicationMetrics.PrepareHistogram).ConfigureAwait(false)
+            ? await Metrics.Measure(() => Transform(oe), ReplicationMetrics.PrepareHistogram)
+                .ConfigureAwait(false)
             : TransformMeta(context.OriginalEvent);
 
-        if (transformed is NoEvent) return;
+        if (transformed is NoEvent)
+            return;
 
         context.AddOrUpdatePayload(() => transformed, _ => transformed);
 
@@ -32,10 +37,26 @@ public class TransformFilter : IFilter<PrepareContext> {
             );
             activity.Start();
 
-            return await _transform(
-                originalEvent,
-                context.CancellationToken
-            ).ConfigureAwait(false);
+            try {
+                var res = await _transform(
+                        originalEvent,
+                        context.CancellationToken
+                    )
+                    .ConfigureAwait(false);
+                activity.SetStatus(ActivityStatusCode.Ok);
+                return res;
+            }
+            catch (Exception e) {
+                activity.SetStatus(ActivityStatusCode.Error, e.Message);
+
+                Log.Error(
+                    e,
+                    "Failed to transform event from stream {Stream} of type {EventType}",
+                    context.OriginalEvent.EventDetails.Stream,
+                    context.OriginalEvent.EventDetails.EventType
+                );
+                throw;
+            }
         }
     }
 
@@ -80,7 +101,8 @@ public class TransformSpecification : IPipeSpecification<PrepareContext> {
 
 public static class TransformPipeExtensions {
     public static void UseEventTransform(
-        this IPipeConfigurator<PrepareContext> configurator, TransformEvent transformEvent
+        this IPipeConfigurator<PrepareContext> configurator,
+        TransformEvent                         transformEvent
     )
         => configurator.AddPipeSpecification(new TransformSpecification(transformEvent));
 }
