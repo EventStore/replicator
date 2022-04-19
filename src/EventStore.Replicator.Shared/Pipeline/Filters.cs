@@ -44,4 +44,7 @@ public static class Filters {
         public StreamNameFilter(string? include, string? exclude)
             : base(include, exclude, x => x.EventDetails.Stream) { }
     }
+    
+    public static ValueTask<bool> EmptyDataFilter(BaseOriginalEvent originalEvent) 
+        => new(originalEvent is OriginalEvent { Data.Length: > 0 });
 }
