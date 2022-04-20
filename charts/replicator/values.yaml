@@ -12,6 +12,11 @@ resources:
   requests:
     cpu: 250m
     memory: 512Mi
+image:
+  registry: docker.io
+  repository: eventstore/replicator
+  tag: 0.4.6
+  pullPolicy: IfNotPresent
 replicator:
   reader:
     connectionString:
