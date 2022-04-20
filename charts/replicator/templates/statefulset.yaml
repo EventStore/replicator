@@ -24,14 +24,14 @@ spec:
         tier: web
     spec:
       containers:
-      - image: eventstore/replicator:0.4.5
-        imagePullPolicy: Always
+      - name: {{ .Chart.Name }}
+        image: {{ template "replicator.image" . }}
+        imagePullPolicy: {{ .Values.image.pullPolicy | quote }}
         livenessProbe:
           httpGet:
             path: /health
             port: 5000
             scheme: HTTP
-        name: {{ .Chart.Name }}
         ports:
         - containerPort: 5000
           name: web
