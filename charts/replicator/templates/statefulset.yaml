@@ -68,7 +68,7 @@ spec:
 {{- end }}
       - name: transform-js
         configMap:
-          name: {{ template "replicator.name" . }}-transform-js
+          name: {{ template "replicator.fullname" . }}-transform-js
       - name: {{ template "replicator.name" . }}
         persistentVolumeClaim:
           claimName: {{ template "replicator.fullname" . }}

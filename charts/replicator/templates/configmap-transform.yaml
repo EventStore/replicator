@@ -5,7 +5,7 @@ data:
 
 kind: ConfigMap
 metadata:
-  name: {{ template "replicator.name" . }}-transform-js
+  name: {{ template "replicator.fullname" . }}-transform-js
   labels:
     app: {{ template "replicator.name" . }}
     chart: {{ template "replicator.chart" . }}
