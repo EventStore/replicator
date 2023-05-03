@@ -1,30 +1,29 @@
-ARG BUILDER_IMG=mcr.microsoft.com/dotnet/sdk:6.0
-ARG RUNNER_IMG=mcr.microsoft.com/dotnet/aspnet:6.0
-ARG RUNTIME=linux-x64
+ARG RUNNER_IMG=
 
-FROM $BUILDER_IMG AS builder
+FROM --platform=$BUILDPLATFORM mcr.microsoft.com/dotnet/nightly/sdk:8.0-preview AS builder
+ARG TARGETARCH
 
 WORKDIR /app
 
 ARG RUNTIME
-RUN curl -sL https://deb.nodesource.com/setup_16.x | bash - \
+RUN curl -sL https://deb.nodesource.com/setup_19.x | bash - \
  && apt-get install -y --no-install-recommends nodejs \
  && npm install -g yarn 
 
 COPY ./src/Directory.Build.props ./src/*/*.csproj ./src/
 RUN for file in $(ls src/*.csproj); do mkdir -p ./${file%.*}/ && mv $file ./${file%.*}/; done
-RUN dotnet restore ./src/es-replicator -nowarn:msb3202,nu1503 -r $RUNTIME
+RUN dotnet restore ./src/es-replicator -nowarn:msb3202,nu1503 -a $TARGETARCH
 
 COPY ./src/es-replicator/ClientApp/package.json ./src/es-replicator/ClientApp/
 COPY ./src/es-replicator/ClientApp/yarn.lock ./src/es-replicator/ClientApp/
 RUN cd ./src/es-replicator/ClientApp && yarn install
 
 FROM builder as publish
-ARG RUNTIME
+ARG TARGETARCH
 COPY ./src ./src
-RUN dotnet publish ./src/es-replicator -c Release -r $RUNTIME -clp:NoSummary --no-self-contained -o /app/publish
+RUN dotnet publish ./src/es-replicator -c Release -a $TARGETARCH -clp:NoSummary --no-self-contained -o /app/publish
 
-FROM $RUNNER_IMG AS runner
+FROM mcr.microsoft.com/dotnet/aspnet:7.0 AS runner
 
 WORKDIR /app
 COPY --from=publish /app/publish .
