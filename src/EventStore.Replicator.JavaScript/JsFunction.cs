@@ -29,7 +29,7 @@ public class TypedJsFunction<T, TResult> : JsFunction where T : class {
         => _convert = convert;
 
     public TResult Execute(T arg) {
-        var result = _func.Invoke(JsValue.FromObject(Engine, arg));
+        var result = Engine.Invoke(_func, arg);
         return _convert(result, arg);
     }
 }
