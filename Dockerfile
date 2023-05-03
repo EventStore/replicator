@@ -1,5 +1,5 @@
-ARG BUILDER_IMG=mcr.microsoft.com/dotnet/sdk:6.0
-ARG RUNNER_IMG=mcr.microsoft.com/dotnet/aspnet:6.0
+ARG BUILDER_IMG=mcr.microsoft.com/dotnet/sdk:7.0
+ARG RUNNER_IMG=mcr.microsoft.com/dotnet/aspnet:7.0
 ARG RUNTIME=linux-x64
 
 FROM $BUILDER_IMG AS builder
@@ -7,7 +7,7 @@ FROM $BUILDER_IMG AS builder
 WORKDIR /app
 
 ARG RUNTIME
-RUN curl -sL https://deb.nodesource.com/setup_16.x | bash - \
+RUN curl -sL https://deb.nodesource.com/setup_19.x | bash - \
  && apt-get install -y --no-install-recommends nodejs \
  && npm install -g yarn 
 

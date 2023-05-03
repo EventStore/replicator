@@ -6,10 +6,6 @@
     <ItemGroup>
         <PackageReference Include="LibLog" Version="5.0.8" PrivateAssets="All" />
         <PackageReference Include="Ubiquitous.Metrics" Version="0.4.0" />
-        <PackageReference Include="YamlDotNet" Version="11.2.1" />
-    </ItemGroup>
-
-    <ItemGroup>
-      <Folder Include="Pipeline\Filters" />
+        <PackageReference Include="YamlDotNet" Version="13.1.0" />
     </ItemGroup>
 </Project>
