@@ -1,5 +1,6 @@
 using EventStore.Replicator.JavaScript;
 using EventStore.Replicator.Shared.Contracts;
+using Jint;
 using Jint.Native;
 using Jint.Native.Json;
 
@@ -15,7 +16,7 @@ public class JsKeyProvider {
             AsPartition
         );
 
-        static string? AsPartition(JsValue result, PartitionEvent evt)
+        static string? AsPartition(JsValue? result, PartitionEvent evt)
             => result == null || result.IsUndefined() || !result.IsString()
                 ? null
                 : result.ToString();
@@ -33,7 +34,7 @@ public class JsKeyProvider {
                 original.EventDetails.Stream,
                 original.EventDetails.EventType,
                 parser.Parse(evt.Data.AsUtf8String()),
-                parser.Parse(evt.Metadata?.AsUtf8String())
+                evt.Metadata != null ? parser.Parse(evt.Metadata.AsUtf8String()) : null
             )
         );
 
