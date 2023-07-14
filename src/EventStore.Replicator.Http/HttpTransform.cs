@@ -21,7 +21,8 @@ public class HttpTransform {
         var httpEvent = new HttpEvent(
             originalEvent.EventDetails.EventType,
             originalEvent.EventDetails.Stream,
-            Encoding.UTF8.GetString(originalEvent.Data)
+            Encoding.UTF8.GetString(originalEvent.Data),
+            originalEvent.Metadata == null ? null : Encoding.UTF8.GetString(originalEvent.Metadata)
         );
 
         try {
@@ -50,8 +51,8 @@ public class HttpTransform {
                 originalEvent.EventDetails with {
                     EventType = httpResponse.EventType, Stream = httpResponse.StreamName
                 },
-                Encoding.UTF8.GetBytes(httpResponse.Payload),
-                originalEvent.Metadata,
+                Encoding.UTF8.GetBytes(httpResponse.Data),
+                httpResponse.Metadata == null ? null : Encoding.UTF8.GetBytes(httpResponse.Metadata),
                 originalEvent.Position,
                 originalEvent.SequenceNumber
             );
@@ -61,5 +62,5 @@ public class HttpTransform {
         }
     }
 
-    record HttpEvent(string EventType, string StreamName, string Payload);
+    record HttpEvent(string EventType, string StreamName, string Data, string? Metadata);
 }
