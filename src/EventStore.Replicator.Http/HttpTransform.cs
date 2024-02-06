@@ -3,7 +3,7 @@ using System.Text;
 using System.Text.Json;
 using EventStore.Replicator.Shared.Contracts;
 
-namespace EventStore.Replicator.Http; 
+namespace EventStore.Replicator.Http;
 
 public class HttpTransform {
     readonly HttpClient _client;
@@ -11,17 +11,19 @@ public class HttpTransform {
     public HttpTransform(string? url) {
         if (string.IsNullOrWhiteSpace(url))
             throw new ArgumentNullException(nameof(url), "HTTP Transform must have a valid URL");
-            
-        _client = new HttpClient {BaseAddress = new Uri(url)};
+
+        _client = new HttpClient { BaseAddress = new Uri(url) };
     }
 
     public async ValueTask<BaseProposedEvent> Transform(
-        OriginalEvent originalEvent, CancellationToken cancellationToken
+        OriginalEvent     originalEvent,
+        CancellationToken cancellationToken
     ) {
         var httpEvent = new HttpEvent(
             originalEvent.EventDetails.EventType,
             originalEvent.EventDetails.Stream,
-            Encoding.UTF8.GetString(originalEvent.Data)
+            Encoding.UTF8.GetString(originalEvent.Data),
+            originalEvent.Metadata == null ? null : Encoding.UTF8.GetString(originalEvent.Metadata)
         );
 
         try {
@@ -51,7 +53,7 @@ public class HttpTransform {
                     EventType = httpResponse.EventType, Stream = httpResponse.StreamName
                 },
                 Encoding.UTF8.GetBytes(httpResponse.Payload),
-                originalEvent.Metadata,
+                httpResponse.Metadata == null ? originalEvent.Metadata : Encoding.UTF8.GetBytes(httpResponse.Metadata),
                 originalEvent.Position,
                 originalEvent.SequenceNumber
             );
@@ -61,5 +63,5 @@ public class HttpTransform {
         }
     }
 
-    record HttpEvent(string EventType, string StreamName, string Payload);
+    record HttpEvent(string EventType, string StreamName, string Payload, string? Metadata);
 }
