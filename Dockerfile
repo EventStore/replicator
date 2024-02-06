@@ -1,6 +1,6 @@
-ARG RUNNER_IMG=
+ARG RUNNER_IMG
 
-FROM --platform=$BUILDPLATFORM mcr.microsoft.com/dotnet/nightly/sdk:8.0-preview AS builder
+FROM --platform=$BUILDPLATFORM mcr.microsoft.com/dotnet/sdk:8.0 AS builder
 ARG TARGETARCH
 
 WORKDIR /app
@@ -23,7 +23,7 @@ ARG TARGETARCH
 COPY ./src ./src
 RUN dotnet publish ./src/es-replicator -c Release -a $TARGETARCH -clp:NoSummary --no-self-contained -o /app/publish
 
-FROM mcr.microsoft.com/dotnet/aspnet:7.0 AS runner
+FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS runner
 
 WORKDIR /app
 COPY --from=publish /app/publish .

@@ -4,7 +4,7 @@ services:
 
   replicator:
     container_name: repl-replicator
-    image: eu.gcr.io/esc-platform-advocacy/eventstore/replicator:latest
+    image: eventstore/replicator:latest
     ports:
       - "5000:5000"
     volumes:
