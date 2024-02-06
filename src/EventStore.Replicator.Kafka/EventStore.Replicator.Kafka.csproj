@@ -1,7 +1,8 @@
 <Project Sdk="Microsoft.NET.Sdk">
     <ItemGroup>
-        <PackageReference Include="Confluent.Kafka" Version="2.1.0" />
+        <PackageReference Include="Confluent.Kafka" Version="2.3.0" />
         <Using Include="Confluent.Kafka" />
+        <PackageReference Update="JetBrains.Annotations" Version="2023.3.0" />
     </ItemGroup>
 
     <ItemGroup>

@@ -1,6 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
     <ItemGroup>
         <PackageReference Include="GreenPipes" Version="4.0.1" />
+        <PackageReference Update="JetBrains.Annotations" Version="2023.3.0" />
     </ItemGroup>
 
     <ItemGroup>

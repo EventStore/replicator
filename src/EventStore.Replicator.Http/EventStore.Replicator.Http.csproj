@@ -2,4 +2,7 @@
     <ItemGroup>
       <ProjectReference Include="..\EventStore.Replicator.Shared\EventStore.Replicator.Shared.csproj" />
     </ItemGroup>
+    <ItemGroup>
+      <PackageReference Update="JetBrains.Annotations" Version="2023.3.0" />
+    </ItemGroup>
 </Project>
