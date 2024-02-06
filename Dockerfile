@@ -1,6 +1,6 @@
 ARG RUNNER_IMG
 
-FROM --platform=$BUILDPLATFORM mcr.microsoft.com/dotnet/nightly/sdk:8.0 AS builder
+FROM --platform=$BUILDPLATFORM mcr.microsoft.com/dotnet/sdk:8.0 AS builder
 ARG TARGETARCH
 
 WORKDIR /app
