@@ -50,6 +50,9 @@ spec:
           mountPath: /app/js/{{ .fileName }}
           subPath: {{ .fileName }}
 {{- end }}
+        - name: transform-js
+          mountPath: /app/transform.js
+          subPath: transform.js
         resources:
 {{ toYaml .Values.resources | indent 10 }}
       imagePullSecrets: []
@@ -63,6 +66,9 @@ spec:
         configMap:
           name: {{ .configMapName }}
 {{- end }}
+      - name: transform-js
+        configMap:
+          name: {{ template "replicator.fullname" . }}-transform-js
       - name: {{ template "replicator.name" . }}
         persistentVolumeClaim:
           claimName: {{ template "replicator.fullname" . }}
