@@ -3,6 +3,7 @@ using EventStore.Replicator.Shared.Contracts;
 using Jint;
 using Jint.Native;
 using Jint.Native.Json;
+// ReSharper disable NotAccessedPositionalProperty.Global
 
 namespace EventStore.Replicator.Kafka; 
 
@@ -16,7 +17,7 @@ public class KafkaJsMessageRouter {
             AsRoute
         );
 
-        static MessageRoute AsRoute(JsValue result, RouteEvent evt) {
+        static MessageRoute AsRoute(JsValue? result, RouteEvent evt) {
             if (result == null || result.IsUndefined() || !result.IsObject())
                 return DefaultRouters.RouteByCategory(evt.Stream);
 
@@ -36,7 +37,7 @@ public class KafkaJsMessageRouter {
                 evt.EventDetails.Stream,
                 evt.EventDetails.EventType,
                 parser.Parse(evt.Data.AsUtf8String()),
-                parser.Parse(evt.Metadata?.AsUtf8String())
+                evt.Metadata == null ? null : parser.Parse(evt.Metadata.AsUtf8String())
             )
         );
     }
