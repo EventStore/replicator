@@ -3,8 +3,6 @@ data:
   "appsettings.yaml": |
     replicator:
 {{ toYaml .Values.replicator | indent 6 }}
-      checkpoint:
-        path: "./checkpoint"
 kind: ConfigMap
 metadata:
   name: {{ template "replicator.fullname" . }}
