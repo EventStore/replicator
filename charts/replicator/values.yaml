@@ -30,7 +30,5 @@ replicator:
   scavenge: true
   filters: []
   transform: null
-transformJs: |-
-
 #  restartOnFailure: false
 #  runContinuously: true

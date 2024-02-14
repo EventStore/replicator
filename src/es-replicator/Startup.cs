@@ -1,4 +1,3 @@
-using System.Collections.Immutable;
 using es_replicator.HttpApi;
 using es_replicator.Settings;
 using EventStore.Replicator;

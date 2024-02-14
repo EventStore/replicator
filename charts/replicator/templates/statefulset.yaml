@@ -50,9 +50,16 @@ spec:
           mountPath: /app/js/{{ .fileName }}
           subPath: {{ .fileName }}
 {{- end }}
+{{- if eq (include "replicator.shouldUseJavascriptTransform" .) "true" }}
         - name: transform-js
-          mountPath: /app/transform.js
-          subPath: transform.js
+          mountPath: /app{{ include "replicator.transform.filepath" . }}
+          subPath: {{ include "replicator.transform.filename" . }}
+{{- end }}
+{{- if eq (include "replicator.shouldUseCustomPartitioner" .) "true" }}
+        - name: partitioner-js
+          mountPath: /app{{ include "replicator.sink.partitioner.filepath" . }}
+          subPath: {{ include "replicator.sink.partitioner.filename" . }}
+{{- end }}
         resources:
 {{ toYaml .Values.resources | indent 10 }}
       imagePullSecrets: []
@@ -66,9 +73,16 @@ spec:
         configMap:
           name: {{ .configMapName }}
 {{- end }}
+{{- if eq (include "replicator.shouldUseJavascriptTransform" .) "true" }}
       - name: transform-js
         configMap:
           name: {{ template "replicator.fullname" . }}-transform-js
+{{- end }}
+{{- if eq (include "replicator.shouldUseCustomPartitioner" .) "true" }}
+      - name: partitioner-js
+        configMap:
+          name: {{ template "replicator.fullname" . }}-partitioner-js
+{{- end }}
       - name: {{ template "replicator.name" . }}
         persistentVolumeClaim:
           claimName: {{ template "replicator.fullname" . }}
