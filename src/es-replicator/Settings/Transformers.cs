@@ -11,10 +11,16 @@ public static class Transformers {
 
         return type switch {
             "default" => Transforms.DefaultWithExtraMeta,
-            "http"    => new HttpTransform(settings.Transform?.Config).Transform,
+            "http"    => GetHttpTransform().Transform,
             "js"      => GetJsTransform().Transform,
             _         => Transforms.DefaultWithExtraMeta,
         };
+
+        HttpTransform GetHttpTransform() {
+            Ensure.NotEmpty(settings.Transform?.Config, "Transform config");
+
+            return new HttpTransform(settings.Transform!.Config);
+        }
 
         JsTransform GetJsTransform() {
             Ensure.NotEmpty(settings.Transform?.Config, "Transform config");

@@ -1,6 +1,7 @@
+{{- if eq (include "replicator.shouldUseJavascriptTransform" .) "true" -}}
 apiVersion: v1
 data:
-  transform.js: |-
+{{ include "replicator.transform.filename" . | indent 2 }}: |-
 {{ .Values.transformJs | indent 4 }}
 
 kind: ConfigMap
@@ -11,3 +12,4 @@ metadata:
     chart: {{ template "replicator.chart" . }}
     release: {{ .Release.Name }}
     heritage: {{ .Release.Service }}
+{{- end }}

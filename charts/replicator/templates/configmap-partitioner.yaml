@@ -1,0 +1,15 @@
+{{- if eq (include "replicator.shouldUseCustomPartitioner" .) "true" -}}
+apiVersion: v1
+data:
+{{ include "replicator.sink.partitioner.filename" . | indent 2 }}: |-
+{{ .Values.partitionerJs | indent 4 }}
+
+kind: ConfigMap
+metadata:
+  name: {{ template "replicator.fullname" . }}-partitioner-js
+  labels:
+    app: {{ template "replicator.name" . }}
+    chart: {{ template "replicator.chart" . }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+{{- end }}

@@ -34,7 +34,5 @@ replicator:
     type: file
     path: ./checkpoint
     checkpointAfter: 1000
-transformJs: |-
-
 #  restartOnFailure: false
 #  runContinuously: true

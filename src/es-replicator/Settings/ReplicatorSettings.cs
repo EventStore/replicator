@@ -1,9 +1,7 @@
-
-
 // ReSharper disable UnusedAutoPropertyAccessor.Global
 
 #nullable disable
-namespace es_replicator.Settings; 
+namespace es_replicator.Settings;
 
 public record EsdbSettings {
     public string ConnectionString { get; init; }
@@ -57,10 +55,10 @@ public static class ConfigExtensions {
     }
 
     public static void AddOptions<T>(
-        this IServiceCollection services, IConfiguration configuration
+        this IServiceCollection services,
+        IConfiguration          configuration
     )
         where T : class {
         services.Configure<T>(configuration.GetSection(typeof(T).Name));
     }
 }
-#nullable enable
