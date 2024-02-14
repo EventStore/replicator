@@ -30,6 +30,10 @@ replicator:
   scavenge: true
   filters: []
   transform: null
+  checkpoint:
+    type: file
+    path: ./checkpoint
+    checkpointAfter: 1000
 transformJs: |-
 
 #  restartOnFailure: false
