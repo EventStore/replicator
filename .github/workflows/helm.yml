@@ -1,5 +1,4 @@
-name: Helm Publish
-
+name: Publish Helm Chart
 on:
   push:
     paths:
@@ -8,11 +7,17 @@ on:
       - master
 
 jobs:
-  build:
+  helm:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v1
-      - uses: J12934/helm-gh-pages-action@master
-        with:
-          access-token: ${{ secrets.ACCESS_TOKEN }}
-          deploy-branch: gh-pages
+      - 
+        name: Checkout
+        uses: actions/checkout@v3
+      - 
+        name: Install Helm
+        uses: azure/setup-helm@v3
+      - 
+        name: Publish Helm Chart
+        uses: helm/chart-releaser-action@v1.6.0
+        env:
+          CR_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
