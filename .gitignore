@@ -332,3 +332,10 @@ exclusive.lck
 version.txt
 /public/
 **/checkpoint
+
+# Hugo Docs
+docs/public/
+docs/resources/
+docs/node_modules/
+docs/tech-doc-hugo
+docs/.DS_Store
