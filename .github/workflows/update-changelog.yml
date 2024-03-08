@@ -11,4 +11,5 @@ jobs:
       - name: Update changelog for Replicator
         uses: EventStore/Automations/changelog-update@master
         with:
+	  mode: batch
           github-token: ${{ secrets.ORG_GH_BOT_AUTOMATION }}
