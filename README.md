@@ -16,13 +16,13 @@ EventStoreDB readers implement one additional filter, which executes during the 
 
 ## Build
 
-On a standard x64 architecture:
-
 ```sh
 docker build .
 ```
 
-On an arm64 / Mac apple silicium:
+The default target architecture is amd64 (x86_64).
+
+You can build targeting arm64 (e.g to execute on Apple Silicon) like so:
 
 ```sh
 docker build --build-arg RUNTIME=linux-arm64 .
