@@ -18,7 +18,7 @@
   "homepage": "https://github.com/EventStore/replicator#readme",
   "devDependencies": {
     "autoprefixer": "^10.2.5",
-    "postcss": "^8.2.15",
+    "postcss": "^8.4.38",
     "postcss-cli": "^8.3.1"
   }
 }
