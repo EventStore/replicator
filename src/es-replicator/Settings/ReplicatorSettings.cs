@@ -9,12 +9,19 @@ public record EsdbSettings {
     public int    PageSize         { get; init; } = 1024;
 }
 
+public record CheckpointSeeder {
+    public string Path { get; init; }
+    
+    public string Type { get; init; } = "none"; // "chaser"
+}
+
 public record Checkpoint {
-    public string Path            { get; init; }
-    public string Type            { get; init; } = "file";
-    public int    CheckpointAfter { get; init; } = 1000;
-    public string Database        { get; init; } = "replicator";
-    public string InstanceId      { get; init; } = "default";
+    public string           Path            { get; init; }
+    public string           Type            { get; init; } = "file";
+    public int              CheckpointAfter { get; init; } = 1000;
+    public string           Database        { get; init; } = "replicator";
+    public string           InstanceId      { get; init; } = "default";
+    public CheckpointSeeder Seeder          { get; init; }
 }
 
 public record SinkSettings : EsdbSettings {

@@ -17,6 +17,7 @@ public static class Replicator {
         IEventWriter           writer,
         SinkPipeOptions        sinkPipeOptions,
         PreparePipelineOptions preparePipeOptions,
+        ICheckpointSeeder      checkpointSeeder,
         ICheckpointStore       checkpointStore,
         ReplicatorOptions      replicatorOptions,
         CancellationToken      stoppingToken
@@ -65,6 +66,8 @@ public static class Replicator {
         await writer.Start();
 
         var stopping = false;
+
+        await checkpointSeeder.Seed(stoppingToken);
 
         try {
             while (!stopping) {

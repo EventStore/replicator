@@ -3,6 +3,9 @@ using EventStore.Replicator.Shared;
 namespace EventStore.Replicator.Tests.Fakes; 
 
 public class CheckpointStore : ICheckpointStore {
+    public ValueTask<bool> HasStoredCheckpoint(CancellationToken cancellationToken)
+        => ValueTask.FromResult(true);
+    
     public ValueTask<Position> LoadCheckpoint(CancellationToken cancellationToken)
         => ValueTask.FromResult(Position.Start);
 

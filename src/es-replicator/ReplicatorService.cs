@@ -11,6 +11,7 @@ public class ReplicatorService : BackgroundService {
     readonly SinkPipeOptions        _sinkOptions;
     readonly PreparePipelineOptions _prepareOptions;
     readonly ReplicatorOptions      _replicatorOptions;
+    readonly ICheckpointSeeder      _checkpointSeeder;
     readonly ICheckpointStore       _checkpointStore;
 
     public ReplicatorService(
@@ -19,14 +20,16 @@ public class ReplicatorService : BackgroundService {
         SinkPipeOptions        sinkOptions,
         PreparePipelineOptions prepareOptions,
         ReplicatorOptions      replicatorOptions,
+        ICheckpointSeeder      checkpointSeeder,
         ICheckpointStore       checkpointStore
     ) {
-        _reader            = reader;
-        _writer            = writer;
-        _sinkOptions       = sinkOptions;
-        _prepareOptions    = prepareOptions;
-        _replicatorOptions = replicatorOptions;
-        _checkpointStore   = checkpointStore;
+        _reader                = reader;
+        _writer                = writer;
+        _sinkOptions           = sinkOptions;
+        _prepareOptions        = prepareOptions;
+        _replicatorOptions     = replicatorOptions;
+        _checkpointSeeder      = checkpointSeeder;
+        _checkpointStore       = checkpointStore;
     }
 
     protected override Task ExecuteAsync(CancellationToken stoppingToken)
@@ -35,6 +38,7 @@ public class ReplicatorService : BackgroundService {
             _writer,
             _sinkOptions,
             _prepareOptions,
+            _checkpointSeeder,
             _checkpointStore,
             _replicatorOptions,
             stoppingToken

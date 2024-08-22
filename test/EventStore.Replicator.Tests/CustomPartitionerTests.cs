@@ -47,6 +47,7 @@ public class ValuePartitionerTests : IClassFixture<Fixture> {
             writer,
             sinkOptions,
             prepareOptions,
+            new NoCheckpointSeeder(),
             _fixture.CheckpointStore,
             new ReplicatorOptions(false, false),
             CancellationToken.None

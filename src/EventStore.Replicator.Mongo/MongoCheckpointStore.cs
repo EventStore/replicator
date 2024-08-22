@@ -22,6 +22,15 @@ public class MongoCheckpointStore : ICheckpointStore {
     int       _counter;
     Position? _lastPosition;
 
+    public async ValueTask<bool> HasStoredCheckpoint(CancellationToken cancellationToken) {
+        var doc = await _collection
+            .Find(x => x.Id == _id).Limit(1)
+            .SingleOrDefaultAsync(cancellationToken)
+            .ConfigureAwait(false);
+
+        return doc != null;
+    }
+
     public async ValueTask<Position> LoadCheckpoint(CancellationToken cancellationToken) {
         if (_lastPosition != null) {
             Log.Info("Starting from a previously known checkpoint {LastKnown}", _lastPosition);

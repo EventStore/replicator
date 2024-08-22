@@ -74,6 +74,7 @@ static class Startup {
         );
 
         RegisterCheckpointStore(replicatorOptions.Checkpoint, services);
+        RegisterCheckpointSeeder(replicatorOptions.Checkpoint.Seeder, services);
         services.AddHostedService<ReplicatorService>();
         services.Configure<HostOptions>(opts => opts.ShutdownTimeout = TimeSpan.FromMinutes(5));
         services.AddSingleton<CountersKeep>();
@@ -116,5 +117,19 @@ static class Startup {
             _ => throw new ArgumentOutOfRangeException($"Unknown checkpoint store type: {settings.Type}")
         };
         services.AddSingleton(store);
+    }
+    
+    static void RegisterCheckpointSeeder(CheckpointSeeder settings, IServiceCollection services) {
+        services.AddSingleton<ICheckpointSeeder>(
+            sp =>
+                settings.Type switch {
+                    "none" => new NoCheckpointSeeder(),
+                    "chaser" => new ChaserCheckpointSeeder(
+                        settings.Path,
+                        sp.GetRequiredService<ICheckpointStore>()
+                    ),
+                    _ => throw new ArgumentOutOfRangeException($"Unknown checkpoint seeder type: {settings.Type}")
+                }
+        );
     }
 }

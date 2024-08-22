@@ -26,6 +26,10 @@ public class FileCheckpointStore : ICheckpointStore {
         }
     }
 
+    public ValueTask<bool> HasStoredCheckpoint(CancellationToken cancellationToken) {
+        return ValueTask.FromResult(File.Exists(_fileName) && new FileInfo(_fileName).Length > 0);
+    }
+
     public async ValueTask<Position> LoadCheckpoint(CancellationToken cancellationToken) {
         if (_lastPosition != null) {
             Log.Info("Starting from a previously known checkpoint {LastKnown}", _lastPosition);
