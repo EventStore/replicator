@@ -24,7 +24,8 @@ public class ChaserCheckpointSeeder : ICheckpointSeeder {
             Log.Warn("Seeding failed because the file at {FilePath} does not exist", _filePath);
             return;
         }
-        using var fileStream = new FileStream(
+
+        await using var fileStream = new FileStream(
             _filePath,
             FileMode.Open,
             FileAccess.Read,
