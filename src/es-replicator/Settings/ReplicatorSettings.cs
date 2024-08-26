@@ -21,7 +21,7 @@ public record Checkpoint {
     public int              CheckpointAfter { get; init; } = 1000;
     public string           Database        { get; init; } = "replicator";
     public string           InstanceId      { get; init; } = "default";
-    public CheckpointSeeder Seeder          { get; init; }
+    public CheckpointSeeder Seeder          { get; init; } = new();
 }
 
 public record SinkSettings : EsdbSettings {
