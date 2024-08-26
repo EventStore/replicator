@@ -20,6 +20,7 @@ jobs:
         uses: docker/setup-qemu-action@v3
       -
         name: Set up Docker metadata
+        id: meta
         uses: docker/metadata-action@v5
         with:
           images: |
