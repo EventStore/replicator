@@ -36,6 +36,30 @@ Configuring a higher `checkpointAfter` improves write performance by ensuring Re
 
 Configure the `checkpointAfter` to align with your data consistency and performance requirements.
 
+### Checkpoint seeding
+
+Replicator supports checkpoint seeding, which allows you to start replication from a specific event number. This is optional and the default is to not seed.
+
+```yaml
+replicator:
+  checkpoint:
+    seeder: 
+      type: none
+```
+
+When the `type` of seeder is set to `chaser`, you can seed a checkpoint store from a `chaser.chk` file, like so:
+
+```yaml
+replicator:
+  checkpoint:
+    seeder: 
+      type: chaser
+      path: "path/to/chaser.chk"
+```
+
+This is useful when you want to start replication from the same event number as a backup's `chaser.chk`. It's not recommended to use this feature unless you are sure the `chaser.chk` file is immutable. This implies that the `chaser.chk` file of a running EventStoreDB node should not be used.
+Note that seeding will only happen if the checkpoint store has no corresponding stored checkpoint.
+
 ### Checkpoint stores
 
 Replicator supports storing checkpoints in different stores. Only one store can be configured per Replicator instance. 
