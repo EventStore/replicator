@@ -70,7 +70,12 @@ static class Startup {
         );
 
         services.AddSingleton(
-            new ReplicatorOptions(replicatorOptions.RestartOnFailure, replicatorOptions.RunContinuously)
+            new ReplicatorOptions(
+                replicatorOptions.RestartOnFailure,
+                replicatorOptions.RunContinuously,
+                TimeSpan.FromSeconds(replicatorOptions.RestartDelayInSeconds),
+                TimeSpan.FromSeconds(replicatorOptions.ReportMetricsFrequencyInSeconds)
+            )
         );
 
         RegisterCheckpointStore(replicatorOptions.Checkpoint, services);

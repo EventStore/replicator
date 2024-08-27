@@ -13,28 +13,30 @@ The settings file has the `replicator` root level, all settings are children to 
 
 Available configuration options are:
 
-| Option                                  | Description                                                                                                                                                                   |
-|:----------------------------------------|:------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| `replicator.reader.connectionString`    | Connection string for the source cluster or instance                                                                                                                          |
-| `replicator.reader.protocol`            | Reader protocol (`tcp` or `grpc`)                                                                                                                                             |
-| `replicator.reader.pageSize`            | Reader page size (only applicable for TCP protocol                                                                                                                            |
-| `replicator.sink.connectionString`      | Connection string for the target cluster or instance                                                                                                                          |
-| `replicator.sink.protocol`              | Writer protocol (`tcp` or `grpc`)                                                                                                                                             |
-| `replicator.sink.partitionCount`        | Number of [partitioned]({{% ref "writers" %}}) concurrent writers                                                                                                             |
-| `replicator.sink.partitioner`           | Custom JavaScript [partitioner]({{% ref "writers" %}})                                                                                                                        |
-| `replicator.sink.bufferSize`            | Size of the sink buffer, `1000` events by default                                                                                                                             |
-| `replicator.scavenge`                   | Enable real-time [scavenge]({{% ref "scavenge" %}})                                                                                                                           |
-| `replicator.runContinuously`            | Set to `false` if you want Replicator to stop when it reaches the end of `$all` stream. Default is `true`, so the replication continues until you stop it explicitly.         |
-| `replicator.filters`                    | Add one or more of provided [filters]({{% ref "filters" %}})                                                                                                                  |
-| `replicator.transform`                  | Configure the [event transformation]({{% ref "Transforms" %}})                                                                                                                |
-| `replicator.transform.bufferSize`       | Size of the prepare buffer (filtering and transformations), `1000` events by default                                                                                          |
-| `replicator.checkpoint.type`            | Type of checkpoint store (`file` or `mongo`), `file` by default                                                                                                               |
-| `replicator.checkpoint.path`            | The file path or connection string, `./checkpoint` by default                                                                                                                 |
-| `replicator.checkpoint.checkpointAfter` | The number of events that must be replicated before a checkpoint is stored, `1000` events by default                                                                          |
-| `replicator.checkpoint.database`        | The name of the Mongo database, `replicator` by default                                                                                                                       |
-| `replicator.checkpoint.instanceId`      | The name of the replicator instance to isolate checkpoints with in the Mongo database, `default` by default                                                                   |
-| `replicator.checkpoint.seeder.type`     | Type of checkpoint seeder to use (`none` or `chaser`), `none` by default                                                                                                      |
-| `replicator.checkpoint.seeder.path`     | The file path of the `chaser.chk`, empty by default                                                                                                                           |
+| Option                                       | Description                                                                                                                                                           |
+|:---------------------------------------------|:----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `replicator.reader.connectionString`         | Connection string for the source cluster or instance                                                                                                                  |
+| `replicator.reader.protocol`                 | Reader protocol (`tcp` or `grpc`)                                                                                                                                     |
+| `replicator.reader.pageSize`                 | Reader page size (only applicable for TCP protocol                                                                                                                    |
+| `replicator.sink.connectionString`           | Connection string for the target cluster or instance                                                                                                                  |
+| `replicator.sink.protocol`                   | Writer protocol (`tcp` or `grpc`)                                                                                                                                     |
+| `replicator.sink.partitionCount`             | Number of [partitioned]({{% ref "writers" %}}) concurrent writers                                                                                                     |
+| `replicator.sink.partitioner`                | Custom JavaScript [partitioner]({{% ref "writers" %}})                                                                                                                |
+| `replicator.sink.bufferSize`                 | Size of the sink buffer, `1000` events by default                                                                                                                     |
+| `replicator.scavenge`                        | Enable real-time [scavenge]({{% ref "scavenge" %}})                                                                                                                   |
+| `replicator.runContinuously`                 | Set to `false` if you want Replicator to stop when it reaches the end of `$all` stream. Default is `true`, so the replication continues until you stop it explicitly. |
+| `replicator.filters`                         | Add one or more of provided [filters]({{% ref "filters" %}})                                                                                                          |
+| `replicator.transform`                       | Configure the [event transformation]({{% ref "Transforms" %}})                                                                                                        |
+| `replicator.transform.bufferSize`            | Size of the prepare buffer (filtering and transformations), `1000` events by default                                                                                  |
+| `replicator.checkpoint.type`                 | Type of checkpoint store (`file` or `mongo`), `file` by default                                                                                                       |
+| `replicator.checkpoint.path`                 | The file path or connection string, `./checkpoint` by default                                                                                                         |
+| `replicator.checkpoint.checkpointAfter`      | The number of events that must be replicated before a checkpoint is stored, `1000` events by default                                                                  |
+| `replicator.checkpoint.database`             | The name of the Mongo database, `replicator` by default                                                                                                               |
+| `replicator.checkpoint.instanceId`           | The name of the replicator instance to isolate checkpoints with in the Mongo database, `default` by default                                                           |
+| `replicator.checkpoint.seeder.type`          | Type of checkpoint seeder to use (`none` or `chaser`), `none` by default                                                                                              |
+| `replicator.checkpoint.seeder.path`          | The file path of the `chaser.chk`, empty by default                                                                                                                   |
+| `replicator.restartDelayInSeconds`           | The number of seconds between replication restarts, `5` by default                                                                                                    |
+| `replicator.reportMetricsFrequencyInSeconds` | The frequency at which to report certain metrics expressed in seconds, `5` by default                                                                                 |
 
 ## Enable verbose logging
 

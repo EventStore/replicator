@@ -49,7 +49,7 @@ public class ValuePartitionerTests : IClassFixture<Fixture> {
             prepareOptions,
             new NoCheckpointSeeder(),
             _fixture.CheckpointStore,
-            new ReplicatorOptions(false, false),
+            new ReplicatorOptions(false, false, TimeSpan.FromSeconds(5), TimeSpan.FromSeconds(5)),
             CancellationToken.None
         );
         await Timing.Measure("Replication", replication);

@@ -103,10 +103,10 @@ public static class Replicator {
                     break;
                 }
 
-                Log.Info("Will restart in 5 sec");
+                Log.Info("Will restart in {0} sec", replicatorOptions.RestartDelay.TotalSeconds);
 
                 try {
-                    await Task.Delay(5000, stoppingToken);
+                    await Task.Delay(replicatorOptions.RestartDelay, stoppingToken);
                 }
                 catch (OperationCanceledException) {
                     // stopping now
@@ -172,7 +172,7 @@ public static class Replicator {
                         ReplicationMetrics.LastSourcePosition.Set(position.Value);
                     }
 
-                    await Task.Delay(5000, stoppingToken).ConfigureAwait(false);
+                    await Task.Delay(replicatorOptions.ReportMetricsFrequency, stoppingToken).ConfigureAwait(false);
                 }
             }
             catch (OperationCanceledException) {
