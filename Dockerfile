@@ -6,7 +6,7 @@ ARG TARGETARCH
 WORKDIR /app
 
 ARG RUNTIME
-RUN curl -sL https://deb.nodesource.com/setup_19.x | bash - \
+RUN curl -fsSL https://deb.nodesource.com/setup_22.x | bash - \
  && apt-get install -y --no-install-recommends nodejs \
  && npm install -g yarn 
 
@@ -18,7 +18,7 @@ COPY ./src/es-replicator/ClientApp/package.json ./src/es-replicator/ClientApp/
 COPY ./src/es-replicator/ClientApp/yarn.lock ./src/es-replicator/ClientApp/
 RUN cd ./src/es-replicator/ClientApp && yarn install
 
-FROM builder as publish
+FROM builder AS publish
 ARG TARGETARCH
 COPY ./src ./src
 RUN dotnet publish ./src/es-replicator -c Release -a $TARGETARCH -clp:NoSummary --no-self-contained -o /app/publish
