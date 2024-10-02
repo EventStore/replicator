@@ -105,12 +105,14 @@ public static class Replicator {
 
                 Log.Info("Will restart in {0} sec", replicatorOptions.RestartDelay.TotalSeconds);
 
-                try {
-                    await Task.Delay(replicatorOptions.RestartDelay, stoppingToken);
-                }
-                catch (OperationCanceledException) {
-                    // stopping now
-                    break;
+                if (replicatorOptions.RestartDelay != TimeSpan.Zero) {
+                    try {
+                        await Task.Delay(replicatorOptions.RestartDelay, stoppingToken);
+                    }
+                    catch (OperationCanceledException) {
+                        // stopping now
+                        break;
+                    }
                 }
             }
         }
