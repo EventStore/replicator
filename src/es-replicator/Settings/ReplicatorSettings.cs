@@ -44,14 +44,16 @@ public record Filter {
 }
 
 public record Replicator {
-    public EsdbSettings      Reader           { get; init; }
-    public SinkSettings      Sink             { get; init; }
-    public bool              Scavenge         { get; init; }
-    public bool              RestartOnFailure { get; init; } = true;
-    public bool              RunContinuously  { get; init; } = true;
-    public Checkpoint        Checkpoint       { get; init; } = new();
-    public TransformSettings Transform        { get; init; } = new();
-    public Filter[]          Filters          { get; init; }
+    public EsdbSettings      Reader                          { get; init; }
+    public SinkSettings      Sink                            { get; init; }
+    public bool              Scavenge                        { get; init; }
+    public bool              RestartOnFailure                { get; init; } = true;
+    public bool              RunContinuously                 { get; init; } = true;
+    public int               RestartDelayInSeconds           { get; init; } = 5;
+    public int               ReportMetricsFrequencyInSeconds { get; init; } = 5;
+    public Checkpoint        Checkpoint                      { get; init; } = new();
+    public TransformSettings Transform                       { get; init; } = new();
+    public Filter[]          Filters                         { get; init; }
 }
 
 public static class ConfigExtensions {

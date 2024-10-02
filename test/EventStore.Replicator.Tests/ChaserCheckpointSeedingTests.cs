@@ -66,7 +66,7 @@ public class ChaserCheckpointSeedingTests {
                 new PreparePipelineOptions(null, null),
                 new ChaserCheckpointSeeder(chaser_chk_copy, store),
                 store,
-                new ReplicatorOptions(false, false),
+                new ReplicatorOptions(false, false, TimeSpan.FromSeconds(5), TimeSpan.FromSeconds(5)),
                 CancellationToken.None
             );
 
